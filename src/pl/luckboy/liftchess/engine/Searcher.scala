@@ -5,5 +5,7 @@ package pl.luckboy.liftchess.engine
  */
 trait Searcher 
 {
+  def evaluator: Evaluator
+  
   def search(depth: Int, alpha: Int, beta: Int): Int
 }
