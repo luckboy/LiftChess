@@ -144,7 +144,7 @@ class Board
    * @param f			funkcja.
    * @return			wynik funkcji lub wartość początkowa.
    */  
-  def unsafeSuccNullMove[T](z: T)(f: (Board) => T): T = throw new Exception
+  def unsafeSuccNull[T](z: T)(f: (Board) => T): T = throw new Exception
   
   /**
    * Wykonuje ruch.
@@ -177,39 +177,5 @@ class Board
   /**
    * Sprawdza czy jest szach dla strony która ma ruch.
    */
-  def inCheck: Boolean = throw new Exception  
-
-  /**
-   * Składa ruchy pseudo legalne dla danej strony.
-   * @param side		strona.
-   * @param z			wartość począntkowa.
-   * @param f			funkcja składania.
-   * @return 			wynik składania.
-   */
-  def foldSidePseudoLegalMoves[T](side: Side.Value)(z: T)(f: (T, Move) => T): T = throw new Exception
-
-  /**
-   * Składa potencjalnie dobre ruchy pseudo legalne dla danej strony.
-   * @param side		strona.
-   * @param z			wartość począntkowa.
-   * @param f			funkcja składania.
-   * @return 			wynik składania.
-   */
-  def foldSideGoodPseudoLegalMoves[T](side: Side.Value)(z: T)(f: (T, Move) => T): T = throw new Exception
-
-  /**
-   * Składa ruchy pseudo legalne dla strony która ma ruch.
-   * @param z			wartość począntkowa.
-   * @param f			funkcja składania.
-   * @return 			wynik składania.
-   */
-  def foldPseudoLegalMoves[T](z: T)(f: (T, Move) => T): T = throw new Exception
-
-  /**
-   * Składa potencjalnie dobre ruchy pseudo legalne dla strony która ma ruch.
-   * @param z			wartość począntkowa.
-   * @param f			funkcja składania.
-   * @return 			wynik składania.
-   */
-  def foldGoodPseudoLegalMoves[T](z: T)(f: (T, Move) => T): T = throw new Exception
+  def inCheck: Boolean = throw new Exception
 }

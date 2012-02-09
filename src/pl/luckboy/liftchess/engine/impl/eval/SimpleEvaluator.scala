@@ -1,4 +1,4 @@
-package pl.luckboy.liftchess.engine.eval
+package pl.luckboy.liftchess.engine.impl.eval
 import pl.luckboy.liftchess.engine.Board
 import pl.luckboy.liftchess.engine.Evaluator
 

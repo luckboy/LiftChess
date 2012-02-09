@@ -3,27 +3,53 @@ package pl.luckboy.liftchess.engine
 /**
  * @author Łukasz Szpakowski
  */
-class MoveStack 
+class MoveStack
 {
   /**
-   * Składa posortowane ruchy pseudo legalne dla strony która ma ruch.
+   * Generuje pseudo legalne ruchy i wkłada na stos.
    * @param bd			plansza.
-   * @param mvEval		funkcja oceniająca ruch.
-   * @param z			wartość począntkowa.
-   * @param p			funkcja przerwania (false gdy przerywa).
-   * @param f			funkcja składania.
-   * @return 			wynik składania.
    */
-  def foldSortedPseudoLegalMoves[T](bd: Board)(mvEval: (Move) => Int)(z: T)(p: (T, Move) => T)(f: (T, Move) => T): T = throw new Exception
+  def generatePseudoLegalMoves(bd: Board): Unit = throw new Exception
 
   /**
-   * Składa posortowane potencjalnie dobre ruchy pseudo legalne dla strony która ma ruch.
+   * Generuje pseudo legalne ruchy które mogą być potencjalnie dobre i wkłada na stos.
    * @param bd			plansza.
-   * @param mvEval		funkcja oceniająca ruch.
-   * @param z			wartość począntkowa.
-   * @param p			funkcja przerwania (false gdy przerywa).
-   * @param f			funkcja składania.
-   * @return 			wynik składania.
    */
-  def foldSortedGoodPseudoLegalMoves[T](bd: Board)(mvEval: (Move) => Int)(z: T)(p: (T, Move) => T)(f: (T, Move) => T): T = throw new Exception
+  def generatePseudoLegalGoodMoves(bd: Board): Unit = throw new Exception
+
+  /**
+   * Zdejmuje ruchy z stosu.
+   */
+  def popMoves(): Unit = throw new Exception
+  
+  /**
+   * Wkłada pseudo legalne ruchy i wykonuje funkcje. Następnie po wykonaniu funkcji zdejmuje ruchy z stosu.
+   * @param bd			plansza.
+   * @param z			wartość początkowa.
+   * @param f			funkcja.
+   * @return			wynik funkcji.
+   */
+  def succPseudoLegalMoves[T](bd: Board)(z: T)(f: (MoveStack) => T): T = throw new Exception
+  
+  /**
+   * Wkłada pseudo legalne ruchy, które są potencjalie dobre i wykonuje funkcje. Następnie po wykonaniu funkcji 
+   * zdejmuje ruchy z stosu.
+   * @param bd			plansza.
+   * @param z			wartość początkowa.
+   * @param f			funkcja.
+   * @return			wynik funkcji.
+   */
+  def succPseudoLegalGoodMoves[T](bd: Board)(z: T)(f: (MoveStack) => T): T = throw new Exception
+
+  /**
+   * Liczba ruchów.
+   */
+  def size: Int = throw new Exception
+  
+  /**
+   * Podaje ruch o danym indeksie.
+   * @param i			indeks.
+   * @return			ruch.
+   */
+  def apply(i: Int): Move = throw new Exception
 }
