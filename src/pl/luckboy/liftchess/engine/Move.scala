@@ -1,6 +1,3 @@
 package pl.luckboy.liftchess.engine
 
-class Move 
-{
-
-}
+case class Move(piece: Piece.Value, source: Int, destination: Int, promotion: Piece.Value)

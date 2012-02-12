@@ -102,12 +102,7 @@ class Board
   /**
    * Pole bicia w przelocie.
    */
-  def enPassant: Option[Int] = throw new Exception
-
-  /**
-   * Pole bicia w przelocie w postaci mniej bezpiecznej.
-   */
-  def unsafeEnPassant: Int = throw new Exception
+  def enPassant: SquareOption = throw new Exception
 
   /**
    * Liczba półruchów.
@@ -130,21 +125,42 @@ class Board
   def apply(sq: Int): SidePiece.Value = throw new Exception
   
   /**
-   * Wykonuje ruch jeśli jest legalny i wykonuje daną funkcje. Po wykonaniu funkcji cofa ruch.
+   * Słada następnik planszy. W rzeczywistości wykonuje ruch jeśli jest legalny i wykonuje daną funkcje. Po 
+   * wykonaniu funkcji cofa ruch.
    * @param	move		ruch.
    * @param z			wartość początkowa.
-   * @param f			funkcja.
+   * @param f			funkcja składania.
    * @return			wynik funkcji lub wartość początkowa.
    */
-  def unsafeSucc[T](move: Move)(z: T)(f: (Board) => T): T = throw new Exception
+  def unsafeFoldSuccessor[T](move: Move)(z: T)(f: (T, Board) => T): T = throw new Exception
 
   /**
-   * Wykonuje pusty ruch i wykonuje daną funkcje. Po wykonaniu funkcji cofa ruch pusty.
+   * Słada następnik planszy dla ruchu pustego. W rzeczywistości  wykonuje pusty ruch jeśli jest legalny i 
+   * wykonuje daną funkcje. Po wykonaniu funkcji cofa ruch pusty.
    * @param z			wartość początkowa.
    * @param f			funkcja.
    * @return			wynik funkcji lub wartość początkowa.
    */  
-  def unsafeSuccNull[T](z: T)(f: (Board) => T): T = throw new Exception
+  def unsafeFoldNullSuccessor[T](z: T)(f: (T, Board) => T): T = throw new Exception
+  
+  /**
+   * Słada następnik planszy bez obliczania hash klucza. W rzeczywistości wykonuje ruch jeśli jest legalny i 
+   * wykonuje daną funkcje. Po wykonaniu funkcji cofa ruch.
+   * @param	move		ruch.
+   * @param z			wartość początkowa.
+   * @param f			funkcja składania.
+   * @return			wynik funkcji lub wartość początkowa.
+   */
+  def unsafeFoldSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, Board) => T): T = throw new Exception
+
+  /**
+   * Słada następnik planszy dla ruchu pustego bez obliczania hash klucza. W rzeczywistości wykonuje pusty ruch 
+   * jeśli jest legalnyi wykonuje daną funkcje. Po wykonaniu funkcji cofa ruch pusty.
+   * @param z			wartość początkowa.
+   * @param f			funkcja składania.
+   * @return			wynik funkcji lub wartość początkowa.
+   */  
+  def unsafeFoldNullSuccessorWithoutHashKey[T](z: T)(f: (T, Board) => T): T = throw new Exception
   
   /**
    * Wykonuje ruch.
@@ -158,6 +174,7 @@ class Board
    * @param undo		dane cofania ruchu.
    */
   def unsafeUndoMove(undo: Undo): Unit = throw new Exception
+
   
   /**
    * Sprawdza czy dane pole jest atakowane daną stronę.
@@ -178,4 +195,18 @@ class Board
    * Sprawdza czy jest szach dla strony która ma ruch.
    */
   def inCheck: Boolean = throw new Exception
+}
+
+/**
+ * @author Łukasz Szpakowski
+ */
+object Board
+{
+  def apply(
+      pieces: Seq[SidePiece.Value],
+      side: Side.Value,
+      canstling: (Castling.Value, Castling.Value), 
+      enPassant: SquareOption, 
+      halfmoveClock: Int,
+      fullmoveNumber: Int): Board = throw new Exception
 }

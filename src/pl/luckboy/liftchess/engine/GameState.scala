@@ -13,22 +13,40 @@ class GameState
   def board: Board = throw new Exception
   
   /**
-   * Podobnie jak unsafeSucc w Board tylko dla gry.
+   * Podobnie jak unsafeFoldSuccessor w Board tylko dla gry.
    * @param	move		ruch.
    * @param z			wartość początkowa.
-   * @param f			funkcja.
+   * @param f			funkcja składania.
    * @return			wynik funkcji lub wartość początkowa.
    */
-  def unsafeSucc[T](move: Move)(z: T)(f: (GameState) => T): T = throw new Exception
+  def unsafeFoldSuccessor[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
 
   /**
-   * Podobnie jak unsafeSuccNull w Board tylko dla gry.
+   * Podobnie jak unsafeFoldNullSuccessor w Board tylko dla gry.
    * @param z			wartość początkowa.
-   * @param f			funkcja.
+   * @param f			funkcja składania.
    * @return			wynik funkcji lub wartość początkowa.
    */
-  def unsafeSuccNull[T](z: T)(f: (GameState) => T): T = throw new Exception
+  def unsafeFoldNullSuccessor[T](z: T)(f: (T, GameState) => T): T = throw new Exception
 
+  /**
+   * Podobnie jak unsafeFoldSuccessorWithoutHashKey w Board tylko dla gry.
+   * @param	move		ruch.
+   * @param z			wartość początkowa.
+   * @param f			funkcja składania.
+   * @return			wynik funkcji lub wartość początkowa.
+   */
+  def unsafeFoldSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
+
+  /**
+   * Podobnie jak unsafeFoldNullSuccessorWithoutHashKey w Board tylko dla gry.
+   * @param	move		ruch.
+   * @param z			wartość początkowa.
+   * @param f			funkcja składania.
+   * @return			wynik funkcji lub wartość początkowa.
+   */
+  def unsafeFoldNullSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (GameState) => T): T = throw new Exception
+  
   /**
    * Składa posortowane następniki stanu gry.
    * @param mvStack		ruchy (bufor ruchów).

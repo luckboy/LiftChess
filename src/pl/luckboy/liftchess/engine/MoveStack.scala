@@ -25,21 +25,19 @@ class MoveStack
   /**
    * Wkłada pseudo legalne ruchy i wykonuje funkcje. Następnie po wykonaniu funkcji zdejmuje ruchy z stosu.
    * @param bd			plansza.
-   * @param z			wartość początkowa.
    * @param f			funkcja.
    * @return			wynik funkcji.
    */
-  def succPseudoLegalMoves[T](bd: Board)(z: T)(f: (MoveStack) => T): T = throw new Exception
+  def generatePseudoLegalMovesWithPopMoves[T](bd: Board)(f: => T): T = throw new Exception
   
   /**
    * Wkłada pseudo legalne ruchy, które są potencjalie dobre i wykonuje funkcje. Następnie po wykonaniu funkcji 
    * zdejmuje ruchy z stosu.
    * @param bd			plansza.
-   * @param z			wartość początkowa.
    * @param f			funkcja.
    * @return			wynik funkcji.
    */
-  def succPseudoLegalGoodMoves[T](bd: Board)(z: T)(f: (MoveStack) => T): T = throw new Exception
+  def generatePseudoLegalGoodMovesWithPopMoves[T](bd: Board)(f: => T): T = throw new Exception
 
   /**
    * Liczba ruchów.
