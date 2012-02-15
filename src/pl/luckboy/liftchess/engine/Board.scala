@@ -13,21 +13,21 @@ class Board
    * @param piece		bierka.
    * @return			liczba bierek.
    */
-  def countSidePieces(side: Side.Value, piece: Piece.Value): Int = throw new Exception
+  def countSidePieces(side: Side, piece: Piece): Int = throw new Exception
   
   /**
    * Podaje liczbę wystąpień bierki.
    * @param piece		bierka.
    * @return			liczba bierek.
    */
-  def countPieces(piece: Piece.Value): Int = throw new Exception
+  def countPieces(piece: Piece): Int = throw new Exception
   
   /**
    * Podaje liczbę wszystkich bierek danej strony.
    * @param side		strona.
    * @return			liczba bierek.
    */
-  def countAllSidePieces(side: Side.Value): Int = throw new Exception
+  def countAllSidePieces(side: Side): Int = throw new Exception
   
   /**
    * Podaje liczbę wszystkich bierek.
@@ -44,7 +44,7 @@ class Board
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldSidePiece[T](side: Side.Value, piece: Piece.Value)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
+  def foldSidePiece[T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
   
   /**
    * Składa określone bierki.
@@ -54,7 +54,7 @@ class Board
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldPieces[T](piece: Piece.Value)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
+  def foldPieces[T](piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
   
   /**
    * Składa wszystkie bierki danej strony.
@@ -64,7 +64,7 @@ class Board
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldAllSidePieces[T](side: Side.Value)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
+  def foldAllSidePieces[T](side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
 
   /**
    * Składa wszystkie bierki.
@@ -85,19 +85,19 @@ class Board
    * @param g			funkcja składania po przerwaniu linii.
    * @return			wynik składania.
    */
-  def foldMoveSquares[T](sq: Int, piece: Piece.Value)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = throw new Exception
+  def foldMoveSquares[T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = throw new Exception
 
   /**
    * Strona.
    */
-  def side: Side.Value = throw new Exception
+  def side: Side = throw new Exception
 
   /**
    * Dostępne roszady dla danej strony.
    * @param side		strona.
    * @return			dostępne roszady.
    */
-  def castling(side: Side.Value): Castling.Value = throw new Exception
+  def castling(side: Side): Castling = throw new Exception
   
   /**
    * Pole bicia w przelocie.
@@ -122,7 +122,7 @@ class Board
   /**
    * Podaje bierkę na określonym polu.
    */
-  def apply(sq: Int): SidePiece.Value = throw new Exception
+  def apply(sq: Int): SidePieceOption = throw new Exception
   
   /**
    * Słada następnik planszy. W rzeczywistości wykonuje ruch jeśli jest legalny i wykonuje daną funkcje. Po 
@@ -182,14 +182,14 @@ class Board
    * @param side		strona atakującia.
    * @return			jeśli strona atakuje to true.
    */
-  def attack(sq: Int, side: Side.Value): Boolean = throw new Exception
+  def attack(sq: Int, side: Side): Boolean = throw new Exception
   
   /**
    * Sprawdza czy jest szach dla danej strony.
    * @param side		strona.
    * @return			jeśli jest szach to true.
    */
-  def sideInCheck(side: Side.Value): Boolean = throw new Exception
+  def sideInCheck(side: Side): Boolean = throw new Exception
   
   /**
    * Sprawdza czy jest szach dla strony która ma ruch.
@@ -203,9 +203,9 @@ class Board
 object Board
 {
   def apply(
-      pieces: Seq[SidePiece.Value],
-      side: Side.Value,
-      canstling: (Castling.Value, Castling.Value), 
+      pieces: Seq[SidePieceOption],
+      side: Side,
+      canstling: (Castling, Castling), 
       enPassant: SquareOption, 
       halfmoveClock: Int,
       fullmoveNumber: Int): Board = throw new Exception

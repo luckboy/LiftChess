@@ -76,14 +76,14 @@ class GameState
    * @param side		strona.
    * @return			jeśli wygrała grę to true.
    */
-  def isWin(side: Side.Value): Boolean = throw new Exception
+  def isWin(side: Side): Boolean = throw new Exception
 
   /**
    * Podaje true jeśli strona przegrała grę.
    * @param side		strona.
    * @return			jeśli przegrała grę to true.
    */
-  def isLose(side: Side.Value): Boolean = throw new Exception
+  def isLose(side: Side): Boolean = throw new Exception
   
   /**
    * Podaje true jeśli jest remis.

@@ -3,12 +3,22 @@ package pl.luckboy.liftchess.engine
 /**
  * @author Łukasz Szpakowski
  */
-object Piece extends Enumeration
+class Piece private(val id: Int, val name: String) extends EnumValue
+
+/**
+ * @author Łukasz Szpakowski
+ */
+object Piece
 {
-  val Pawn = Value(1, "P")
-  val Knight = Value(2, "N")
-  val Bishop = Value(3, "B")
-  val Rook = Value(4, "R")
-  val Queen = Value(5, "Q")
-  val King = Value(6, "K")
+  val Pawn = new Piece(1, "P")
+  val Knight = new Piece(2, "N")
+  val Bishop = new Piece(3, "B")
+  val Rook = new Piece(4, "R")
+  val Queen = new Piece(5, "Q")
+  val King = new Piece(6, "K")
+  
+  private val Values = Array(Pawn, Knight, Bishop, Rook, Queen, King)
+  
+  def apply(id: Int): Piece = 
+    Values(id - 1)
 }

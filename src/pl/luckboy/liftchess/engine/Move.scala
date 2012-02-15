@@ -1,3 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-case class Move(piece: Piece.Value, source: Int, destination: Int, promotion: Piece.Value)
+/**
+ * @author Łukasz Szpakowski
+ */
+case class Move(piece: Piece, source: Int, destination: Int, promotion: PieceOption, flags: Int)
