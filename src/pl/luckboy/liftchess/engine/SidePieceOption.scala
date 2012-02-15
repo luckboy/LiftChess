@@ -4,6 +4,10 @@ package pl.luckboy.liftchess.engine
  * @author Łukasz Szpakowski
  */
 class SidePieceOption private(val id: Int, val name: String) extends EnumValue
+{
+  def foldLeft[T](z: T)(f: (T, SidePiece) => T): T =
+    if(id != 0) f(z, SidePiece(id)) else z
+}
 
 /**
  * @author Łukasz Szpakowski
