@@ -1,29 +1,21 @@
 package pl.luckboy.liftchess.engine
 
-/**
- * Cecha przeszukiwania drzewa gry.
+/** Cecha przeszukiwania drzewa gry.
  * 
  * @author Łukasz Szpakowski
  */
 trait Searcher 
 {
-  /**
-   * Evaluator searchera.
-   */
+  /** Evaluator searchera. */
   def evaluator: Evaluator
 
-  /**
-   * Stan gry searchera.
-   */
+  /** Stan gry searchera. */
   def gameState: GameState
   
-  /**
-   * Ustawia stan gry searchera.
-   */
+  /** Ustawia stan gry searchera. */
   def gameState_=(gs: GameState): Unit
   
-  /**
-   * Przeszukuje drzewa gry na daną głebokość.
+  /** Przeszukuje drzewa gry na daną głebokość.
    * @param depth		głębokość.
    * @param alpha		alfa.
    * @param beta		beta.
