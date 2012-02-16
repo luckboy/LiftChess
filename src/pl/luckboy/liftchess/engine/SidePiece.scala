@@ -1,11 +1,13 @@
 package pl.luckboy.liftchess.engine
 
-/**
+/** Klasa Bierki strony.
+ * 
  * @author Łukasz Szpakowski
  */
 class SidePiece private(val id: Int, val name: String) extends EnumValue
 
-/**
+/** Singleton bierki strony.
+ * 
  * @author Łukasz Szpakowski
  */
 object SidePiece

@@ -1,6 +1,7 @@
 package pl.luckboy.liftchess.engine
 
-/**
+/** Klasa bierki opcjonalnej.
+ * 
  * @author Łukasz Szpakowski
  */
 class PieceOption private(val id: Int, val name: String) extends EnumValue
@@ -9,7 +10,8 @@ class PieceOption private(val id: Int, val name: String) extends EnumValue
     if(id != 0) f(z, Piece(id)) else z
 }
 
-/**
+/** Singleton bierki opcjonalnej.
+ * 
  * @authpr Łukasz Szpakowski
  */
 object PieceOption

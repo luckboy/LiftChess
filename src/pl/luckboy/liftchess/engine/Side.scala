@@ -1,11 +1,13 @@
 package pl.luckboy.liftchess.engine
 
-/**
+/** Klasa strony.
+ * 
  * @author Łukasz Szpakowski
  */
 class Side private(val id: Int, val name: String) extends EnumValue
 
-/**
+/** Singleton strony.
+ * 
  * @author Łukasz Szpakowski
  */
 object Side

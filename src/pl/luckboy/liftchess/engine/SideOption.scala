@@ -1,15 +1,17 @@
 package pl.luckboy.liftchess.engine
 
-/**
+/** Klasa strony opcjonalnej.
+ * 
  * @author Łukasz Szpakowski
  */
 class SideOption private(val id: Int, val name: String) extends EnumValue
 {
   def foldLeft[T](z: T)(f: (T, Side) => T): T =
-    if(id != 0) f(z, Side(id)) else z
+    if(id != -1) f(z, Side(id)) else z
 }
 
-/**
+/** Singleton strony opcjonalnej.
+ * 
  * @author Łukasz Szpakowski
  */
 object SideOption

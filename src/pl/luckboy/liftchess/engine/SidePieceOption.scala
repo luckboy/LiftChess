@@ -1,15 +1,23 @@
 package pl.luckboy.liftchess.engine
 
-/**
+/** Klasa bierki strony opcjonalnej.
+ * 
  * @author Łukasz Szpakowski
  */
 class SidePieceOption private(val id: Int, val name: String) extends EnumValue
 {
   def foldLeft[T](z: T)(f: (T, SidePiece) => T): T =
     if(id != 0) f(z, SidePiece(id)) else z
+    
+  def foldSide[T](z: T)(f: (T, Side) => T): T =
+    if((id & 48) == 0) f(z, Side((id >> 4) - 1)) else z
+    
+  def foldPiece[T](z: T)(f: (T, Piece) => T): T =
+    if((id & 15) == 0) f(z, Piece(id & 15)) else z
 }
 
-/**
+/** Singleton bierki strony opcjonalnej.
+ * 
  * @author Łukasz Szpakowski
  */
 object SidePieceOption
@@ -31,7 +39,7 @@ object SidePieceOption
   val BlackKing = new SidePieceOption(SidePiece.BlackKing.id, SidePiece.BlackKing.name)
 
   private val Values = Array(
-      Array[SidePieceOption](),
+      Array(None),
       Array(None, WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen, WhiteKing),
       Array(None, BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )

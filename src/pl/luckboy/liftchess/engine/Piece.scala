@@ -1,11 +1,13 @@
 package pl.luckboy.liftchess.engine
 
-/**
+/** Klasa bierki.
+ * 
  * @author Łukasz Szpakowski
  */
 class Piece private(val id: Int, val name: String) extends EnumValue
 
-/**
+/** Singleton bierki.
+ * 
  * @author Łukasz Szpakowski
  */
 object Piece
