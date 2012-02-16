@@ -38,7 +38,7 @@ class GameState
    * @param f			funkcja składania.
    * @return			wynik funkcji lub wartość początkowa.
    */
-  def unsafeFoldNullSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (GameState) => T): T = throw new Exception
+  def unsafeFoldNullSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
   
   /** Składa posortowane następniki stanu gry.
    * @param mvStack		ruchy (bufor ruchów).
