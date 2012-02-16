@@ -1,6 +1,7 @@
 package pl.luckboy.liftchess.engine
 
-/**
+/** Klasa stosu ruchów.
+ * 
  * @author Łukasz Szpakowski
  */
 class MoveStack
@@ -40,5 +41,23 @@ class MoveStack
    * @param i			indeks.
    * @return			ruch.
    */
-  def apply(i: Int): Move = throw new Exception
+  def move(i: Int): Move = throw new Exception
+  
+  /** Podaje punkty ruchu o danym indeksie.
+   * @param i			indeks.
+   * @return 			ruch.
+   */
+  def score(i: Int): Int = throw new Exception
+  
+  /** Ustawia punkty ruchu o danym indeksie.
+   * @param i			indeks.
+   * @param score		punkty.
+   */
+  def setScore(i: Int, score: Int): Unit = throw new Exception
+  
+  /** Zamienia mieściami ruchy i ich punkty o danych indeksach.
+   * @param	i			indeks ruchu pierwszego.
+   * @param j			indeks ruchu drugiego.
+   */
+  def swap(i: Int, j: Int): Unit = throw new Exception
 }
