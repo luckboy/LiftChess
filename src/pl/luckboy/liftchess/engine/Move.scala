@@ -13,7 +13,7 @@ case class Move(piece: Piece, source: Int, destination: Int, promotionPiece: Pie
 object Move
 {
   val NoneFlag = 0
-  val CaptureFlag = 1
+  val EnPassantFlag = 1
   val KingsideCastlingFlag = 2
   val QueensideCastlingFlag = 4
 }
@@ -34,19 +34,19 @@ object NormalMove
     }
 }
 
-/** Singleton bicia.
+/** Singleton bicia w przelocie.
  * 
  * @author Łukasz Szpakowski
  */
-object Capture
+object EnPassant
 {
-  def apply(piece: Piece, src: Int, dst: Int, promPiece: PieceOption): Move =
-    Move(piece, src, dst, promPiece, Move.CaptureFlag)
+  def apply(src: Int, dst: Int): Move =
+    Move(Piece.Pawn, src, dst, PieceOption.None, Move.EnPassantFlag)
     
-  def unapply(move: Move): Option[(Piece, Int, Int, PieceOption)] =
+  def unapply(move: Move): Option[(Int, Int)] =
     move match {
-      case Move(piece, src, dst, promPiece, Move.CaptureFlag) => Some(piece, src, dst, promPiece)
-      case _                                                  => None
+      case Move(Piece.Pawn, src, dst, PieceOption.None, Move.EnPassantFlag) => Some(src, dst) 
+      case _                                                                => None
     }
 }
 

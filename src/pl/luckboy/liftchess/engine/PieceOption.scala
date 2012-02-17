@@ -16,7 +16,7 @@ class PieceOption private(val id: Int, val name: String) extends EnumValue
  */
 object PieceOption
 {
-  val None = new PieceOption(0, ".")
+  val None = new PieceOption(0, "_")
   val Pawn = new PieceOption(Piece.Pawn.id, Piece.Pawn.name)
   val Knight = new PieceOption(Piece.Knight.id, Piece.Knight.name)
   val Bishop = new PieceOption(Piece.Bishop.id, Piece.Bishop.name)
