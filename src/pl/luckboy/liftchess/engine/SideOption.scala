@@ -7,8 +7,8 @@ package pl.luckboy.liftchess.engine
 class SideOption private(val id: Int, val name: String) extends EnumValue
 {
   /** Podaje stronę przeciwną */
-  def opposite: Side =
-    Side(id ^ 1)
+  def opposite: SideOption =
+    if(id != 2) SideOption(id ^ 1) else this
 
   /** Składa stronę.
    * @param z			wartość początkowa.
