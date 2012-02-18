@@ -3,7 +3,9 @@ package pl.luckboy.liftchess.engine
 /**
  * @author Łukasz Szpakowski
  */
-trait SearcherFactory
+trait SearcherFactory[T]
 {
-  def apply(eval: Evaluator): Searcher
+  type Params
+  
+  def apply(eval: Evaluator, params: Params): T
 }

@@ -4,8 +4,8 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-trait Searcher 
-{
+trait Searcher[TSearchInput]
+{  
   /** Evaluator searchera. */
   def evaluator: Evaluator
 
@@ -15,11 +15,16 @@ trait Searcher
   /** Ustawia stan gry searchera. */
   def gameState_=(gs: GameState): Unit
   
+  /** Listener przeszukiwania. */
+  def searchListener: SearchListener
+  
+  /** Ustawia listener przeszukiwania. */
+  def searchListener_=(listener: SearchListener): Unit
+  
   /** Przeszukuje drzewa gry na daną głebokość.
    * @param depth		głębokość.
-   * @param alpha		alfa.
-   * @param beta		beta.
+   * @param input		dane wejściowe dla przeszukiwania.
    * @return			wynik przeszukiwania.
    */
-  def search(depth: Int, alpha: Int, beta: Int): Int
+  def search(depth: Int, input: TSearchInput): Int
 }

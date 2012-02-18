@@ -4,18 +4,29 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-case class Move(piece: Piece, source: Int, destination: Int, promotionPiece: PieceOption, flags: Int)
+case class Move(piece: Piece, source: Int, destination: Int, promotionPiece: PieceOption, moveType: MoveType)
 
-/** Singleton ruchu.
+/** Klasa typu ruchu.
  * 
  * @author Łukasz Szpakowski
  */
-object Move
+class MoveType private(val id: Int, val name: String) extends EnumValue
+
+/** Singleton typu ruchu.
+ * 
+ * @author Łukasz Szpakowski
+ */
+object MoveType
 {
-  val NoneFlag = 0
-  val EnPassantFlag = 1
-  val KingsideCastlingFlag = 2
-  val QueensideCastlingFlag = 4
+  val NormalMove = new MoveType(0, "NormalMove") 
+  val EnPassant = new MoveType(1, "EnPassant")
+  val KingsideCastling = new MoveType(2, "KingsideCastling")
+  val QueensideCastling = new MoveType(3, "QueensideCastling")
+  
+  val Values = Array(NormalMove, EnPassant, KingsideCastling, QueensideCastling)
+  
+  def apply(id: Int): MoveType =
+    Values(id)
 }
 
 /** Singleton ruchu normalnego.
@@ -25,12 +36,12 @@ object Move
 object NormalMove
 {
   def apply(piece: Piece, src: Int, dst: Int, promPiece: PieceOption): Move =
-    Move(piece, src, dst, promPiece, Move.NoneFlag)
+    Move(piece, src, dst, promPiece, MoveType.NormalMove)
     
   def unapply(move: Move): Option[(Piece, Int, Int, PieceOption)] =
     move match {
-      case Move(piece, src, dst, promPiece, Move.NoneFlag) => Some(piece, src, dst, promPiece) 
-      case _                                               => None
+      case Move(piece, src, dst, promPiece, MoveType.NormalMove) => Some(piece, src, dst, promPiece) 
+      case _                                                     => None
     }
 }
 
@@ -41,11 +52,11 @@ object NormalMove
 object EnPassant
 {
   def apply(src: Int, dst: Int): Move =
-    Move(Piece.Pawn, src, dst, PieceOption.None, Move.EnPassantFlag)
+    Move(Piece.Pawn, src, dst, PieceOption.None, MoveType.EnPassant)
     
   def unapply(move: Move): Option[(Int, Int)] =
     move match {
-      case Move(Piece.Pawn, src, dst, PieceOption.None, Move.EnPassantFlag) => Some(src, dst) 
+      case Move(Piece.Pawn, src, dst, PieceOption.None, MoveType.EnPassant) => Some(src, dst) 
       case _                                                                => None
     }
 }
@@ -57,10 +68,10 @@ object EnPassant
 object KingsideCastling
 {
   def apply(): Move =
-    Move(Piece.King, 4, 6, PieceOption.None, Move.KingsideCastlingFlag)
+    Move(Piece.King, 4, 6, PieceOption.None, MoveType.KingsideCastling)
     
   def unapply(move: Move): Boolean =
-    (move.flags & Move.KingsideCastlingFlag) != 0
+    move.moveType == MoveType.KingsideCastling
 }
 
 /** Singleton roszady długiej.
@@ -70,8 +81,8 @@ object KingsideCastling
 object QueensideCastling
 {
   def apply(): Move =
-    Move(Piece.King, 4, 2, PieceOption.None, Move.QueensideCastlingFlag)
+    Move(Piece.King, 4, 2, PieceOption.None, MoveType.QueensideCastling)
     
   def unapply(move: Move): Boolean =
-    (move.flags & Move.QueensideCastlingFlag) != 0
+    move.moveType == MoveType.QueensideCastling
 }

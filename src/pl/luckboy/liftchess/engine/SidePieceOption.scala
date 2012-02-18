@@ -45,7 +45,7 @@ class SidePieceOption private(val id: Int, val name: String) extends EnumValue
    * @return			wynik składania.
    */
   def foldSide[T](z: T)(f: (T, Side) => T): T =
-    if((id & 48) == 48) f(z, Side((id >> 4) - 1)) else z
+    if((id & 48) != 48) f(z, Side((id >> 4) - 1)) else z
     
   /** Składa tylko bierkę.
    * @param z			wartość początkowa.
@@ -53,7 +53,7 @@ class SidePieceOption private(val id: Int, val name: String) extends EnumValue
    * @return			wynik składania.
    */
   def foldPiece[T](z: T)(f: (T, Piece) => T): T =
-    if((id & 15) == 0) f(z, Piece(id & 15)) else z
+    if((id & 15) != 0) f(z, Piece(id & 15)) else z
 }
 
 /** Singleton bierki strony opcjonalnej.
@@ -79,9 +79,8 @@ object SidePieceOption
   val BlackKing = new SidePieceOption(SidePiece.BlackKing.id, SidePiece.BlackKing.name)
 
   private val Values = Array(
-      Array(None, WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen, WhiteKing),
-      Array(None, BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing),
-      Array(None)
+      Array(WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen, WhiteKing),
+      Array(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )
 
   /** Tworzy bierke strony opcjonalna z strony i bierki.
@@ -90,12 +89,12 @@ object SidePieceOption
    * @return			bierka strony.
    */
   def fromSideAndPiece(side: Side, piece: Piece): SidePieceOption =
-    Values(side.id)(piece.id)
+    Values(side.id)(piece.id - 1)
     
   /** Tworzy bierkę strony opcjonalnej z identyfikatora.
    * @param id			identyfikator.
    * @return			bierka strony.
    */
   def apply(id: Int): SidePieceOption =
-    Values((id >> 4) - 1)(id & 15)
+    if(id != None.id) Values((id >> 4) - 1)((id & 15) - 1) else None
 }
