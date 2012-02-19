@@ -6,6 +6,8 @@ package pl.luckboy.liftchess.engine
  */
 trait AlphaBetaSearcher extends Searcher
 {
+  override type SearchListener = AlphaBetaSearchListener
+  
   /** Przeszukiwanie drzewa gry na daną głębokość z określonym oknem.
    * @param depth		głębokość.
    * @param alpha		alfa.
