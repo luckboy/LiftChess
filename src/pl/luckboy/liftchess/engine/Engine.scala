@@ -4,11 +4,8 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-trait Engine[TSearchInput]
-{
-  /** Searcher silnika */
-  def searcher: Searcher[TSearchInput]
-  
+trait Engine
+{  
   /** Stan gry silnika. */
   def gameState: GameState
   
