@@ -19,6 +19,14 @@ class SidePiece private(val id: Int, val name: String) extends EnumValue
    */
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
+  
+  /** Podaje strone bierki */
+  def side: Side =
+    Side((id >> 4) - 1)
+
+  /** Podaje typ bierki */ 
+  def piece: Piece =
+    Piece(id & 15)
 }
 
 /** Singleton bierki strony.

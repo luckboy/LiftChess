@@ -4,3 +4,8 @@ case class SquareOption(sq: Int)
 {
   def foldLeft[T](z: T)(f: (T, Int) => T): T = throw new Exception
 }
+
+object SquareOption
+{
+  val None = SquareOption(-1)
+}

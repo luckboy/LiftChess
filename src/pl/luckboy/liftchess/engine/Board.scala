@@ -38,7 +38,7 @@ class Board
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldSidePiece[T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
+  def foldSidePieces[T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
   
   /** Składa określone bierki.
    * @param piece		bierka.
@@ -77,8 +77,7 @@ class Board
    */
   def foldMoveSquares[T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = throw new Exception
 
-  /** Strona.
-   */
+  /** Strona. */
   def side: Side = throw new Exception
 
   /** Dostępne roszady dla danej strony.
