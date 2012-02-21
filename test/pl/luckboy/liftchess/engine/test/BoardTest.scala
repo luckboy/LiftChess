@@ -55,9 +55,7 @@ class BoardTest extends Properties("Board")
   
   val boardArgsGen = piecesGen.map6(sideGen, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClockGen, fullmoveNumberGen) { case args => args }
 
-  val pieceGen = Gen.oneOf(Piece.Pawn, Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen, Piece.King)
-  
-  val maxSqGen = Gen.choose(0, 100)
+  val pieceGen = Gen.oneOf(Piece.Pawn, Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen, Piece.King)  
   
   def newBoardTupled(args: (Seq[SidePieceOption], Side, (Castling, Castling), SquareOption, Int, Int)) =
     (Board.apply _).tupled(args)
