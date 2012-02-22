@@ -49,9 +49,9 @@ object SidePiece
   val BlackQueen = new SidePiece(Piece.Queen.id | 32, "q")
   val BlackKing = new SidePiece(Piece.King.id | 32, "k")
   
-  private val Values = Array(
-      Array(WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen, WhiteKing),
-      Array(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
+  private val Values = Side.makeArray(
+      Piece.makeArray(WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen, WhiteKing),
+      Piece.makeArray(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )
   
   /** Tworzy bierke strony opcjonalna z strony i bierki.
@@ -60,12 +60,12 @@ object SidePiece
    * @return			bierka strony.
    */
   def fromSideAndPiece(side: Side, piece: Piece): SidePiece =
-    Values(side.id)(piece.id - 1)
+    Values(side.id)(piece.id)
    
   /** Tworzy bierkę strony opcjonalnej z identyfikatora.
    * @param id			identyfikator.
    * @return			bierka strony.
    */
   def apply(id: Int): SidePiece = 
-    Values((id >> 4) - 1)((id & 15) - 1)
+    Values((id >> 4) - 1)(id & 15)    
 }

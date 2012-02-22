@@ -78,9 +78,9 @@ object SidePieceOption
   val BlackQueen = new SidePieceOption(SidePiece.BlackQueen.id, SidePiece.BlackQueen.name)
   val BlackKing = new SidePieceOption(SidePiece.BlackKing.id, SidePiece.BlackKing.name)
 
-  private val Values = Array(
-      Array(WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen, WhiteKing),
-      Array(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
+  private val Values = Side.makeArray(
+      Piece.makeArray(WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen, WhiteKing),
+      Piece.makeArray(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )
 
   /** Tworzy bierke strony opcjonalna z strony i bierki.
@@ -96,5 +96,5 @@ object SidePieceOption
    * @return			bierka strony.
    */
   def apply(id: Int): SidePieceOption =
-    if(id != None.id) Values((id >> 4) - 1)((id & 15) - 1) else None
+    if(id != None.id) Values((id >> 4) - 1)(id & 15) else None
 }

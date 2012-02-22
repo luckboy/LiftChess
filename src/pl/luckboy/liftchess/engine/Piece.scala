@@ -12,15 +12,18 @@ class Piece private(val id: Int, val name: String) extends EnumValue
  */
 object Piece
 {
-  val Pawn = new Piece(1, "P")
-  val Knight = new Piece(2, "N")
-  val Bishop = new Piece(3, "B")
-  val Rook = new Piece(4, "R")
-  val Queen = new Piece(5, "Q")
-  val King = new Piece(6, "K")
+  val Pawn = new Piece(0, "P")
+  val Knight = new Piece(1, "N")
+  val Bishop = new Piece(2, "B")
+  val Rook = new Piece(3, "R")
+  val Queen = new Piece(4, "Q")
+  val King = new Piece(5, "K")
   
-  private val Values = Array(Pawn, Knight, Bishop, Rook, Queen, King)
+  private val Values = makeArray(Pawn, Knight, Bishop, Rook, Queen, King)
   
   def apply(id: Int): Piece = 
-    Values(id - 1)
+    Values(id)
+    
+  def makeArray[T](p: T, n: T, b: T, r: T, q: T, k: T)(implicit m: ClassManifest[T]): Array[T] = 
+    Array(p, n, b, r, q, k)
 }

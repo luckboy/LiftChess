@@ -20,8 +20,11 @@ object Side
   val White = new Side(0, "w")
   val Black = new Side(1, "b")
   
-  private val Values = Array(White, Black)
+  private val Values = makeArray(White, Black)
   
   def apply(id: Int): Side =
     Values(id)
+    
+  def makeArray[T](w: T, b: T)(implicit m: ClassManifest[T]) =
+    Array(w, b)
 }

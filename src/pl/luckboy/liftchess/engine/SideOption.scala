@@ -33,4 +33,7 @@ object SideOption
   
   def apply(id: Int): SideOption =
     Values(id)
+    
+  def makeArray[T](w: T, b: T, none: T)(implicit m: ClassManifest[T]): Array[T] = 
+    Array(w, b, none)
 }
