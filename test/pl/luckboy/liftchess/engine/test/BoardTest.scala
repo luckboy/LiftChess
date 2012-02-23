@@ -151,7 +151,5 @@ class BoardTest extends Properties("Board")
         val aSum = newBoardTupled(args).foldAllPieces(0) { (sum, _) => sum < m } { (sum, _) => sum + 1 }
         val eSum = args._1.count { spo => spo != SidePieceOption.None }.min(m)
         aSum == eSum
-    }
-  
-  property("foldMoveSquares") = Prop.forAll((x: Int) => true)    
+    }  
 }
