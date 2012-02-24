@@ -170,6 +170,38 @@ class SquareTest extends Properties("Square")
   val rookMoveSquareMarks =
     slideMoveSquareMarks(Seq((-1, 0), (0, -1), (0, 1), (1, 0))) _
     
-  val queenMoveSquareMakrs = 
-    slideMoveSquareMarks(Seq((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))) _    
+  val queenMoveSquareMarks = 
+    slideMoveSquareMarks(Seq((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))) _
+    
+  val squareGen = Gen.choose(0, 63) 
+  
+  List((Piece.Knight, knightMoveSquareMarks), (Piece.King, kingMoveSquareMarks)).foreach { 
+    case (piece, marksFun) => 
+      property("foldNoSlideMoveSquares for " + piece + " should return square set") =
+        Prop.forAll(squareGen) {
+          (sq) =>
+            val marks = marksFun(sq)
+            val aSqs = Square.foldNoSlideMoveSquares(sq, Piece.Knight)(Set[Int]()) { (sqs, sq) => if(marks(sq)) sqs + sq  else sqs }
+            val eSqs = (0 to 63).filter { marks }.toSet
+            aSqs == eSqs
+        }
+  }
+  
+  List((Piece.Bishop, 4, bishopMoveSquareMarks), (Piece.Rook, 4, rookMoveSquareMarks), (Piece.Queen, 8, queenMoveSquareMarks)).foreach { 
+    case (piece, nLimits, marksFun) =>
+      property("foldSlideMoveSquares for " + piece + " should return two square sets") =
+        Prop.forAll(squareGen, Gen.listOfN(nLimits, Gen.choose(0, 8))) {
+          (sq, limits) =>
+            val marks1 = marksFun(limits, sq)
+            val marks2 = marksFun(limits.map { _  + 1 }, sq)
+            val (aSqs1, aSqs2) = Square.foldSlideMoveSquares(sq, Piece.Bishop)(Set[Int](), Set[Int]()) { (_, sq) => marks1(sq) } {
+              case ((sqs1, sqs2), sq) => (sqs1 + sq, sqs2)
+            } {
+              case ((sqs1, sqs2), sq) => (sqs1, sqs2 + sq)
+            }
+            val eSqs1 = (0 to 63).filter { marks1 }.toSet
+            val eSqs2 = (0 to 63).filter { sq => marks1(sq) ^ marks2(sq) }.toSet
+            aSqs1 == eSqs1 && aSqs2 == eSqs2
+        }
+  }
 }
