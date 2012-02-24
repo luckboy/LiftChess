@@ -42,10 +42,9 @@ object Square
    * @param z			wartość początkowa.
    * @param p			funkcja przerwania (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
    * @param f			funkcja składania przed przerwaniem linii.
-   * @param g			funkcja składania po przerwaniu linii.
    * @return			wynik składania.
    */
-  def foldPawnMoveSquares[T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = throw new Exception
+  def foldPawnMoveSquares[T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = throw new Exception
 
   /** Składa pola nieciągłe ruchy na danym polu.
    * @param sq 			pole.
@@ -67,7 +66,9 @@ object Square
    */
   def foldSlideMoveSquares[T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = throw new Exception
   
-  /** Składa pola ruchu bierki na danym polu (z wyjątkiem bic pionków).
+  /** Składa pola ruchu bierki na danym polu. W przypadku pionka funkcja f jest obliczana tylko dla nie bicia oraz gdy 
+   * warunek przerwania jest spełniony. Zaś funkcja g jest oblicza tylko dla bic oraz gdy warunek przerwania nie jest 
+   * spełniony. 
    * @param sq 			pole.
    * @param side		strony.
    * @param piece		bierka.
