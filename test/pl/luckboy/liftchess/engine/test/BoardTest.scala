@@ -88,11 +88,11 @@ class BoardTest extends Properties("Board")
         newBoardTupled(args).countAllPieces == args._1.count { spo => spo != SidePieceOption.None }
     }
   
-  property("foldSidePieces should return square list") = 
+  property("foldSidePieces should return square set") = 
     Prop.forAll(boardArgsGen, sideGen, pieceGen) {
       (args, side, piece) =>
-        val aSqs = newBoardTupled(args).foldSidePieces(side, piece)(List[Int]()) { (_, _) => true } { (sqs, sq) => sqs :+ sq }
-        val eSqs = (0 to 63).filter { args._1(_) == SidePieceOption.fromSideAndPiece(side, piece) }
+        val aSqs = newBoardTupled(args).foldSidePieces(side, piece)(Set[Int]()) { (_, _) => true } { (sqs, sq) => sqs + sq }
+        val eSqs = (0 to 63).filter { args._1(_) == SidePieceOption.fromSideAndPiece(side, piece) }.toSet
         aSqs == eSqs
     }
 
@@ -104,11 +104,11 @@ class BoardTest extends Properties("Board")
         aSum == eSum
     }
 
-  property("foldPieces should return square list") =
+  property("foldPieces should return square set") =
     Prop.forAll(boardArgsGen, pieceGen) {
       (args, piece) =>
-        val aSqs = newBoardTupled(args).foldPieces(piece)(List[Int]()) { (_, _) => true } { (sqs, sq) => sqs :+ sq }
-        val eSqs = (0 to 63).filter { args._1(_).isPiece(piece) }
+        val aSqs = newBoardTupled(args).foldPieces(piece)(Set[Int]()) { (_, _) => true } { (sqs, sq) => sqs + sq }
+        val eSqs = (0 to 63).filter { args._1(_).isPiece(piece) }.toSet
         aSqs == eSqs
     }
   
@@ -120,11 +120,11 @@ class BoardTest extends Properties("Board")
         aSum == eSum
     }
   
-  property("foldAllSidePieces should return square list") = 
+  property("foldAllSidePieces should return square set") = 
     Prop.forAll(boardArgsGen, sideGen) {
       (args, side) =>
-        val aSqs = newBoardTupled(args).foldAllSidePieces(side)(List[Int]()) { (_, _) => true } { (sqs, sq) => sqs :+ sq }
-        val eSqs = (0 to 63).filter { args._1(_).isSide(side) }
+        val aSqs = newBoardTupled(args).foldAllSidePieces(side)(Set[Int]()) { (_, _) => true } { (sqs, sq) => sqs + sq }
+        val eSqs = (0 to 63).filter { args._1(_).isSide(side) }.toSet
         aSqs == eSqs
     }
   
@@ -137,11 +137,11 @@ class BoardTest extends Properties("Board")
     }
 
   
-  property("foldAllPieces should return square list") = 
+  property("foldAllPieces should return square set") = 
     Prop.forAll(boardArgsGen) {
       args =>
-        val aSqs = newBoardTupled(args).foldAllPieces(List[Int]()) { (_, _) => true } { (sqs, sq) => sqs :+ sq }
-        val eSqs = (0 to 63).filter { args._1(_) != SidePieceOption.None }
+        val aSqs = newBoardTupled(args).foldAllPieces(Set[Int]()) { (_, _) => true } { (sqs, sq) => sqs + sq }
+        val eSqs = (0 to 63).filter { args._1(_) != SidePieceOption.None }.toSet
         aSqs == eSqs
     }
 
