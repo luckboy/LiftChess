@@ -209,7 +209,7 @@ class SquareTest extends Properties("Square")
         val aSqs = Square.foldPawnMoveSquares(sq1, side)(Set[Int](), true) { case ((_, b), sq) => randomMarks(sq) | b } { 
           case ((sqs, b), sq) => (sqs + sq, false)
         }._1
-        val eSqs = (0 to 63).filter { sq => (marks1(sq) | marks2(sq)) & randomMarks(sq) }.toSet
+        val eSqs = (0 to 63).filter { sq => marks1(sq) | (marks2(sq) & randomMarks(sq)) }.toSet
         aSqs == eSqs
     }
   
@@ -243,7 +243,7 @@ class SquareTest extends Properties("Square")
 	    } {
 	      case ((sqs1, sqs2, _), sq) => (sqs1, sqs2 + sq, false)
 	    }
-	    val eSqs1 = (0 to 63).filter { sq => (mvMarks1(sq) | mvMarks2(sq)) & randomMarks(sq) }.toSet
+	    val eSqs1 = (0 to 63).filter { sq => mvMarks1(sq) | (mvMarks2(sq) & randomMarks(sq)) }.toSet
 	    val eSqs2 = (0 to 63).filter { sq => capMarks(sq) & !randomMarks(sq) }.toSet
 	    aSqs1 == eSqs1 && aSqs2 == eSqs2	    
     }
