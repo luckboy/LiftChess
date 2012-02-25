@@ -179,37 +179,73 @@ class SquareTest extends Properties("Square")
 
   property("foldPawnCaptureSquares should return square set") =
     Prop.forAll(squareGen, sideGen) {
-       (sq, side) =>
-         val marks = pawnCaptureSquareMarks(sq, side)
-         val aSqs = Square.foldPawnCaptureSquares(sq, side)(Set[Int]()) { (sqs, sq) => sqs + sq }
-         val eSqs = (0 to 63).filter { marks }.toSet
-         aSqs == eSqs
+      (sq, side) =>
+        val marks = pawnCaptureSquareMarks(sq, side)
+        val aSqs = Square.foldPawnCaptureSquares(sq, side)(Set[Int]()) { (sqs, sq) => sqs + sq }
+        val eSqs = (0 to 63).filter { marks }.toSet
+        aSqs == eSqs
     }
   
   property("foldPawnMoveSquares should return square set advance one square") =
     Prop.forAll(squareGen, sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
-       (sq, side, randomMarks) =>
-         val marks = pawnMoveSquareMarks(sq, side)
-         val aSqs = Square.foldPawnMoveSquares(sq, side)(Set[Int](), true) { case ((_, b), sq) => randomMarks(sq) & b } { 
-           case ((sqs, b), sq) => (sqs + sq, false) 
-         }._1
-         val eSqs = (0 to 63).filter { sq => marks(sq) & randomMarks(sq) }.toSet
-         aSqs == eSqs
+      (sq, side, randomMarks) =>
+        val marks = pawnMoveSquareMarks(sq, side)
+        val aSqs = Square.foldPawnMoveSquares(sq, side)(Set[Int](), true) { case ((_, b), sq) => randomMarks(sq) & b } { 
+          case ((sqs, b), sq) => (sqs + sq, false) 
+        }._1
+        val eSqs = (0 to 63).filter { sq => marks(sq) & randomMarks(sq) }.toSet
+        aSqs == eSqs
     }
 
   property("foldPawnMoveSquares should return square set advance two squares") =
     Prop.forAll(Gen.choose(0, 7), sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
-       (col, side, randomMarks) =>
-         val (sq1, sq2) = side match {
-           case Side.White => (Square(6, col), Square(5, col))
-           case Side.Black => (Square(1, col), Square(2, col))
-         }
-         val marks = pawnMoveSquareMarks(sq2, side)
-         val aSqs = Square.foldPawnMoveSquares(sq1, side)(Set[Int](), true) { case ((_, b), sq) => randomMarks(sq) | b } { 
-           case ((sqs, b), sq) => (sqs + sq, false)
-         }._1
-         val eSqs = (0 to 63).filter { sq => marks(sq) & randomMarks(sq) }.toSet
-         aSqs == eSqs
+      (col, side, randomMarks) =>
+        val (sq1, sq2) = side match {
+          case Side.White => (Square(6, col), Square(5, col))
+          case Side.Black => (Square(1, col), Square(2, col))
+        }
+        val marks1 = pawnMoveSquareMarks(sq1, side)
+        val marks2 = pawnMoveSquareMarks(sq2, side)
+        val aSqs = Square.foldPawnMoveSquares(sq1, side)(Set[Int](), true) { case ((_, b), sq) => randomMarks(sq) | b } { 
+          case ((sqs, b), sq) => (sqs + sq, false)
+        }._1
+        val eSqs = (0 to 63).filter { sq => (marks1(sq) | marks2(sq)) & randomMarks(sq) }.toSet
+        aSqs == eSqs
+    }
+  
+  property("foldMoveSquares for P should return two  square sets") =
+    Prop.forAll(squareGen, sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
+	  (sq, side, randomMarks) =>
+	    val mvMarks = pawnMoveSquareMarks(sq, side)
+	    val capMarks = pawnCaptureSquareMarks(sq, side)
+	    val (aSqs1, aSqs2, _) = Square.foldMoveSquares(sq, side, Piece.Pawn)(Set[Int](), Set[Int](), true) { case ((_, _, b), sq) => randomMarks(sq) & b } {
+	      case ((sqs1, sqs2, _), sq) => (sqs1 + sq, sqs2, false)
+	    } {
+	      case ((sqs1, sqs2, _), sq) => (sqs1, sqs2 + sq, false)
+	    }
+	    val eSqs1 = (0 to 63).filter { sq => mvMarks(sq) & randomMarks(sq) }.toSet
+	    val eSqs2 = (0 to 63).filter { sq => capMarks(sq) & !randomMarks(sq) }.toSet
+	    aSqs1 == eSqs1 && aSqs2 == eSqs2 
+    }
+
+  property("foldMoveSquares for P should return two  square sets advance two squares") =
+    Prop.forAll(Gen.choose(0, 7), sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
+      (col, side, randomMarks) =>
+        val (sq1, sq2) = side match {
+          case Side.White => (Square(6, col), Square(5, col))
+          case Side.Black => (Square(1, col), Square(2, col))
+        }
+	    val mvMarks1 = pawnMoveSquareMarks(sq1, side)
+	    val mvMarks2 = pawnMoveSquareMarks(sq2, side)
+	    val capMarks = pawnCaptureSquareMarks(sq1, side)
+	    val (aSqs1, aSqs2, _) = Square.foldMoveSquares(sq1, side, Piece.Pawn)(Set[Int](), Set[Int](), true) { case ((_, _, b), sq) => randomMarks(sq) | b } {
+	      case ((sqs1, sqs2, _), sq) => (sqs1 + sq, sqs2, false)
+	    } {
+	      case ((sqs1, sqs2, _), sq) => (sqs1, sqs2 + sq, false)
+	    }
+	    val eSqs1 = (0 to 63).filter { sq => (mvMarks1(sq) | mvMarks2(sq)) & randomMarks(sq) }.toSet
+	    val eSqs2 = (0 to 63).filter { sq => capMarks(sq) & !randomMarks(sq) }.toSet
+	    aSqs1 == eSqs1 && aSqs2 == eSqs2	    
     }
   
   List((Piece.Knight, knightMoveSquareMarks), (Piece.King, kingMoveSquareMarks)).foreach { 
