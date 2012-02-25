@@ -65,31 +65,31 @@ class BoardTest extends Properties("Board")
   //
     
   property("countSidePieces should return number of pieces") =
-    Prop.forAll(boardArgsGen, sideGen, pieceGen) { 
+    Prop.forAllNoShrink(boardArgsGen, sideGen, pieceGen) { 
       (args, side, piece) =>
         newBoardTupled(args).countSidePieces(side, piece) == args._1.count { spo => spo == SidePieceOption.fromSideAndPiece(side, piece) }
     }
   
   property("countPieces should return number of pieces") = 
-    Prop.forAll(boardArgsGen, pieceGen) {
+    Prop.forAllNoShrink(boardArgsGen, pieceGen) {
       (args, piece) =>
         newBoardTupled(args).countPieces(piece) == args._1.count { spo => spo.isPiece(piece) }
     }
   
   property("countAllSidePieces should return number of pieces") = 
-    Prop.forAll(boardArgsGen, sideGen) {
+    Prop.forAllNoShrink(boardArgsGen, sideGen) {
       (args, side) =>
         newBoardTupled(args).countAllSidePieces(side) == args._1.count { spo => spo.isSide(side) }
     }
   
   property("countAllPieces should return number of pieces") = 
-    Prop.forAll(boardArgsGen) {
+    Prop.forAllNoShrink(boardArgsGen) {
       args =>
         newBoardTupled(args).countAllPieces == args._1.count { spo => spo != SidePieceOption.None }
     }
   
   property("foldSidePieces should return square set") = 
-    Prop.forAll(boardArgsGen, sideGen, pieceGen) {
+    Prop.forAllNoShrink(boardArgsGen, sideGen, pieceGen) {
       (args, side, piece) =>
         val aSqs = newBoardTupled(args).foldSidePieces(side, piece)(Set[Int]()) { (_, _) => true } { (sqs, sq) => sqs + sq }
         val eSqs = (0 to 63).filter { args._1(_) == SidePieceOption.fromSideAndPiece(side, piece) }.toSet
@@ -97,7 +97,7 @@ class BoardTest extends Properties("Board")
     }
 
   property("foldSidePieces should return number of pieces") = 
-    Prop.forAll(boardArgsGen, sideGen, pieceGen, Gen.choose(0, 64), Gen.choose(0, 64)) {
+    Prop.forAllNoShrink(boardArgsGen, sideGen, pieceGen, Gen.choose(0, 64), Gen.choose(0, 64)) {
       (args, side, piece, n, m) =>
         val aSum = newBoardTupled(args).foldSidePieces(side, piece)(0) { (sum, _) => sum < m } { (sum, _) => sum + 1 }
         val eSum = args._1.count { spo => spo == SidePieceOption.fromSideAndPiece(side, piece) }.min(m)
@@ -105,7 +105,7 @@ class BoardTest extends Properties("Board")
     }
 
   property("foldPieces should return square set") =
-    Prop.forAll(boardArgsGen, pieceGen) {
+    Prop.forAllNoShrink(boardArgsGen, pieceGen) {
       (args, piece) =>
         val aSqs = newBoardTupled(args).foldPieces(piece)(Set[Int]()) { (_, _) => true } { (sqs, sq) => sqs + sq }
         val eSqs = (0 to 63).filter { args._1(_).isPiece(piece) }.toSet
@@ -113,7 +113,7 @@ class BoardTest extends Properties("Board")
     }
   
   property("foldPieces should return number of pieces") =
-    Prop.forAll(boardArgsGen, pieceGen, Gen.choose(0, 64), Gen.choose(0, 64)) {
+    Prop.forAllNoShrink(boardArgsGen, pieceGen, Gen.choose(0, 64), Gen.choose(0, 64)) {
       (args, piece, n, m) =>
         val aSum = newBoardTupled(args).foldPieces(piece)(0) { (sum, _) => sum < m } { (sum, _) => sum + 1 }
         val eSum = args._1.count { spo => spo.isPiece(piece) }.min(m)
@@ -121,7 +121,7 @@ class BoardTest extends Properties("Board")
     }
   
   property("foldAllSidePieces should return square set") = 
-    Prop.forAll(boardArgsGen, sideGen) {
+    Prop.forAllNoShrink(boardArgsGen, sideGen) {
       (args, side) =>
         val aSqs = newBoardTupled(args).foldAllSidePieces(side)(Set[Int]()) { (_, _) => true } { (sqs, sq) => sqs + sq }
         val eSqs = (0 to 63).filter { args._1(_).isSide(side) }.toSet
@@ -129,16 +129,15 @@ class BoardTest extends Properties("Board")
     }
   
   property("foldAllSidePieces should return number of pieces") =
-    Prop.forAll(boardArgsGen, sideGen, Gen.choose(0, 64), Gen.choose(0, 64)) {
+    Prop.forAllNoShrink(boardArgsGen, sideGen, Gen.choose(0, 64), Gen.choose(0, 64)) {
       (args, side, n, m) =>
         val aSum = newBoardTupled(args).foldAllSidePieces(side)(0) { (sum, _) => sum < m } { (sum, _) => sum + 1 }
         val eSum = args._1.count { spo => spo.isSide(side) }.min(m)
         aSum == eSum
     }
-
   
   property("foldAllPieces should return square set") = 
-    Prop.forAll(boardArgsGen) {
+    Prop.forAllNoShrink(boardArgsGen) {
       args =>
         val aSqs = newBoardTupled(args).foldAllPieces(Set[Int]()) { (_, _) => true } { (sqs, sq) => sqs + sq }
         val eSqs = (0 to 63).filter { args._1(_) != SidePieceOption.None }.toSet
@@ -146,7 +145,7 @@ class BoardTest extends Properties("Board")
     }
 
   property("foldAllPieces should return number of pieces") =
-    Prop.forAll(boardArgsGen, Gen.choose(0, 64), Gen.choose(0, 64)) {
+    Prop.forAllNoShrink(boardArgsGen, Gen.choose(0, 64), Gen.choose(0, 64)) {
       (args, n, m) =>
         val aSum = newBoardTupled(args).foldAllPieces(0) { (sum, _) => sum < m } { (sum, _) => sum + 1 }
         val eSum = args._1.count { spo => spo != SidePieceOption.None }.min(m)

@@ -8,17 +8,17 @@ import pl.luckboy.liftchess.engine._
 class SquareTest extends Properties("Square")
 {
   property("apply should return square of row and column") =
-	Prop.forAll(Gen.choose(0, 7), Gen.choose(0, 7)) {
+	Prop.forAllNoShrink(Gen.choose(0, 7), Gen.choose(0, 7)) {
 	  (row, col) => Square(row, col) == (row * 8) + col
 	}
 
   property("toColumn should return column") =
-	Prop.forAll(Gen.choose(0, 7), Gen.choose(0, 7)) {
+	Prop.forAllNoShrink(Gen.choose(0, 7), Gen.choose(0, 7)) {
 	  (row, col) => Square.toColumn(Square(row, col)) == col
 	}
 
   property("toRow should return row") =
-	Prop.forAll(Gen.choose(0, 7), Gen.choose(0, 7)) {
+	Prop.forAllNoShrink(Gen.choose(0, 7), Gen.choose(0, 7)) {
 	  (row, col) => Square.toRow(Square(row, col)) == row
 	}
 
@@ -178,7 +178,7 @@ class SquareTest extends Properties("Square")
   val sideGen = Gen.value(Side.White) | Gen.value(Side.Black)
 
   property("foldPawnCaptureSquares should return square set") =
-    Prop.forAll(squareGen, sideGen) {
+    Prop.forAllNoShrink(squareGen, sideGen) {
       (sq, side) =>
         val marks = pawnCaptureSquareMarks(sq, side)
         val aSqs = Square.foldPawnCaptureSquares(sq, side)(Set[Int]()) { (sqs, sq) => sqs + sq }
@@ -187,7 +187,7 @@ class SquareTest extends Properties("Square")
     }
   
   property("foldPawnMoveSquares should return square set advance one square") =
-    Prop.forAll(squareGen, sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
+    Prop.forAllNoShrink(squareGen, sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
       (sq, side, randomMarks) =>
         val marks = pawnMoveSquareMarks(sq, side)
         val aSqs = Square.foldPawnMoveSquares(sq, side)(Set[Int](), true) { case ((_, b), sq) => randomMarks(sq) & b } { 
@@ -198,7 +198,7 @@ class SquareTest extends Properties("Square")
     }
 
   property("foldPawnMoveSquares should return square set advance two squares") =
-    Prop.forAll(Gen.choose(0, 7), sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
+    Prop.forAllNoShrink(Gen.choose(0, 7), sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
       (col, side, randomMarks) =>
         val (sq1, sq2) = side match {
           case Side.White => (Square(6, col), Square(5, col))
@@ -214,22 +214,22 @@ class SquareTest extends Properties("Square")
     }
   
   property("foldMoveSquares for P should return two  square sets") =
-    Prop.forAll(squareGen, sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
+    Prop.forAllNoShrink(squareGen, sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
 	  (sq, side, randomMarks) =>
 	    val mvMarks = pawnMoveSquareMarks(sq, side)
 	    val capMarks = pawnCaptureSquareMarks(sq, side)
-	    val (aSqs1, aSqs2, _) = Square.foldMoveSquares(sq, side, Piece.Pawn)(Set[Int](), Set[Int](), true) { case ((_, _, b), sq) => randomMarks(sq) & b } {
+	    val (aSqs1, aSqs2, _) = Square.foldMoveSquares(sq, side, Piece.Pawn)(Set[Int](), Set[Int](), true) { case ((_, _, b), sq) => randomMarks(sq) & (b | capMarks(sq)) } {
 	      case ((sqs1, sqs2, _), sq) => (sqs1 + sq, sqs2, false)
 	    } {
-	      case ((sqs1, sqs2, _), sq) => (sqs1, sqs2 + sq, false)
+	      case ((sqs1, sqs2, _), sq) => (sqs1, sqs2 + sq, true)
 	    }
 	    val eSqs1 = (0 to 63).filter { sq => mvMarks(sq) & randomMarks(sq) }.toSet
 	    val eSqs2 = (0 to 63).filter { sq => capMarks(sq) & !randomMarks(sq) }.toSet
 	    aSqs1 == eSqs1 && aSqs2 == eSqs2 
     }
 
-  property("foldMoveSquares for P should return two  square sets advance two squares") =
-    Prop.forAll(Gen.choose(0, 7), sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
+  property("foldMoveSquares for P should return square set advance two squares") =
+    Prop.forAllNoShrink(Gen.choose(0, 7), sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
       (col, side, randomMarks) =>
         val (sq1, sq2) = side match {
           case Side.White => (Square(6, col), Square(5, col))
@@ -238,29 +238,28 @@ class SquareTest extends Properties("Square")
 	    val mvMarks1 = pawnMoveSquareMarks(sq1, side)
 	    val mvMarks2 = pawnMoveSquareMarks(sq2, side)
 	    val capMarks = pawnCaptureSquareMarks(sq1, side)
-	    val (aSqs1, aSqs2, _) = Square.foldMoveSquares(sq1, side, Piece.Pawn)(Set[Int](), Set[Int](), true) { case ((_, _, b), sq) => randomMarks(sq) | b } {
-	      case ((sqs1, sqs2, _), sq) => (sqs1 + sq, sqs2, false)
+	    val aSqs = Square.foldMoveSquares(sq1, side, Piece.Pawn)(Set[Int](), true) { case ((_, b), sq) => randomMarks(sq) | (b | capMarks(sq)) } {
+	      case ((sqs, _), sq) => (sqs + sq, false)
 	    } {
-	      case ((sqs1, sqs2, _), sq) => (sqs1, sqs2 + sq, false)
-	    }
-	    val eSqs1 = (0 to 63).filter { sq => mvMarks1(sq) | (mvMarks2(sq) & randomMarks(sq)) }.toSet
-	    val eSqs2 = (0 to 63).filter { sq => capMarks(sq) & !randomMarks(sq) }.toSet
-	    aSqs1 == eSqs1 && aSqs2 == eSqs2	    
+	      case ((sqs, _), sq) => (sqs, true)
+	    }._1
+	    val eSqs = (0 to 63).filter { sq => mvMarks1(sq) | (mvMarks2(sq) & randomMarks(sq)) }.toSet
+	    aSqs == eSqs
     }
   
   List((Piece.Knight, knightMoveSquareMarks), (Piece.King, kingMoveSquareMarks)).foreach { 
     case (piece, marksFun) => {
       property("foldNoSlideMoveSquares for " + piece + " should return square set") =
-        Prop.forAll(squareGen) {
+        Prop.forAllNoShrink(squareGen) {
           (sq) =>
             val marks = marksFun(sq)
-            val aSqs = Square.foldNoSlideMoveSquares(sq, Piece.Knight)(Set[Int]()) { (sqs, sq) => if(marks(sq)) sqs + sq  else sqs }
+            val aSqs = Square.foldNoSlideMoveSquares(sq, piece)(Set[Int]()) { (sqs, sq) => if(marks(sq)) sqs + sq  else sqs }
             val eSqs = (0 to 63).filter { marks }.toSet
             aSqs == eSqs
         }
      
       property("foldMoveSquares for " + piece + " should return two  square sets") =
-        Prop.forAll(squareGen, sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
+        Prop.forAllNoShrink(squareGen, sideGen, Gen.listOfN(64, Gen.value(false) | Gen.value(true))) {
           (sq, side, randomMarks) =>
             val marks = marksFun(sq)
             val (aSqs1, aSqs2) = Square.foldMoveSquares(sq, side, piece)(Set[Int](), Set[Int]()) { (_, sq) => randomMarks(sq) } {
@@ -269,7 +268,7 @@ class SquareTest extends Properties("Square")
               case ((sqs1, sqs2), sq) => (sqs1, sqs2 + sq)
             }
             val eSqs1 = (0 to 63).filter { sq => marks(sq) & randomMarks(sq) }.toSet
-            val eSqs2 = (0 to 63).filter { sq => marks(sq) & randomMarks(sq) }.toSet
+            val eSqs2 = (0 to 63).filter { sq => marks(sq) & !randomMarks(sq) }.toSet
             aSqs1 == eSqs1 && aSqs2 == eSqs2
         }
     }
@@ -278,11 +277,11 @@ class SquareTest extends Properties("Square")
   List((Piece.Bishop, 4, bishopMoveSquareMarks), (Piece.Rook, 4, rookMoveSquareMarks), (Piece.Queen, 8, queenMoveSquareMarks)).foreach { 
     case (piece, nLimits, marksFun) => {
       property("foldSlideMoveSquares for " + piece + " should return two square sets") =
-        Prop.forAll(squareGen, Gen.listOfN(nLimits, Gen.choose(0, 8))) {
+        Prop.forAllNoShrink(squareGen, Gen.listOfN(nLimits, Gen.choose(0, 8))) {
           (sq, limits) =>
             val marks1 = marksFun(limits, sq)
             val marks2 = marksFun(limits.map { _  + 1 }, sq)
-            val (aSqs1, aSqs2) = Square.foldSlideMoveSquares(sq, Piece.Bishop)(Set[Int](), Set[Int]()) { (_, sq) => marks1(sq) } {
+            val (aSqs1, aSqs2) = Square.foldSlideMoveSquares(sq, piece)(Set[Int](), Set[Int]()) { (_, sq) => marks1(sq) } {
               case ((sqs1, sqs2), sq) => (sqs1 + sq, sqs2)
             } {
               case ((sqs1, sqs2), sq) => (sqs1, sqs2 + sq)
@@ -293,7 +292,7 @@ class SquareTest extends Properties("Square")
         }
       
       property("foldMoveSquares for " + piece + " should return two  square sets") =
-        Prop.forAll(squareGen, sideGen, Gen.listOfN(nLimits, Gen.choose(0, 8))) {
+        Prop.forAllNoShrink(squareGen, sideGen, Gen.listOfN(nLimits, Gen.choose(0, 8))) {
           (sq, side, limits) =>
             val marks1 = marksFun(limits, sq)
             val marks2 = marksFun(limits.map { _  + 1 }, sq)
