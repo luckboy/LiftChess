@@ -136,7 +136,7 @@ class Board
   def unsafeUndoMove(undo: Undo): Unit = throw new Exception
 
   
-  /** Sprawdza czy dane pole jest atakowane daną stronę.
+  /** Sprawdza czy dane pole jest atakowane przez daną stronę.
    * @param sq			pole atakowane.
    * @param side		strona atakującia.
    * @return			jeśli strona atakuje to true.
