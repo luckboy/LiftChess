@@ -112,17 +112,19 @@ object Square
    * @param sq 			pole.
    * @param piece		bierka.
    * @param z			wartość początkowa.
+   * @param l			funkcja składania linii.
    * @param p			funkcja przerwania (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
    * @param f			funkcja składania przed przerwaniem linii.
    * @param g			funkcja składania po przerwaniu linii.
    * @return			wynik składania.
    */
-  def foldSlideMoveSquares[T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
+  def foldSlideMoveSquares[T](sq: Int, piece: Piece)(z: T)(l: (T) => T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
     var y = z
     var i = 0
     while(i < SlideSteps(piece.id).length) {
       val step = SlideSteps(piece.id)(i)
       var dst = Lookup88(sq) + step
+      y = l(y)
       while((dst & 0x88) == 0 && p(y, Mailbox88(dst))) {
         y = f(y, Mailbox88(dst))
         dst += step
@@ -147,7 +149,7 @@ object Square
    */
   def foldMoveSquares[T](sq: Int, side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T =
     if(IsSlide(piece.id)) {
-      foldSlideMoveSquares(sq, piece)(z)(p)(f)(g)
+      foldSlideMoveSquares(sq, piece)(z) { y => y } (p)(f)(g)
     } else {
       if(piece == Piece.Pawn) {
         val y = foldPawnCaptureSquares(sq, side)(z) { (x, dst) => if(p(x, dst)) x else g(x, dst) }

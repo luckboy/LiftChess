@@ -293,14 +293,15 @@ class SquareTest extends Properties("Square")
           (sq, limits) =>
             val marks1 = marksFun(limits, sq)
             val marks2 = marksFun(limits.map { _  + 1 }, sq)
-            val (aSqs1, aSqs2) = Square.foldSlideMoveSquares(sq, piece)(Set[Int](), Set[Int]()) { (_, sq) => marks1(sq) } {
-              case ((sqs1, sqs2), sq) => (sqs1 + sq, sqs2)
+            val (aSqs1, aSqs2, aNum) = Square.foldSlideMoveSquares(sq, piece)(Set[Int](), Set[Int](), 0) { case (sqs1, sqs2, n) => (sqs1, sqs2, n + 1) } { (_, sq) => marks1(sq) } {
+              case ((sqs1, sqs2, n), sq) => (sqs1 + sq, sqs2, n)
             } {
-              case ((sqs1, sqs2), sq) => (sqs1, sqs2 + sq)
+              case ((sqs1, sqs2, n), sq) => (sqs1, sqs2 + sq, n)
             }
             val eSqs1 = (0 to 63).filter { marks1 }.toSet
             val eSqs2 = (0 to 63).filter { sq => marks1(sq) ^ marks2(sq) }.toSet
-            aSqs1 == eSqs1 && aSqs2 == eSqs2
+            val eNum = nLimits
+            aSqs1 == eSqs1 && aSqs2 == eSqs2 && aNum == eNum
         }
       
       property("foldMoveSquares for " + piece + " should return two  square sets") =
