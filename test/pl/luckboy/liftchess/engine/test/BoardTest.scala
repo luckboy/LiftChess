@@ -183,7 +183,12 @@ class BoardTest extends Properties("Board")
         	__, __, __, __, p2, __, __, __
         	)
     }
-    val res = Seq(a1, a2).exists { _ == SidePieceOption.fromSideAndPiece(side, Piece.Pawn) }
+    val res = (
+        Seq(a1, a2).exists { _ == SidePieceOption.fromSideAndPiece(side, Piece.Pawn) } ||
+        Seq(a1, a2).exists { _ == SidePieceOption.fromSideAndPiece(side, Piece.Bishop) } ||
+        Seq(a1, a2).exists { _ == SidePieceOption.fromSideAndPiece(side, Piece.Queen) } ||
+        Seq(a1, a2).exists { _ == SidePieceOption.fromSideAndPiece(side, Piece.King) }
+        )
      
     (pieces, Square(4, 3), side, res)
   }
