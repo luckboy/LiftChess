@@ -161,7 +161,7 @@ object Board
   def apply(
       pieces: Seq[SidePieceOption],
       side: Side,
-      canstling: (Castling, Castling), 
+      castling: (Castling, Castling), 
       enPassant: SquareOption, 
       halfmoveClock: Int,
       fullmoveNumber: Int): Board = throw new Exception
