@@ -357,9 +357,9 @@ class BoardTest extends Properties("Board")
       aSide =>
         sposGen.map6(sideGen, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClockGen, fullmoveNumberGen) {
          (spos, side, castling, enPassant, halfmoveClock, fullmoveNumber) =>
-           val newSpos = spos :+ SidePieceOption.fromSideAndPiece(aSide.opposite, Piece.King) :+ SidePieceOption.None
+           val newSpos = spos :+ SidePieceOption.fromSideAndPiece(aSide, Piece.King) :+ SidePieceOption.None
            val shuffledSpos = Random.shuffle(newSpos)
-           val (pieces, sq, rSide, res) = f(SidePieceOption.fromSideAndPiece(aSide, Piece.King) :: spos, aSide)
+           val (pieces, sq, rSide, res) = f(SidePieceOption.fromSideAndPiece(aSide.opposite, Piece.King) :: spos, aSide)
            
            ((pieces, side, castling, enPassant, halfmoveClock, fullmoveNumber), sq, rSide, res)
         }
@@ -373,7 +373,7 @@ class BoardTest extends Properties("Board")
       (spos, side, castling, enPassant, halfmoveClock, fullmoveNumber) =>
          val newSpos = spos :+ SidePieceOption.fromSideAndPiece(side.opposite, Piece.King) :+ SidePieceOption.None
          val shuffledSpos = Random.shuffle(newSpos)
-         val (pieces, sq, rSide, res) = f(SidePieceOption.fromSideAndPiece(side, Piece.King) :: spos, side)
+         val (pieces, sq, rSide, res) = f(SidePieceOption.fromSideAndPiece(side, Piece.King) :: spos, side.opposite)
          
          ((pieces, side, castling, enPassant, halfmoveClock, fullmoveNumber), sq, rSide, res)
     }
@@ -480,10 +480,9 @@ class BoardTest extends Properties("Board")
     bd.fullmoveNumber == aFullmoveNumber
   }
   
-  def foldSuccessorPropForLegalMoves[T](gen: Gen[T])(f: (T) => (BoardArgs, List[(Move, BoardArgs)]))(foldSuccessor: (Board) => (Move) => (Boolean) => ((Boolean, Board) => Boolean) => Boolean) = {
+  def foldSuccessorPropForLegalMoves(gen: Gen[(BoardArgs, List[(Move, BoardArgs)])])(foldSuccessor: (Board) => (Move) => (Boolean) => ((Boolean, Board) => Boolean) => Boolean) = {
     Prop.forAllNoShrink(gen) {
-      x => { 
-        val (ba, mbas) = f(x)
+      case (ba, mbas) => { 
         def g(bd: Board, ba: BoardArgs, mbas: List[(Move, BoardArgs)]): Boolean = {
           val res1 = boardTest(bd, ba)
           val res2 = mbas match {
@@ -503,10 +502,9 @@ class BoardTest extends Properties("Board")
     }
   }
   
-  def foldSuccessorPropForIllegalMoves[T](gen: Gen[T])(f: (T) => (BoardArgs, Set[Move]))(foldSuccessor: (Board) => (Move) => (Boolean) => ((Boolean, Board) => Boolean) => Boolean) = {
+  def foldSuccessorPropForIllegalMoves(gen: Gen[(BoardArgs, Set[Move])])(foldSuccessor: (Board) => (Move) => (Boolean) => ((Boolean, Board) => Boolean) => Boolean) = {
     Prop.forAllNoShrink(gen) {
-      x => 
-        val (ba, moves) = f(x)
+      case (ba, moves) => 
         moves.forall {
           move => 
             val aBd = newBoardTupled(ba)
@@ -522,148 +520,192 @@ class BoardTest extends Properties("Board")
   //
   
   val promotionPieceGen = Gen.oneOf(Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen)
+
+  val castlingGen = Gen.oneOf(
+      Castling.NoneCastling, 
+      Castling.KingsideCastling, 
+      Castling.QueensideCastling, 
+      Castling.AllCastling)
+  
+  def sidePieceOptionGenWithSideAndWithoutKing(side: Side) = Gen.oneOf(
+      SidePieceOption.None,
+      SidePieceOption.fromSideAndPiece(side, Piece.Pawn),
+      SidePieceOption.fromSideAndPiece(side, Piece.Knight),
+      SidePieceOption.fromSideAndPiece(side, Piece.Bishop),
+      SidePieceOption.fromSideAndPiece(side, Piece.Rook),
+      SidePieceOption.fromSideAndPiece(side, Piece.Queen))
   
   // Ruchy.
+
+  val movesGen = {
+	sideGen.flatMap {
+	  side =>
+	    val osGen = Gen.listOfN(6, sidePieceOptionGenWithSideAndWithoutKing(side.opposite))
+	    val ssGen = Gen.listOfN(2, sidePieceOptionGenWithSideAndWithoutKing(side))
+	    Gen.choose(0, 255).map6(pieceGen, osGen, ssGen, halfmoveClockGen, fullmoveNumberGen) {
+	      (i, piece, os, ss, halfmoveClock, fullmoveNumber) =>
+	        val newOs = Random.shuffle(os) :+ SidePieceOption.fromSideAndPiece(side.opposite, Piece.King)
+	        val newSs = Random.shuffle(ss) :+ (if(piece == Piece.King) SidePieceOption.None else SidePieceOption.fromSideAndPiece(side, Piece.King))
+	        movesFun(i, side, piece, os ++ ss, halfmoveClock, fullmoveNumber)
+	    }
+	}
+  }
   
-  def movesFun(x: (Int, Side, Piece, Seq[SidePieceOption], Int, Int)) = 
-    x match {
-      case (i, side, piece, Seq(p1, p2, o1, o2, o3, o4, o5, o6, s1, s2), halfmoveClock, fullmoveNumber) => {
-        import scala.collection.mutable.Seq
-        val s0 = SidePieceOption.fromSideAndPiece(side, piece)
-        val pieces = Seq(
-            __, __, __, __, p1, __, __, __,
-            __, __, __, __, __, __, __, __,
-            s2, o1, __, __, o2, __, __, __,
-            __, __, __, s0, __, __, o6, __,
-            __, __, __, __, o4, __, __, __,
-            __, __, o3, __, __, s1, __, __,
-            o5, __, __, __, __, __, __, __,
-            __, __, __, __, p2, __, __, __
-            )
-        val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
-        val src = Square(3, 3)
-        val n = Square.foldMoveSquares(src, side, piece)(0) { (_, sq) => pieces(sq).isNone } { (n, _) => n + 1 } { (n, _) => n + 1 }
-        val (dst, _) = Square.foldMoveSquares(src, side, piece)(0, 0) { (_, sq) => pieces(sq).isNone } { 
-          case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
-        } {
-          case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
-        }
-        val pieces2 = pieces.clone()
-        pieces2(src) = SidePieceOption.None
-        pieces2(dst) = s0
-        val halfmoveClock2 = piece match {
-          case Piece.Pawn => 0
-          case _          => if(pieces(dst) == SidePieceOption.None) (halfmoveClock + 1) else 0
-        }
-        val fullmoveNumber2 = side match {
-          case Side.White => fullmoveNumber
-          case Side.Black => fullmoveNumber + 1
-        }
-        val move = NormalMove(piece, src, dst, PieceOption.None)
-        val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock2, fullmoveNumber2)
-        
-        (ba, List((move, ba2)))
-      }
+  def movesFun(i: Int, side: Side, piece: Piece, spos: Seq[SidePieceOption], halfmoveClock: Int, fullmoveNumber: Int) = {
+    val s0 = SidePieceOption.fromSideAndPiece(side, piece)
+    val Seq(o1, o2, o3, o4, o5, o6, o7, s1, s2, s3) = spos
+    import scala.collection.mutable.Seq
+    val pieces = Seq(
+        __, __, __, __, s3, __, __, __,
+        __, __, __, __, __, __, __, __,
+        s2, o1, __, __, o2, __, __, __,
+        __, __, __, s0, __, __, o6, __,
+        __, __, __, __, o4, __, __, __,
+        __, __, o3, __, __, s1, __, __,
+        o5, __, __, __, __, __, __, __,
+        __, __, __, __, o7, __, __, __
+        )
+    val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+    val src = Square(3, 3)
+
+    val n = Square.foldMoveSquares(src, side, piece)(0) { (_, sq) => pieces(sq).isNone } { (n, _) => n + 1 } { (n, _) => n + 1 }
+    val (dst, _) = Square.foldMoveSquares(src, side, piece)(0, 0) { (_, sq) => pieces(sq).isNone } { 
+      case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
+    } {
+      case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
     }
+        
+    val pieces2 = pieces.clone()
+    pieces2(src) = SidePieceOption.None
+    pieces2(dst) = s0
+        
+    val halfmoveClock2 = piece match {
+      case Piece.Pawn => 0
+      case _          => if(pieces(dst) == SidePieceOption.None) (halfmoveClock + 1) else 0
+    }
+    val fullmoveNumber2 = side match {
+       case Side.White => fullmoveNumber
+       case Side.Black => fullmoveNumber + 1
+    }
+        
+    val move = NormalMove(piece, src, dst, PieceOption.None)
+    val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock2, fullmoveNumber2)
+        
+    (ba, List((move, ba2)))
+  }
   
   // Promocje.
 
-  def promotionsFun(x: (Int, Side, Piece, Seq[SidePieceOption], Int, Int)) = 
-    x match {
-      case (i, side, promPiece, Seq(p1, p2, o1, s1, s2), halfmoveClock, fullmoveNumber) => {
-        import scala.collection.mutable.Seq
-        val (pieces, src) = side match {
-          case Side.White =>
-            (
-                Seq(__, __, __, o1, __, __, __, __,
-                    __, __, WP, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, s1, __, s2, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, p2, __, p1
-                    ),
-                Square(1, 2))
-          case Side.Black => 
-            (
-                Seq(__, __, __, __, __, p2, __, p1,
-                    __, s1, __, __, __, __, __, __,
-                    s2, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, BP, __, __, __, __,
-                    __, __, __, __, o1, __, __, __
-                    ),
-                Square(6, 3))
-        }
-        val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
-        val n = Square.foldMoveSquares(src, side, Piece.Pawn)(0) { (_, sq) => pieces(sq).isNone } { (n, _) => n + 1 } { (n, _) => n + 1 }
-        val (dst, _) = Square.foldMoveSquares(src, side, Piece.Pawn)(0, 0) { (_, sq) => pieces(sq).isNone } { 
-          case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
-        } {
-          case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
-        }
-        val pieces2 = pieces.clone()
-        pieces2(src) = SidePieceOption.None
-        pieces2(dst) = SidePieceOption.fromSideAndPiece(side, promPiece)
-        val fullmoveNumber2 = side match {
-          case Side.White => fullmoveNumber
-          case Side.Black => fullmoveNumber + 1
-        }
-        val move = NormalMove(Piece.Pawn, src, dst, PieceOption(promPiece.id))
-        val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, fullmoveNumber2)
-        
-        (ba, List((move, ba2)))
-      }
+  val promotionsGen = {
+    sideGen.flatMap {
+      side => 
+	    val osGen = Gen.listOf1(sidePieceOptionGenWithSideAndWithoutKing(side.opposite))
+	    val ssGen = Gen.listOfN(2, sidePieceOptionGenWithSideAndWithoutKing(side))
+	    Gen.choose(0, 255).map6(pieceGen, osGen, ssGen, halfmoveClockGen, fullmoveNumberGen) {
+	      (i, promPiece, os, ss, halfmoveClock, fullmoveNumber) =>
+	        promotionsFun(i, side, promPiece, os ++ ss, halfmoveClock, fullmoveNumber)
+	    }
     }
+  }
+  
+  def promotionsFun(i: Int, side: Side, promPiece: Piece, spos: Seq[SidePieceOption], halfmoveClock: Int, fullmoveNumber: Int) = {
+    val Seq(o1, s1, s2) = spos
+    import scala.collection.mutable.Seq
+    val (pieces, src) = side match {
+      case Side.White =>
+        (
+            Seq(__, __, __, o1, __, __, __, __,
+            	__, __, WP, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, s1, __, s2, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, WK, __, BK
+            	),
+            Square(1, 2))
+      case Side.Black => 
+        (
+            Seq(__, __, __, __, __, WK, __, BK,
+            	__, s1, __, __, __, __, __, __,
+            	s2, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, BP, __, __, __, __,
+            	__, __, __, __, o1, __, __, __
+                ),
+            Square(6, 3))
+    }
+    val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+        
+    val n = Square.foldMoveSquares(src, side, Piece.Pawn)(0) { (_, sq) => pieces(sq).isNone } { (n, _) => n + 1 } { (n, _) => n + 1 }
+    val (dst, _) = Square.foldMoveSquares(src, side, Piece.Pawn)(0, 0) { (_, sq) => pieces(sq).isNone } { 
+       case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
+    } {
+       case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
+    }
+        
+    val pieces2 = pieces.clone()
+    pieces2(src) = SidePieceOption.None
+    pieces2(dst) = SidePieceOption.fromSideAndPiece(side, promPiece)
+        
+    val fullmoveNumber2 = side match {
+      case Side.White => fullmoveNumber
+      case Side.Black => fullmoveNumber + 1
+    }
+        
+    val move = NormalMove(Piece.Pawn, src, dst, PieceOption(promPiece.id))
+    val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, fullmoveNumber2)
+        
+    (ba, List((move, ba2)))
+  }
   
   // En passant.
   
-  def enPassantsFun(x: (Boolean, Side, Int, Int)) = 
-    x match {
-      case (isEnp, side, halfmoveClock, fullmoveNumber) => {
-        import scala.collection.mutable.Seq
-        val (pieces, src, dst, src2, mvDst2, capDst2) = side match {
-          case Side.White =>
-            (
-                Seq(__, __, __, __, __, BK, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, BP, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, WP, __, __, __, __, __,
-                    __, __, __, __, __, WP, __, __
-                    ),
-                Square(6, 2), Square(4, 2),
-                Square(4, 1), Square(5, 1), Square(5, 2))
-          case Side.Black => 
-            (
-                Seq(__, __, __, __, __, BK, __, __,
-                    __, __, BP, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, WP, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, WK, __, __
-                    ),
-                Square(1, 2), Square(3, 2),
-                Square(3, 3), Square(2, 3), Square(2, 2))
-        }
-        val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
-        val (fullmoveNumber2, fullmoveNumber3) = side match {
-          case Side.White => (fullmoveNumber, fullmoveNumber + 1)
-          case Side.Black => (fullmoveNumber + 1, fullmoveNumber + 1)
-        }
-        val move = NormalMove(Piece.Pawn, src, dst, PieceOption.None)
-        val move2 = NormalMove(Piece.Pawn, src2, if(isEnp) capDst2 else mvDst2, PieceOption.None)
-        val pieces2 = pieces.clone()
-        pieces2(src) = SidePieceOption.None
-        pieces2(dst) = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
-        val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption(capDst2), 0, fullmoveNumber2)
+  val enPassantsGen = Gen.oneOf(false, true).map4(sideGen, halfmoveClockGen, fullmoveNumberGen)(enPassantsFun)
+  
+  def enPassantsFun(isEnp: Boolean, side: Side, halfmoveClock: Int, fullmoveNumber: Int) = {
+    import scala.collection.mutable.Seq
+    val (pieces, src, dst, src2, mvDst2, capDst2) = side match {
+      case Side.White =>
+        (
+            Seq(__, __, __, __, __, BK, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, BP, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, WP, __, __, __, __, __,
+            	__, __, __, __, __, WP, __, __
+            	),
+            Square(6, 2), Square(4, 2),
+            Square(4, 1), Square(5, 1), Square(5, 2))
+      case Side.Black => 
+        (
+            Seq(__, __, __, __, __, BK, __, __,
+            	__, __, BP, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, WP, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, WK, __, __
+                ),
+            Square(1, 2), Square(3, 2),
+            Square(3, 3), Square(2, 3), Square(2, 2))
+    }
+    val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+    val (fullmoveNumber2, fullmoveNumber3) = side match {
+      case Side.White => (fullmoveNumber, fullmoveNumber + 1)
+      case Side.Black => (fullmoveNumber + 1, fullmoveNumber + 1)
+    }
+    val move = NormalMove(Piece.Pawn, src, dst, PieceOption.None)
+    val move2 = NormalMove(Piece.Pawn, src2, if(isEnp) capDst2 else mvDst2, PieceOption.None)
+    val pieces2 = pieces.clone()
+    pieces2(src) = SidePieceOption.None
+    pieces2(dst) = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
+    val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption(capDst2), 0, fullmoveNumber2)
         val pieces3 = pieces.clone()
         if(isEnp) {
           pieces3(src2) = SidePieceOption.None
@@ -675,109 +717,350 @@ class BoardTest extends Properties("Board")
         val ba3 = (pieces3.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, fullmoveNumber3)
 
         (ba, List((move, ba2), (move2, ba3)))
-      }
-    }
+  }
   
   // Roszada
   
-  def castlingsFun(x: (Boolean, Boolean, Side, Castling, Int, Int)) =
-    x match {
-      case (isKingside, isAllCastling, side, oppCastling, halfmoveClock, fullmoveNumber) => {
-        val (pieces, allCastling, noneCastling, (move, pieces2, castling)) = side match {
-          case Side.White =>
-            (
-                Seq(BR, __, __, __, BK, __, __, BR,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    WP, __, __, __, __, __, __, WP,
-                    WR, __, __, __, WK, __, __, WR
-                    ),
-                (Castling.AllCastling, oppCastling),
-                (Castling.NoneCastling, oppCastling),
-                if(isKingside) 
-                  (
-                      KingsideCastling(), 
-                      Seq(BR, __, __, __, BK, __, __, BR,
-                          __, __, __, __, __, __, __, __,
-                          __, __, __, __, __, __, __, __,
-                          __, __, __, __, __, __, __, __,
-                          __, __, __, __, __, __, __, __,
-                          __, __, __, __, __, __, __, __,
-                          WP, __, __, __, __, __, __, WP,
-                          WR, __, __, __, __, WR, WK, __
-                    	  ),
-                      (Castling.KingsideCastling, oppCastling)
-                      )
-                else
-                  (
-                      QueensideCastling(), 
-                      Seq(BR, __, __, __, BK, __, __, BR,
-                          __, __, __, __, __, __, __, __,
-                          __, __, __, __, __, __, __, __,
-                          __, __, __, __, __, __, __, __,
-                          __, __, __, __, __, __, __, __,
-                          __, __, __, __, __, __, __, __,
-                          WP, __, __, __, __, __, __, WP,
-                          __, __, WK, WR, __, __, __, WR
-                          ),
-                      (Castling.QueensideCastling, oppCastling)
-                      )
-                )
-          case Side.Black => 
-            (
-                Seq(BR, __, __, __, BK, __, __, BR,
-                    BP, __, __, __, __, __, __, BP,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    __, __, __, __, __, __, __, __,
-                    WR, __, __, __, WK, __, __, WR
-                    ),
-                (oppCastling, Castling.AllCastling),
-                (oppCastling, Castling.NoneCastling),
-                if(isKingside) 
+  val castlingsGen = Gen.choose(0, 4).map6(Gen.choose(0, 255), sideGen, castlingGen, halfmoveClockGen, fullmoveNumberGen)(castlingsFun)
+  
+  def castlingsFun(i: Int, j: Int, side: Side, oppCastling: Castling, halfmoveClock: Int, fullmoveNumber: Int) = {
+    val (pieces, (move, pieces2, (castling, castling2))) = side match {
+      case Side.White =>
+        (
+            // pieces
+            Seq(BR, __, __, __, BK, __, __, BR,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                WP, __, __, __, __, __, __, WP,
+                WR, __, __, __, WK, __, __, WR
+            	),
+            // (move, pieces2, (castling, castling2))
+            Seq(
+                // Roszada krókta.
                 (
-                    KingsideCastling(), 
-                    Seq(BR, __, __, __, __, BR, BK, __,
-                        BP, __, __, __, __, __, __, BP,
-                        __, __, __, __, __, __, __, __,
-                        __, __, __, __, __, __, __, __,
-                        __, __, __, __, __, __, __, __,
-                        __, __, __, __, __, __, __, __,
-                        __, __, __, __, __, __, __, __,
-                        WR, __, __, __, WK, __, __, WR
-                        ),
-                    (oppCastling, Castling.KingsideCastling)
-                    )
-                else
+                	KingsideCastling(), 
+                    Seq(BR, __, __, __, BK, __, __, BR,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	WP, __, __, __, __, __, __, WP,
+                    	WR, __, __, __, __, WR, WK, __
+                    	),
+                    Seq(((Castling.KingsideCastling, oppCastling),  (Castling.NoneCastling, oppCastling)),
+                    	((Castling.AllCastling, oppCastling),       (Castling.NoneCastling, oppCastling)))(j % 2)),
+                // Roszada długa.
                 (
                     QueensideCastling(), 
-                    Seq(__, __, BK, BR, __, __, __, BR,
+                    Seq(BR, __, __, __, BK, __, __, BR,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	WP, __, __, __, __, __, __, WP,
+                    	__, __, WK, WR, __, __, __, WR
+                    	),
+                    Seq(((Castling.KingsideCastling, oppCastling),  (Castling.NoneCastling, oppCastling)),
+                    	((Castling.AllCastling, oppCastling),       (Castling.NoneCastling, oppCastling)))(j % 2)),
+                // Ruch prawą wieżą.
+                (
+                    NormalMove(Piece.Rook, Square(7, 7), Square(7, 6), PieceOption.None), 
+                    Seq(BR, __, __, __, BK, __, __, BR,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	WP, __, __, __, __, __, __, WP,
+                    	WR, __, __, __, WK, __, WR, __
+                        ),
+                    Seq(((Castling.NoneCastling, oppCastling),      (Castling.NoneCastling, oppCastling)),
+                    	((Castling.KingsideCastling, oppCastling),  (Castling.NoneCastling, oppCastling)),
+                    	((Castling.QueensideCastling, oppCastling), (Castling.QueensideCastling, oppCastling)),
+                    	((Castling.AllCastling, oppCastling),       (Castling.QueensideCastling, oppCastling)))(j % 4)),
+                // Ruch lewą wieżą.
+                (
+                    NormalMove(Piece.Rook, Square(7, 0), Square(7, 1), PieceOption.None),
+                    Seq(BR, __, __, __, BK, __, __, BR,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	WP, __, __, __, __, __, __, WP,
+                    	__, WR, __, __, WK, __, __, WR
+                    	),
+                    Seq(((Castling.NoneCastling, oppCastling),      (Castling.NoneCastling, oppCastling)),
+                        ((Castling.KingsideCastling, oppCastling),  (Castling.KingsideCastling, oppCastling)),
+                        ((Castling.QueensideCastling, oppCastling), (Castling.NoneCastling, oppCastling)),
+                        ((Castling.AllCastling, oppCastling),       (Castling.KingsideCastling, oppCastling)))(j % 4)),
+                // Ruch królem.
+                (
+                    NormalMove(Piece.Rook, Square(7, 4), Square(7, 3), PieceOption.None),
+                    Seq(BR, __, __, __, BK, __, __, BR,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	WP, __, __, __, __, __, __, WP,
+                    	WR, __, __, WK, __, __, __, WR
+                    	),
+                    Seq(((Castling.NoneCastling, oppCastling),      (Castling.NoneCastling, oppCastling)),
+                    	((Castling.KingsideCastling, oppCastling),  (Castling.NoneCastling, oppCastling)),
+                    	((Castling.QueensideCastling, oppCastling), (Castling.NoneCastling, oppCastling)),
+                    	((Castling.AllCastling, oppCastling),       (Castling.NoneCastling, oppCastling)))(j % 4))
+                )(i)
+            )
+      case Side.Black => 
+        (
+            // pieces
+            Seq(BR, __, __, __, BK, __, __, BR,
+                BP, __, __, __, __, __, __, BP,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                WR, __, __, __, WK, __, __, WR
+                ),
+            // (move, pieces2, (castling, castling2))
+            Seq(
+               // Roszada krótka.
+               (
+                   KingsideCastling(), 
+                   Seq(BR, __, __, __, __, BR, BK, __,
+                       BP, __, __, __, __, __, __, BP,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       WR, __, __, __, WK, __, __, WR
+                	   ),
+                   Seq(((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
+                	   ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 2)),
+               // Roszada długa.
+               (
+                   QueensideCastling(), 
+                   Seq(__, __, BK, BR, __, __, __, BR,
+                	   BP, __, __, __, __, __, __, BP,
+                	   __, __, __, __, __, __, __, __,
+                	   __, __, __, __, __, __, __, __,
+                	   __, __, __, __, __, __, __, __,
+                	   __, __, __, __, __, __, __, __,
+                	   __, __, __, __, __, __, __, __,
+                	   WR, __, __, __, WK, __, __, WR
+                	   ),
+                   Seq(((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
+                       ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 2)),
+               // Ruch prawą wieżą.
+               (
+                   QueensideCastling(), 
+                   Seq(BR, __, __, __, BK, __, BR, __,
+                       BP, __, __, __, __, __, __, BP,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       WR, __, __, __, WK, __, __, WR
+                	   ),
+                   Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
+                       ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
+                       ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.QueensideCastling)),
+                       ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.QueensideCastling)))(j % 4)),
+               // Ruch lewą wieżą.
+               (
+                   QueensideCastling(), 
+                   Seq(__, BR, __, __, BK, __, __, BR,
+                	   BP, __, __, __, __, __, __, BP,
+                	   __, __, __, __, __, __, __, __,
+                	   __, __, __, __, __, __, __, __,
+                	   __, __, __, __, __, __, __, __,
+                	   __, __, __, __, __, __, __, __,
+                	   __, __, __, __, __, __, __, __,
+                	   WR, __, __, __, WK, __, __, WR
+                      ),
+                   Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
+                       ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.KingsideCastling)),
+                       ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
+                       ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.KingsideCastling)))(j % 4)),
+               // Ruch królem.
+               (
+                   QueensideCastling(), 
+                   Seq(BR, __, __, __, __, BK, __, BR,
+                       BP, __, __, __, __, __, __, BP,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       __, __, __, __, __, __, __, __,
+                       WR, __, __, __, WK, __, __, WR
+                	   ),
+                   Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
+                       ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
+                       ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
+                       ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 4))
+               )(i)
+            )
+    }
+    val fullmoveNumber2 = side match {
+      case Side.White => fullmoveNumber
+      case Side.Black => fullmoveNumber + 1
+    }
+    val ba = (pieces, side, castling, SquareOption.None, halfmoveClock, fullmoveNumber)
+    val ba2 = (pieces2.toSeq, side.opposite, castling2, SquareOption.None, halfmoveClock + 1, fullmoveNumber2)
+
+    (ba, List((move, ba2)))
+  }
+  
+  // Bicia wież dla roszad.
+  
+  val castlingCapturesGen = Gen.choose(0, 4).map6(Gen.choose(0, 255), sideGen, castlingGen, halfmoveClockGen, fullmoveNumberGen)(castlingsFun)
+
+  def castlingCapturesFun(i: Int, j: Int, side: Side, oppCastling: Castling, halfmoveClock: Int, fullmoveNumber: Int) = {
+    val (pieces, (move, pieces2, (castling, castling2))) = side match {
+      case Side.White =>
+        (
+            // pieces
+            Seq(BR, __, __, __, BK, __, __, BR,
+                BP, __, __, __, __, __, __, BP,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, WB, __, __, WB, __, __,
+                __, __, __, __, __, __, __, __,
+                WR, __, __, __, WK, __, __, WR
+            	),
+            // (move, pieces2, (castling, castling2))
+            Seq(
+                // Bicie prawą wieży.
+                (
+                    NormalMove(Piece.Bishop, Square(5, 2), Square(0, 7), PieceOption.None), 
+                    Seq(BR, __, __, __, BK, __, __, WB,
+                    	BP, __, __, __, __, __, __, BP,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, WB, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	WR, __, __, __, WK, __, __, WR
+                    	),
+                    Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.QueensideCastling)),
+                        ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.QueensideCastling)))(j % 4)),
+                // Bicie lewą wieżą.
+                (
+                    NormalMove(Piece.Rook, Square(5, 5), Square(0, 0), PieceOption.None),
+                    Seq(WB, __, __, __, BK, __, __, BR,
                         BP, __, __, __, __, __, __, BP,
                         __, __, __, __, __, __, __, __,
                         __, __, __, __, __, __, __, __,
                         __, __, __, __, __, __, __, __,
-                        __, __, __, __, __, __, __, __,
+                        __, __, WB, __, __, __, __, __,
                         __, __, __, __, __, __, __, __,
                         WR, __, __, __, WK, __, __, WR
+                    	),
+                    Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.KingsideCastling)),
+                        ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.KingsideCastling)))(j % 4))
+                )(i)
+            )
+      case Side.Black => 
+        (
+            // pieces
+            Seq(BR, __, __, __, BK, __, __, BR,
+                __, __, __, __, __, __, __, __,
+                __, __, BB, __, __, BB, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                __, __, __, __, __, __, __, __,
+                WP, __, __, __, __, __, __, WP,
+                WR, __, __, __, WK, __, __, WR
+            	),
+            // (move, pieces2, (castling, castling2))
+            Seq(
+                // Ruch prawą wieżą.
+                (
+                	NormalMove(Piece.Bishop, Square(2, 2), Square(7, 7), PieceOption.None), 
+                    Seq(BR, __, __, __, BK, __, __, BR,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, BB, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	__, __, __, __, __, __, __, __,
+                    	WP, __, __, __, __, __, __, WP,
+                    	WR, __, __, __, WK, __, __, BB
                         ),
-                    (oppCastling, Castling.QueensideCastling)
-                    )
-                )
-        }
-        val tmpCastling = if(isAllCastling) allCastling else castling
-        val fullmoveNumber2 = side match {
-          case Side.White => fullmoveNumber
-          case Side.Black => fullmoveNumber + 1
-        }
-        val ba = (pieces, side, tmpCastling, SquareOption.None, halfmoveClock, fullmoveNumber)
-        val ba2 = (pieces2.toSeq, side.opposite, noneCastling, SquareOption.None, 0, fullmoveNumber2)
+                    Seq(((Castling.NoneCastling, oppCastling),      (Castling.NoneCastling, oppCastling)),
+                        ((Castling.KingsideCastling, oppCastling),  (Castling.NoneCastling, oppCastling)),
+                    	((Castling.QueensideCastling, oppCastling), (Castling.QueensideCastling, oppCastling)),
+                    	((Castling.AllCastling, oppCastling),       (Castling.QueensideCastling, oppCastling)))(j % 4)),
+                // Ruch lewą wieżą.
+                (
+                    NormalMove(Piece.Bishop, Square(2, 5), Square(7, 0), PieceOption.None), 
+                    Seq(BR, __, __, __, BK, __, __, BR,
+                        __, __, __, __, __, __, __, __,
+                        __, __, BB, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        WP, __, __, __, __, __, __, WP,
+                        BB, __, __, __, WK, __, __, WR
+                        ),
+                    Seq(((Castling.NoneCastling, oppCastling),      (Castling.NoneCastling, oppCastling)),
+                        ((Castling.KingsideCastling, oppCastling),  (Castling.KingsideCastling, oppCastling)),
+                        ((Castling.QueensideCastling, oppCastling), (Castling.NoneCastling, oppCastling)),
+                        ((Castling.AllCastling, oppCastling),       (Castling.KingsideCastling, oppCastling)))(j % 4))
+                )(i)
+            )
+    }
+    val fullmoveNumber2 = side match {
+      case Side.White => fullmoveNumber
+      case Side.Black => fullmoveNumber + 1
+    }
+    val ba = (pieces, side, castling, SquareOption.None, halfmoveClock, fullmoveNumber)
+    val ba2 = (pieces2.toSeq, side.opposite, castling2, SquareOption.None, halfmoveClock + 1, fullmoveNumber2)
 
-        (ba, List((move, ba2)))
-      }
+    (ba, List((move, ba2)))
+  }
+  
+  //
+  // Testy wykonywania ruchów.
+  //
+  
+  def foldSuccessorForUnsafeMakeMove[T](bd: Board)(move: Move)(z: T)(f: (T, Board) => T): T = {
+    bd.unsafeMakeMove(move).map {
+      undo =>
+        val y = f(z, bd)
+        bd.unsafeUndoMove(undo)
+        y
+    }.getOrElse(z)
+  }
+  
+  Seq(("normal moves", movesGen),
+      ("promotions", promotionsGen),
+      ("enPassants", enPassantsGen),      
+      ("castlings", castlingsGen),
+      ("lost castlings", castlingCapturesGen)
+      ).foreach {
+    case (name, gen) => {
+      property("unsafeFoldSuccessor for " + name + " should make move and undo move") =
+        foldSuccessorPropForLegalMoves(gen) { _.unsafeFoldSuccessor }
+
+      property("unsafeFoldSuccessorWithoutHashkey for " + name + " should make move and undo move") =
+        foldSuccessorPropForLegalMoves(gen) { _.unsafeFoldSuccessorWithoutHashKey }
+
+      property("unsafeMakeMove and unsafeUndoMove for " + name + " should make move and undo move") =
+        foldSuccessorPropForLegalMoves(gen)(foldSuccessorForUnsafeMakeMove)
     }  
+  }
 }
