@@ -1028,7 +1028,7 @@ class BoardTest extends Properties("Board")
       case Side.Black => fullmoveNumber + 1
     }
     val ba = (pieces, side, castling, SquareOption.None, halfmoveClock, fullmoveNumber)
-    val ba2 = (pieces2.toSeq, side.opposite, castling2, SquareOption.None, halfmoveClock + 1, fullmoveNumber2)
+    val ba2 = (pieces2.toSeq, side.opposite, castling2, SquareOption.None, 0, fullmoveNumber2)
 
     (ba, List((move, ba2)))
   }
@@ -1055,9 +1055,6 @@ class BoardTest extends Properties("Board")
     case (name, gen) => {
       property("unsafeFoldSuccessor for " + name + " should make move and undo move") =
         foldSuccessorPropForLegalMoves(gen) { _.unsafeFoldSuccessor }
-
-      property("unsafeFoldSuccessorWithoutHashkey for " + name + " should make move and undo move") =
-        foldSuccessorPropForLegalMoves(gen) { _.unsafeFoldSuccessorWithoutHashKey }
 
       property("unsafeMakeMove and unsafeUndoMove for " + name + " should make move and undo move") =
         foldSuccessorPropForLegalMoves(gen)(foldSuccessorForUnsafeMakeMove)
