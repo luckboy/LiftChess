@@ -157,6 +157,54 @@ class BoardTest extends Properties("Board")
         aSum == eSum
     }
 
+  property("side should return side") =
+    Prop.forAllNoShrink(boardArgsGen) { args => newBoardTupled(args).side == args._2 }
+  
+  val castlingPiecesGen = Gen.value(Seq(BR, __, __, __, BK, __, __, BR) ++ Seq.fill(6 * 8)(SidePieceOption.None) ++ Seq(WR, __, __, __, WR, __, __, WR))
+  
+  val castlingGen = Gen.oneOf(
+      Castling.NoneCastling,
+      Castling.KingsideCastling,
+      Castling.QueensideCastling,
+      Castling.AllCastling)
+
+  val castlingBoardArgsGen = castlingPiecesGen.map6(sideGen, castlingGen.map2(castlingGen) { case p => p }, SquareOption.None, halfmoveClockGen, fullmoveNumberGen) { case args => args }
+  
+  property("castling should return castling") = 
+    Prop.forAllNoShrink(castlingBoardArgsGen) { args => newBoardTupled(args).side == args._3 }
+  
+  val enPassantBoardArgsGen = Gen.choose(0, 6).map5(sideGen, (Castling.NoneCastling, Castling.NoneCastling), halfmoveClockGen, fullmoveNumberGen) {
+    (col, side, castling, halfmoveClock, fullmoveNumber) => 
+      val spos = Seq(
+          SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn),
+          SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
+          )
+      val line = (Seq.fill(col)(SidePieceOption.None) ++ spos ++ Seq.fill(8)(SidePieceOption.None)).take(8)
+      val pieces = side match {
+        case Side.White =>
+          Seq(__, __, __, __, BK, __, __, __) ++ Seq.fill(2 * 8)(__) ++ line ++ Seq.fill(3 * 8)(__) ++ Seq(__, __, __, __, WK, __, __, __)
+        case Side.Black =>
+          Seq(__, __, __, __, BK, __, __, __) ++ Seq.fill(3 * 8)(__) ++ line ++ Seq.fill(2 * 8)(__) ++ Seq(__, __, __, __, WK, __, __, __)
+      }
+      val enPassant = side match {
+        case Side.White => SquareOption(Square(2, col))
+        case Side.Black => SquareOption(Square(5, col))
+      }
+      (pieces, side, castling, enPassant, halfmoveClock, fullmoveNumber)
+  }
+  
+  property("enPassant should return none") = 
+    Prop.forAllNoShrink(boardArgsGen) { args => newBoardTupled(args).enPassant == SquareOption.None }
+
+  property("enPassant should return en passant square") = 
+    Prop.forAllNoShrink(boardArgsGen) { args => newBoardTupled(args).enPassant == args._4 }
+
+  property("halfmoveClock should return halfmove clock") = 
+    Prop.forAllNoShrink(boardArgsGen) { args => newBoardTupled(args).enPassant == args._5 }
+
+  property("fullmoveNumber should return fullmove number") = 
+    Prop.forAllNoShrink(boardArgsGen) { args => newBoardTupled(args).enPassant == args._6 }
+
   // Bierki
   
   val __ = SidePieceOption.None
@@ -523,12 +571,6 @@ class BoardTest extends Properties("Board")
   //
   
   val promotionPieceGen = Gen.oneOf(Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen)
-
-  val castlingGen = Gen.oneOf(
-      Castling.NoneCastling, 
-      Castling.KingsideCastling, 
-      Castling.QueensideCastling, 
-      Castling.AllCastling)
   
   def sidePieceOptionGenWithSideAndWithoutKing(side: Side) = Gen.oneOf(
       SidePieceOption.None,
