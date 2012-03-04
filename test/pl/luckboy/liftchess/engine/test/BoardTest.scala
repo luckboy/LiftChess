@@ -7,6 +7,9 @@ import pl.luckboy.liftchess.engine._
 @RunWith(classOf[org.scalacheck.contrib.ScalaCheckJUnitPropertiesRunner])
 class BoardTest extends Properties("Board")
 {
+  // TODO Dodać generatory combinacji dla wykonywania ruchów.
+  // TODO Dodać generatory nielegalnych roszad.
+  
   //
   // Generatory.
   //
@@ -516,7 +519,7 @@ class BoardTest extends Properties("Board")
   }
   
   //
-  // Generatory dla testów ruchów.
+  // Generatory dla testów legalnych ruchów.
   //
   
   val promotionPieceGen = Gen.oneOf(Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen)
@@ -587,8 +590,12 @@ class BoardTest extends Properties("Board")
        case Side.White => fullmoveNumber
        case Side.Black => fullmoveNumber + 1
     }
-        
-    val move = NormalMove(piece, src, dst, PieceOption.None)
+    
+    val move = pieces(dst) match {
+      case SidePieceOption.None => NormalMove(piece, src, dst, PieceOption.None)
+      case _                    => Capture(piece,src, dst, PieceOption.None)
+    }
+    
     val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock2, fullmoveNumber2)
         
     (ba, List((move, ba2)))
@@ -655,7 +662,10 @@ class BoardTest extends Properties("Board")
       case Side.Black => fullmoveNumber + 1
     }
         
-    val move = NormalMove(Piece.Pawn, src, dst, PieceOption(promPiece.id))
+    val move = pieces(dst) match {
+      case SidePieceOption.None => NormalMove(Piece.Pawn, src, dst, PieceOption(promPiece.id))
+      case _                    => Capture(Piece.Pawn, src, dst, PieceOption(promPiece.id))
+    }
     val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, fullmoveNumber2)
         
     (ba, List((move, ba2)))
@@ -701,7 +711,11 @@ class BoardTest extends Properties("Board")
       case Side.Black => (fullmoveNumber + 1, fullmoveNumber + 1)
     }
     val move = NormalMove(Piece.Pawn, src, dst, PieceOption.None)
-    val move2 = NormalMove(Piece.Pawn, src2, if(isEnp) capDst2 else mvDst2, PieceOption.None)
+    val move2 = if(isEnp)
+      EnPassant(src2, capDst2)
+    else
+      NormalMove(Piece.Pawn, src2, mvDst2, PieceOption.None)
+    
     val pieces2 = pieces.clone()
     pieces2(src) = SidePieceOption.None
     pieces2(dst) = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
@@ -922,9 +936,9 @@ class BoardTest extends Properties("Board")
   
   // Bicia wież dla roszad.
   
-  val castlingCapturesGen = Gen.choose(0, 4).map6(Gen.choose(0, 255), sideGen, castlingGen, halfmoveClockGen, fullmoveNumberGen)(castlingsFun)
+  val lostCastlingsGen = Gen.choose(0, 4).map6(Gen.choose(0, 255), sideGen, castlingGen, halfmoveClockGen, fullmoveNumberGen)(lostCastlingsFun)
 
-  def castlingCapturesFun(i: Int, j: Int, side: Side, oppCastling: Castling, halfmoveClock: Int, fullmoveNumber: Int) = {
+  def lostCastlingsFun(i: Int, j: Int, side: Side, oppCastling: Castling, halfmoveClock: Int, fullmoveNumber: Int) = {
     val (pieces, (move, pieces2, (castling, castling2))) = side match {
       case Side.White =>
         (
@@ -942,7 +956,7 @@ class BoardTest extends Properties("Board")
             Seq(
                 // Bicie prawą wieży.
                 (
-                    NormalMove(Piece.Bishop, Square(5, 2), Square(0, 7), PieceOption.None), 
+                    Capture(Piece.Bishop, Square(5, 2), Square(0, 7), PieceOption.None), 
                     Seq(BR, __, __, __, BK, __, __, WB,
                     	BP, __, __, __, __, __, __, BP,
                     	__, __, __, __, __, __, __, __,
@@ -958,7 +972,7 @@ class BoardTest extends Properties("Board")
                         ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.QueensideCastling)))(j % 4)),
                 // Bicie lewą wieżą.
                 (
-                    NormalMove(Piece.Rook, Square(5, 5), Square(0, 0), PieceOption.None),
+                    Capture(Piece.Rook, Square(5, 5), Square(0, 0), PieceOption.None),
                     Seq(WB, __, __, __, BK, __, __, BR,
                         BP, __, __, __, __, __, __, BP,
                         __, __, __, __, __, __, __, __,
@@ -990,7 +1004,7 @@ class BoardTest extends Properties("Board")
             Seq(
                 // Ruch prawą wieżą.
                 (
-                	NormalMove(Piece.Bishop, Square(2, 2), Square(7, 7), PieceOption.None), 
+                	Capture(Piece.Bishop, Square(2, 2), Square(7, 7), PieceOption.None), 
                     Seq(BR, __, __, __, BK, __, __, BR,
                     	__, __, __, __, __, __, __, __,
                     	__, __, __, __, __, BB, __, __,
@@ -1006,7 +1020,7 @@ class BoardTest extends Properties("Board")
                     	((Castling.AllCastling, oppCastling),       (Castling.QueensideCastling, oppCastling)))(j % 4)),
                 // Ruch lewą wieżą.
                 (
-                    NormalMove(Piece.Bishop, Square(2, 5), Square(7, 0), PieceOption.None), 
+                    Capture(Piece.Bishop, Square(2, 5), Square(7, 0), PieceOption.None), 
                     Seq(BR, __, __, __, BK, __, __, BR,
                         __, __, __, __, __, __, __, __,
                         __, __, BB, __, __, __, __, __,
@@ -1032,9 +1046,9 @@ class BoardTest extends Properties("Board")
 
     (ba, List((move, ba2)))
   }
-  
+    
   //
-  // Testy wykonywania ruchów.
+  // Testy wykonywania legalnych ruchów.
   //
   
   def foldSuccessorForUnsafeMakeMove[T](bd: Board)(move: Move)(z: T)(f: (T, Board) => T): T = {
@@ -1048,9 +1062,9 @@ class BoardTest extends Properties("Board")
   
   Seq(("normal moves", movesGen),
       ("promotions", promotionsGen),
-      ("enPassants", enPassantsGen),      
+      ("en passants", enPassantsGen),
       ("castlings", castlingsGen),
-      ("lost castlings", castlingCapturesGen)
+      ("lost castlings", lostCastlingsGen)
       ).foreach {
     case (name, gen) => {
       property("unsafeFoldSuccessor for " + name + " should make move and undo move") =
@@ -1058,6 +1072,90 @@ class BoardTest extends Properties("Board")
 
       property("unsafeMakeMove and unsafeUndoMove for " + name + " should make move and undo move") =
         foldSuccessorPropForLegalMoves(gen)(foldSuccessorForUnsafeMakeMove)
-    }  
+    }
+  }
+  
+  //
+  // Generatory dla testów nie legalnych ruchów.
+  //
+
+  val illegalKingMovesGen = sideGen.map3(halfmoveClockGen, fullmoveNumberGen)(illegalKingMovesFun)
+
+  def illegalKingMovesFun(side: Side, halfmoveClock: Int, fullmoveNumber: Int) = {
+    val (pieces, src, dsts) = side match {
+      case Side.White =>
+        (
+            Seq(__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	BP, __, __, __, BK, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, WK, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, BN, __, __, __,
+            	__, __, __, __, __, __, __, __
+            	),
+            Square(4, 2),
+            Set(Square(3, 1), Square(3, 3), Square(4, 3), Square(5, 2)))
+      case Side.Black =>
+        (
+            Seq(__, __, __, __, __, __, __, WK,
+            	__, __, __, WN, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, WB, __, BK, __, __, __,
+            	__, __, WP, __, __, __, __, __,
+            	__, __, __, __, __, __, __, __,
+            	__, __, __, __, __, WR, __, __
+            	),
+            Square(4, 4),
+            Set(Square(3, 3), Square(3, 4), Square(3, 5), Square(4, 3), Square(4, 5), Square(5, 3), Square(5, 5)))
+    }
+    val ba = (pieces, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+    val moves = dsts.map { NormalMove(Piece.King, src, _, PieceOption.None) }
+    (ba, moves)
+  }
+
+  val illegalKingExposuresGen = sideGen.map3(halfmoveClockGen, fullmoveNumberGen)(illegalKingExposuresFun)
+
+  def illegalKingExposuresFun(side: Side, halfmoveClock: Int, fullmoveNumber: Int) = {
+    val or = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Rook)
+    val oq = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Queen)
+    val ok = SidePieceOption.fromSideAndPiece(side.opposite, Piece.King)
+    val sn = SidePieceOption.fromSideAndPiece(side, Piece.Knight)
+    val sb = SidePieceOption.fromSideAndPiece(side, Piece.Bishop)
+    val sk = SidePieceOption.fromSideAndPiece(side, Piece.King)
+    val pieces = Seq(
+        __, __, __, __, __, __, __, __,
+        __, __, __, __, __, __, __, __,
+        __, __, __, __, __, __, __, __,
+        __, __, sk, sb, __, __, or, ok,
+        __, __, __, sn, __, __, __, __,
+        __, __, __, __, __, __, __, __,
+        __, __, __, __, __, oq, __, __,
+        __, __, __, __, __, __, __, __        
+        )
+    
+    val ba = (pieces, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+    val moves = Set((Piece.Bishop, Square(3, 3)), (Piece.Knight, Square(4, 3))).flatMap {
+      case (piece, src) => 
+        Square.foldMoveSquares(src, side, piece)(Set[Move]()) { (_, dst) => pieces(dst) == SidePieceOption.None } {
+          (moves, dst) => moves + NormalMove(piece, src, dst, PieceOption.None)
+        } {
+          (moves, _) => moves
+        }
+    }
+    (ba, moves)
+  }
+  
+  Seq(("illegal king moves", illegalKingMovesGen),
+      ("illegal king exposures", illegalKingExposuresGen)
+      ).foreach {
+    case (name, gen) => {
+      property("unsafeFoldSuccessor for " + name + " should make move and undo move") =
+        foldSuccessorPropForIllegalMoves(gen) { _.unsafeFoldSuccessor }
+
+      property("unsafeMakeMove and unsafeUndoMove for " + name + " should make move and undo move") =
+        foldSuccessorPropForIllegalMoves(gen)(foldSuccessorForUnsafeMakeMove)
+    }
   }
 }

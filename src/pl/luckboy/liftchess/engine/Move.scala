@@ -19,9 +19,10 @@ class MoveType private(val id: Int, val name: String) extends EnumValue
 object MoveType
 {
   val NormalMove = new MoveType(0, "NormalMove") 
-  val EnPassant = new MoveType(1, "EnPassant")
-  val KingsideCastling = new MoveType(2, "KingsideCastling")
-  val QueensideCastling = new MoveType(3, "QueensideCastling")
+  val Capture = new MoveType(1, "Capture")
+  val EnPassant = new MoveType(2, "EnPassant")
+  val KingsideCastling = new MoveType(3, "KingsideCastling")
+  val QueensideCastling = new MoveType(4, "QueensideCastling")
   
   val Values = Array(NormalMove, EnPassant, KingsideCastling, QueensideCastling)
   
@@ -42,6 +43,22 @@ object NormalMove
     move match {
       case Move(piece, src, dst, promPiece, MoveType.NormalMove) => Some(piece, src, dst, promPiece) 
       case _                                                     => None
+    }
+}
+
+/** Singleton bicie.
+ * 
+ * @author Łukasz Szpakowski
+ */
+object Capture
+{
+  def apply(piece: Piece, src: Int, dst: Int, promPiece: PieceOption): Move =
+    Move(piece, src, dst, promPiece, MoveType.Capture)
+    
+  def unapply(move: Move): Option[(Piece, Int, Int, PieceOption)] =
+    move match {
+      case Move(piece, src, dst, promPiece, MoveType.Capture) => Some(piece, src, dst, promPiece) 
+      case _                                                  => None
     }
 }
 
