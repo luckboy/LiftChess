@@ -13,9 +13,7 @@ class Board private(
     private var mFullmoveNumber: Int
     )
 {
-  import Board.Sides
-  import Board.MinSListIndexes
-  import Board.MaxSListIndexes
+  import Board._
   
   /** Tablica dla roszad. Zawiera znaczniki roszad w odpowiednich pozycjach. */
   private val mCastlingArray = {
@@ -33,8 +31,8 @@ class Board private(
   private val mSList = {
     val sList = Array.fill(40)(-1)
     val lastSListIndexes = Side.makeArray(
-        MinSListIndexes(Side.White.id).clone(),
-        MinSListIndexes(Side.Black.id).clone()
+        StartSListIndexes(Side.White.id).clone(),
+        StartSListIndexes(Side.Black.id).clone()
         )
     
     (0 to 63).foreach {
@@ -42,8 +40,8 @@ class Board private(
         (_, sp) =>
           val side = sp.side
           val piece = sp.piece
-          val pieceId = if(lastSListIndexes(side.id)(piece.id) < MaxSListIndexes(side.id)(piece.id)) piece.id else Piece.Pawn.id
-          require(lastSListIndexes(side.id)(pieceId) < MaxSListIndexes(side.id)(pieceId))
+          val pieceId = if(lastSListIndexes(side.id)(piece.id) < EndSListIndexes(side.id)(piece.id)) piece.id else Piece.Pawn.id
+          require(lastSListIndexes(side.id)(pieceId) < EndSListIndexes(side.id)(pieceId))
           sList(lastSListIndexes(side.id)(pieceId)) = sq
           lastSListIndexes(side.id)(pieceId) += 1
         }
@@ -70,12 +68,12 @@ class Board private(
     } else {
       var sum = 0
       if(piece != Piece.Pawn) {
-        val j = MinSListIndexes(side.id)(piece.id)
+        val j = StartSListIndexes(side.id)(piece.id)
         if(mSList(j) != -1) sum += 1
         if(mSList(j + 1) != -1) sum += 1
       }
-      var i = MinSListIndexes(side.id)(Piece.Pawn.id)
-      val n = MaxSListIndexes(side.id)(Piece.Pawn.id)
+      var i = StartSListIndexes(side.id)(Piece.Pawn.id)
+      val n = EndSListIndexes(side.id)(Piece.Pawn.id)
       while(i < n) {
         if(mSList(i) != -1 && mPieces(mSList(i)).isPiece(piece)) sum += 1
         i += 1
@@ -88,8 +86,15 @@ class Board private(
    * @param piece		bierka.
    * @return			liczba bierek.
    */
-  def countPieces(piece: Piece): Int = 
-    countSidePieces(Side.White, piece) + countSidePieces(Side.Black, piece)
+  def countPieces(piece: Piece): Int = {
+    var sum = 0
+    var i = 0
+    while(i < 2) {
+      sum += countSidePieces(Sides(i), piece)
+      i += 1
+    }
+    sum
+  }
   
   /** Podaje liczbę wszystkich bierek danej strony.
    * @param side		strona.
@@ -97,8 +102,8 @@ class Board private(
    */
   def countAllSidePieces(side: Side): Int = {
     var sum = 0
-    var i = MinSListIndexes(side.id)(Piece.Pawn.id)
-    val n = MaxSListIndexes(side.id)(Piece.King.id)
+    var i = MinStartSListIndexes(side.id)
+    val n = MaxEndSListIndexes(side.id)
     while(i < n) {
       if(mSList(i) != -1) sum += 1
       i += 1
@@ -109,8 +114,15 @@ class Board private(
   /** Podaje liczbę wszystkich bierek.
    * @return			liczba bierek.
    */
-  def countAllPieces: Int =
-    countAllSidePieces(Side.White) + countAllSidePieces(Side.Black)
+  def countAllPieces: Int = {
+    var sum = 0
+    var i = 0
+    while(i < 2) {
+      sum += countAllSidePieces(Sides(i))
+      i += 1
+    }
+    sum
+  }
   
   /** Składa określone bierki danej strony.
    * @param side		strona.
@@ -122,12 +134,12 @@ class Board private(
    */
   def foldSidePieces[T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     if(piece == Piece.King) {
-      val sq = mSList(MinSListIndexes(side.id)(Piece.King.id))
+      val sq = mSList(StartSListIndexes(side.id)(Piece.King.id))
       if(p(z, sq)) f(z, sq)  else z
     } else {
       var y = z
       if(piece != Piece.Pawn) {
-        val j = MinSListIndexes(side.id)(piece.id)
+        val j = StartSListIndexes(side.id)(piece.id)
         if(mSList(j) != -1) {
           val sq = mSList(j)
           if(!p(y, sq)) return y
@@ -139,8 +151,8 @@ class Board private(
           y = f(y, sq)
         }
       }
-      var i = MinSListIndexes(side.id)(Piece.Pawn.id)
-      val n = MaxSListIndexes(side.id)(Piece.Pawn.id)
+      var i = StartSListIndexes(side.id)(Piece.Pawn.id)
+      val n = EndSListIndexes(side.id)(Piece.Pawn.id)
       while(i < n) {
         if(mSList(i) != -1 && mPieces(mSList(i)).isPiece(piece)) {
           val sq = mSList(i) 
@@ -162,10 +174,10 @@ class Board private(
    */
   def foldPieces[T](piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     if(piece == Piece.King) {
-      val sq = mSList(MinSListIndexes(Side.White.id)(Piece.King.id))
+      val sq = mSList(StartSListIndexes(Side.White.id)(Piece.King.id))
       if(p(z, sq)) {
         val y = f(z, sq)
-        val sq2 = mSList(MinSListIndexes(Side.Black.id)(Piece.King.id))
+        val sq2 = mSList(StartSListIndexes(Side.Black.id)(Piece.King.id))
         if(p(y, sq2)) f(y, sq2) else y
       } else {
         z
@@ -176,7 +188,7 @@ class Board private(
       while(k < 2) {
         val side = Sides(k)
         if(piece != Piece.Pawn) {
-          var j = MinSListIndexes(side.id)(piece.id)
+          var j = StartSListIndexes(side.id)(piece.id)
           if(mSList(j) != -1) {
             val sq = mSList(j)
             if(!p(y, sq)) return y
@@ -188,8 +200,8 @@ class Board private(
             y = f(y, sq)
           }
         }
-        var i = MinSListIndexes(side.id)(Piece.Pawn.id)
-        val n = MaxSListIndexes(side.id)(Piece.Pawn.id)
+        var i = StartSListIndexes(side.id)(Piece.Pawn.id)
+        val n = EndSListIndexes(side.id)(Piece.Pawn.id)
         while(i < n) {
           if(mSList(i) != -1 && mPieces(mSList(i)).isPiece(piece)) {
             val sq = mSList(i)
@@ -213,8 +225,8 @@ class Board private(
    */
   def foldAllSidePieces[T](side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     var y = z
-    var i = MinSListIndexes(side.id)(Piece.Pawn.id)
-    val n = MaxSListIndexes(side.id)(Piece.King.id)
+    var i = MinStartSListIndexes(side.id)
+    val n = MaxEndSListIndexes(side.id)
     while(i < n) {
       if(mSList(i) != -1) {
         val sq = mSList(i)
@@ -237,8 +249,8 @@ class Board private(
     var k = 0
     while(k < 2) {
       val side = Sides(k)
-      var i = MinSListIndexes(side.id)(Piece.Pawn.id)
-      val n = MaxSListIndexes(side.id)(Piece.King.id)
+      var i = MinStartSListIndexes(side.id)
+      val n = MaxEndSListIndexes(side.id)
       while(i < n) {
         if(mSList(i) != -1) {
           val sq = mSList(i)
@@ -357,17 +369,23 @@ object Board
   /** Tablica stron dla implementacji planszy. */
   private val Sides = Array(Side.White, Side.Black)
 
-  /** Tablica minimalnych indeksów dla danej bierki o określonej strony. */
-  private val MinSListIndexes = Side.makeArray(
+  /** Tablica indeksów początkowych dla danej bierki o określonej strony. */
+  private val StartSListIndexes = Side.makeArray(
       Piece.makeArray(0, 8, 10, 12, 14, 16),
       Piece.makeArray(20, 28, 30, 32, 34, 36)
       )
 
-  /** Tablica maksymalnych indeksów dla danej bierki o określonej strony. */  
-  private val MaxSListIndexes = Side.makeArray(
+  /** Tablica indeksów konczowych dla danej bierki o określonej strony. */  
+  private val EndSListIndexes = Side.makeArray(
       Piece.makeArray(8, 10, 12, 14, 15, 17),
       Piece.makeArray(28, 30, 32, 34, 35, 37)
       )
+
+  /** Tablica minimalnych indesków początkowych dla danej strony. */
+  private val MinStartSListIndexes = Side.makeArray(0, 20)
+
+  /** Tablica maksymalnych indesków konczowych dla danej strony. */
+  private val MaxEndSListIndexes = Side.makeArray(17, 37)
   
   def apply(
       pieces: Seq[SidePieceOption],
