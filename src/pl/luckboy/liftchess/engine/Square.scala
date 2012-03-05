@@ -55,14 +55,27 @@ object Square
    * @param sq 			pole.
    * @param side		strona.
    * @param z			wartość początkowa.
+   * @param p			funkcja przerwania (gdy false przerywa).
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldPawnCaptureSquares[T](sq: Int, side: Side)(z: T)(f: (T, Int) => T): T = {
+  def foldPawnCaptureSquares[T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     val dst1 = Lookup88(sq) + (if(side == Side.White) -17 else 15)
     val dst2 = Lookup88(sq) + (if(side == Side.White) -15 else 17)
-    val y1 = if((dst1 & 0x88) == 0) f(z, Mailbox88(dst1)) else z
-    val y2 = if((dst2 & 0x88) == 0) f(y1, Mailbox88(dst2)) else y1
+    val y1 = if((dst1 & 0x88) == 0) {
+      val dst64 = Mailbox88(dst1)
+      if(!p(z, dst64)) return z
+      f(z, dst64)
+    } else {
+      z
+    }
+    val y2 = if((dst2 & 0x88) == 0) {
+      val dst64 = Mailbox88(dst2)
+      if(!p(y1, dst64)) return y1
+      f(y1, dst64)
+    } else {
+      y1
+    }
     y2
   }
 
@@ -70,7 +83,7 @@ object Square
    * @param sq 			pole.
    * @param strona		strona.
    * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
+   * @param p			funkcja przerwania linii (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
    * @param f			funkcja składania przed przerwaniem linii.
    * @return			wynik składania.
    */
@@ -94,15 +107,20 @@ object Square
    * @param sq 			pole.
    * @param piece		bierka.
    * @param z			wartość początkowa.
+   * @param p			funkcja przerwania (gdy false przerywa).
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldNonSlidingMoveSquares[T](sq: Int, piece: Piece)(z: T)(f: (T, Int) => T): T = {
+  def foldNonSlidingMoveSquares[T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     var y = z
     var i = 0
     while(i < 8) {
       val dst = Lookup88(sq) + NonSlidingSteps(piece.id)(i)
-      if((dst & 0x88) == 0) y = f(y, Mailbox88(dst))
+      if((dst & 0x88) == 0) {
+        val dst64 = Mailbox88(dst)
+        if(!p(y, dst64)) return y
+        y = f(y, dst64)
+      }
       i += 1
     }
     y
@@ -112,20 +130,21 @@ object Square
    * @param sq 			pole.
    * @param piece		bierka.
    * @param z			wartość początkowa.
+   * @param p			funkcja przerwania składania(gdy false przerywa).
    * @param l			funkcja składania linii.
-   * @param p			funkcja przerwania (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
+   * @param q			funkcja przerwania linii (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
    * @param f			funkcja składania przed przerwaniem linii.
    * @param g			funkcja składania po przerwaniu linii.
    * @return			wynik składania.
    */
-  def foldSlidingMoveSquares[T](sq: Int, piece: Piece)(z: T)(l: (T) => T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
+  def foldSlidingMoveSquares[T](sq: Int, piece: Piece)(z: T)(p: (T) => Boolean)(l: (T) => T)(q: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
     var y = z
     var i = 0
-    while(i < SlidingSteps(piece.id).length) {
+    while(i < SlidingSteps(piece.id).length && p(y)) {
       val step = SlidingSteps(piece.id)(i)
       var dst = Lookup88(sq) + step
       y = l(y)
-      while((dst & 0x88) == 0 && p(y, Mailbox88(dst))) {
+      while((dst & 0x88) == 0 && q(y, Mailbox88(dst))) {
         y = f(y, Mailbox88(dst))
         dst += step
       }
@@ -142,20 +161,24 @@ object Square
    * @param side		strony.
    * @param piece		bierka.
    * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
+   * @param p			funkcja przerwania linii (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
    * @param f			funkcja składania przed przerwaniem linii.
    * @param g			funkcja składania po przerwaniu linii.
    * @return			wynik składania.
    */
   def foldMoveSquares[T](sq: Int, side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T =
     if(IsSliding(piece.id)) {
-      foldSlidingMoveSquares(sq, piece)(z) { y => y } (p)(f)(g)
+      foldSlidingMoveSquares(sq, piece)(z) {_ => true } { y => y } (p)(f)(g)
     } else {
       if(piece == Piece.Pawn) {
-        val y = foldPawnCaptureSquares(sq, side)(z) { (x, dst) => if(p(x, dst)) x else g(x, dst) }
+        val y = foldPawnCaptureSquares(sq, side)(z) { (_, _) => true } { 
+          (x, dst) => if(p(x, dst)) x else g(x, dst)
+        }
         foldPawnMoveSquares(sq, side)(y)(p)(f)    
       } else {
-        foldNonSlidingMoveSquares(sq, piece)(z) { (x, dst) => if(p(x, dst)) f(x, dst) else g(x, dst) }
+        foldNonSlidingMoveSquares(sq, piece)(z) { (_, _) => true } { 
+          (x, dst) => if(p(x, dst)) f(x, dst) else g(x, dst)
+        }
       }
     }
 }

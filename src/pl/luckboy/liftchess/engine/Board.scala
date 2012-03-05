@@ -349,16 +349,45 @@ class Board private(
    * @param side		strona atakującia.
    * @return			jeśli strona atakuje to true.
    */
-  def attack(sq: Int, side: Side): Boolean = throw new Exception
+  def attack(sq: Int, side: Side): Boolean = {
+    {
+      val pawn = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
+      Square.foldPawnCaptureSquares(sq, side.opposite)(false) { (b, _) => !b } { (_, src) => this(src) == pawn }
+    } || {
+      val knight = SidePieceOption.fromSideAndPiece(side, Piece.Knight)
+      Square.foldNonSlidingMoveSquares(sq, Piece.Knight)(false) { (b, _) => !b } { (_, src) => this(src) == knight }
+    } || {
+      val king = SidePieceOption.fromSideAndPiece(side, Piece.King)
+      Square.foldNonSlidingMoveSquares(sq, Piece.King)(false) { (b, _) => !b } { (_, src) => this(src) == king }
+    } || {
+      val bishop = SidePieceOption.fromSideAndPiece(side, Piece.Bishop)
+      val queen = SidePieceOption.fromSideAndPiece(side, Piece.Queen)
+      Square.foldSlidingMoveSquares(sq, Piece.Bishop)(false) { !_ } { _ => false } { (_, src) => this(src).isNone } { 
+        (_, _) => false 
+      } { 
+        (_, src) => this(src) == bishop || this(src) == queen
+      }
+    } || {
+      val rook = SidePieceOption.fromSideAndPiece(side, Piece.Rook)
+      val queen = SidePieceOption.fromSideAndPiece(side, Piece.Queen)
+      Square.foldSlidingMoveSquares(sq, Piece.Rook)(false) { !_ } { _ => false } { (_, src) => this(src).isNone } { 
+        (_, _) => false 
+      } { 
+        (_, src) => this(src) == rook || this(src) == queen
+      }
+    }
+  }
   
   /** Sprawdza czy jest szach dla danej strony.
    * @param side		strona.
    * @return			jeśli jest szach to true.
    */
-  def sideInCheck(side: Side): Boolean = throw new Exception
+  def sideInCheck(side: Side): Boolean =
+    attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
   
   /** Sprawdza czy jest szach dla strony która ma ruch. */
-  def inCheck: Boolean = throw new Exception
+  def inCheck: Boolean =
+    attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
 }
 
 /**

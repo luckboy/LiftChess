@@ -420,7 +420,7 @@ class BoardTest extends Properties("Board")
          (spos, side, castling, enPassant, halfmoveClock, fullmoveNumber) =>
            val newSpos = spos :+ SidePieceOption.fromSideAndPiece(aSide, Piece.King) :+ SidePieceOption.None
            val shuffledSpos = Random.shuffle(newSpos)
-           val (pieces, sq, rSide, res) = f(SidePieceOption.fromSideAndPiece(aSide.opposite, Piece.King) :: spos, aSide)
+           val (pieces, sq, rSide, res) = f(SidePieceOption.fromSideAndPiece(aSide.opposite, Piece.King) :: shuffledSpos, aSide)
            
            ((pieces, side, castling, enPassant, halfmoveClock, fullmoveNumber), sq, rSide, res)
         }
@@ -434,7 +434,7 @@ class BoardTest extends Properties("Board")
       (spos, side, castling, enPassant, halfmoveClock, fullmoveNumber) =>
          val newSpos = spos :+ SidePieceOption.fromSideAndPiece(side.opposite, Piece.King) :+ SidePieceOption.None
          val shuffledSpos = Random.shuffle(newSpos)
-         val (pieces, sq, rSide, res) = f(SidePieceOption.fromSideAndPiece(side, Piece.King) :: spos, side.opposite)
+         val (pieces, sq, rSide, res) = f(SidePieceOption.fromSideAndPiece(side, Piece.King) :: shuffledSpos, side.opposite)
          
          ((pieces, side, castling, enPassant, halfmoveClock, fullmoveNumber), sq, rSide, res)
     }
@@ -452,7 +452,7 @@ class BoardTest extends Properties("Board")
       ("rook attacks", attackGen(4, rookAttacks))
       ).foreach {
     case (name, gen) =>
-      property("isAttack for " + name + " should return true for attack") = 
+      property("attack for " + name + " should return true for attack") = 
         Prop.forAllNoShrink(gen) { case (args, sq, side, res) => newBoardTupled(args).attack(sq, side) == res }
   }
 

@@ -181,7 +181,7 @@ class SquareTest extends Properties("Square")
     Prop.forAllNoShrink(squareGen, sideGen) {
       (sq, side) =>
         val marks = pawnCaptureSquareMarks(sq, side)
-        val aSqs = Square.foldPawnCaptureSquares(sq, side)(Set[Int]()) { (sqs, sq) => sqs + sq }
+        val aSqs = Square.foldPawnCaptureSquares(sq, side)(Set[Int]()) { (_, _) => true }{ (sqs, sq) => sqs + sq }
         val eSqs = (0 to 63).filter { marks }.toSet
         aSqs == eSqs
     }
@@ -265,7 +265,7 @@ class SquareTest extends Properties("Square")
         Prop.forAllNoShrink(squareGen) {
           (sq) =>
             val marks = marksFun(sq)
-            val aSqs = Square.foldNonSlidingMoveSquares(sq, piece)(Set[Int]()) { (sqs, sq) => if(marks(sq)) sqs + sq  else sqs }
+            val aSqs = Square.foldNonSlidingMoveSquares(sq, piece)(Set[Int]()) { (_, _) => true } { (sqs, sq) => if(marks(sq)) sqs + sq  else sqs }
             val eSqs = (0 to 63).filter { marks }.toSet
             aSqs == eSqs
         }
@@ -293,7 +293,11 @@ class SquareTest extends Properties("Square")
           (sq, limits) =>
             val marks1 = marksFun(limits, sq)
             val marks2 = marksFun(limits.map { _  + 1 }, sq)
-            val (aSqs1, aSqs2, aNum) = Square.foldSlidingMoveSquares(sq, piece)(Set[Int](), Set[Int](), 0) { case (sqs1, sqs2, n) => (sqs1, sqs2, n + 1) } { (_, sq) => marks1(sq) } {
+            val (aSqs1, aSqs2, aNum) = Square.foldSlidingMoveSquares(sq, piece)(Set[Int](), Set[Int](), 0) { _ => true } { 
+              case (sqs1, sqs2, n) => (sqs1, sqs2, n + 1) 
+            } { 
+              case (_, sq) => marks1(sq) 
+            } {
               case ((sqs1, sqs2, n), sq) => (sqs1 + sq, sqs2, n)
             } {
               case ((sqs1, sqs2, n), sq) => (sqs1, sqs2 + sq, n)
