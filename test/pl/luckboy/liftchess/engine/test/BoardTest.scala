@@ -9,6 +9,8 @@ class BoardTest extends Properties("Board")
 {
   // TODO Dodać generatory combinacji dla wykonywania ruchów.
   // TODO Dodać generatory nielegalnych roszad.
+  // TODO Dodać testy dla ruchów dla króla (poprzednie nie były dobre).
+  // TODO Posprawdzać dobrze testy.
   
   //
   // Generatory.
@@ -219,7 +221,7 @@ class BoardTest extends Properties("Board")
     }
 
   property("enPassant should return en passant square") = 
-    Prop.forAllNoShrink(boardArgsGen) { 
+    Prop.forAllNoShrink(enPassantBoardArgsGen) { 
       args => newBoardTupled(args).enPassant == args._4
     }
 
@@ -484,6 +486,16 @@ class BoardTest extends Properties("Board")
   // Fukcje dla testów wykonywania ruchów.
   //
   
+  def newCapture(piece: Piece, src: Int, dst: Int, promPiece: PieceOption) = 
+    Capture(piece, src, dst, promPiece)
+    
+  def newMoveOrCapture(piece: Piece, src: Int, dst: Int, promPiece: PieceOption, args: BoardArgs) = {
+    args._1(dst) match {
+      case SidePieceOption.None => NormalMove(piece, src, dst, promPiece)
+      case _                    => Capture(piece,src, dst, promPiece)
+    }
+  }
+  
   def boardTest(bd: Board, args: BoardArgs) = {
     val (aPieces, aSide, aCastling, aEnPassant, aHalfmoveClock, aFullmoveNumber) = args
    
@@ -549,9 +561,9 @@ class BoardTest extends Properties("Board")
           val res2 = mbas match {
             case (move, ba2) :: mbas2 => 
               foldSuccessor(bd)(move)(false) { 
-                (b, bd2) => b == true && g(bd2, ba2, mbas2)
+                (_, bd2) => g(bd2, ba2, mbas2)
               }
-            case Nil                 =>
+            case Nil                  =>
               true
           }
           val res3 = boardTest(bd, ba)          
@@ -590,35 +602,37 @@ class BoardTest extends Properties("Board")
       SidePieceOption.fromSideAndPiece(side, Piece.Rook),
       SidePieceOption.fromSideAndPiece(side, Piece.Queen))
   
+  val pieceGenWithoutKing = Gen.oneOf(Piece.Pawn, Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen)
+      
   // Ruchy.
 
   val movesGen = {
 	sideGen.flatMap {
 	  side =>
-	    val osGen = Gen.listOfN(6, sidePieceOptionGenWithSideAndWithoutKing(side.opposite))
+	    val osGen = Gen.listOfN(5, sidePieceOptionGenWithSideAndWithoutKing(side.opposite))
 	    val ssGen = Gen.listOfN(2, sidePieceOptionGenWithSideAndWithoutKing(side))
-	    Gen.choose(0, 255).map6(pieceGen, osGen, ssGen, halfmoveClockGen, fullmoveNumberGen) {
+	    Gen.choose(0, 255).map6(pieceGenWithoutKing, osGen, ssGen, halfmoveClockGen, fullmoveNumberGen) {
 	      (i, piece, os, ss, halfmoveClock, fullmoveNumber) =>
 	        val newOs = Random.shuffle(os) :+ SidePieceOption.fromSideAndPiece(side.opposite, Piece.King)
 	        val newSs = Random.shuffle(ss) :+ (if(piece == Piece.King) SidePieceOption.None else SidePieceOption.fromSideAndPiece(side, Piece.King))
-	        movesFun(i, side, piece, os ++ ss, halfmoveClock, fullmoveNumber)
+	        movesFun(i, side, piece, newOs ++ newSs, halfmoveClock, fullmoveNumber)
 	    }
 	}
   }
   
   def movesFun(i: Int, side: Side, piece: Piece, spos: Seq[SidePieceOption], halfmoveClock: Int, fullmoveNumber: Int) = {
     val s0 = SidePieceOption.fromSideAndPiece(side, piece)
-    val Seq(o1, o2, o3, o4, o5, o6, o7, s1, s2, s3) = spos
+    val Seq(o1, o2, o3, o4, o5, o6, s1, s2, s3) = spos
     import scala.collection.mutable.Seq
     val pieces = Seq(
-        __, __, __, __, s3, __, __, __,
+        __, __, __, __, __, __, __, s3,
+        __, __, o1, __, __, __, __, __,
+        s2, o2, __, __, o3, __, __, __,
+        __, __, __, s0, __, __, o5, __,
         __, __, __, __, __, __, __, __,
-        s2, o1, __, __, o2, __, __, __,
-        __, __, __, s0, __, __, o6, __,
-        __, __, __, __, o4, __, __, __,
-        __, __, o3, __, __, s1, __, __,
-        o5, __, __, __, __, __, __, __,
-        __, __, __, __, o7, __, __, __
+        __, __, __, __, __, s1, __, __,
+        o4, __, __, __, __, __, __, __,
+        __, __, __, __, o6, __, __, __
         )
     val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
     val src = Square(3, 3)
@@ -643,10 +657,7 @@ class BoardTest extends Properties("Board")
        case Side.Black => fullmoveNumber + 1
     }
     
-    val move = pieces(dst) match {
-      case SidePieceOption.None => NormalMove(piece, src, dst, PieceOption.None)
-      case _                    => Capture(piece,src, dst, PieceOption.None)
-    }
+    val move = newMoveOrCapture(piece, src, dst, PieceOption.None, ba)
     
     val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock2, fullmoveNumber2)
         
@@ -658,9 +669,9 @@ class BoardTest extends Properties("Board")
   val promotionsGen = {
     sideGen.flatMap {
       side => 
-	    val osGen = Gen.listOf1(sidePieceOptionGenWithSideAndWithoutKing(side.opposite))
+	    val osGen = Gen.listOfN(1, sidePieceOptionGenWithSideAndWithoutKing(side.opposite))
 	    val ssGen = Gen.listOfN(2, sidePieceOptionGenWithSideAndWithoutKing(side))
-	    Gen.choose(0, 255).map6(pieceGen, osGen, ssGen, halfmoveClockGen, fullmoveNumberGen) {
+	    Gen.choose(0, 255).map6(promotionPieceGen, osGen, ssGen, halfmoveClockGen, fullmoveNumberGen) {
 	      (i, promPiece, os, ss, halfmoveClock, fullmoveNumber) =>
 	        promotionsFun(i, side, promPiece, os ++ ss, halfmoveClock, fullmoveNumber)
 	    }
@@ -714,10 +725,7 @@ class BoardTest extends Properties("Board")
       case Side.Black => fullmoveNumber + 1
     }
         
-    val move = pieces(dst) match {
-      case SidePieceOption.None => NormalMove(Piece.Pawn, src, dst, PieceOption(promPiece.id))
-      case _                    => Capture(Piece.Pawn, src, dst, PieceOption(promPiece.id))
-    }
+    val move = newMoveOrCapture(Piece.Pawn, src, dst, PieceOption(promPiece.id), ba)
     val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, fullmoveNumber2)
         
     (ba, List((move, ba2)))
@@ -739,7 +747,7 @@ class BoardTest extends Properties("Board")
             	__, BP, __, __, __, __, __, __,
             	__, __, __, __, __, __, __, __,
             	__, __, WP, __, __, __, __, __,
-            	__, __, __, __, __, WP, __, __
+            	__, __, __, __, __, WK, __, __
             	),
             Square(6, 2), Square(4, 2),
             Square(4, 1), Square(5, 1), Square(5, 2))
@@ -772,17 +780,18 @@ class BoardTest extends Properties("Board")
     pieces2(src) = SidePieceOption.None
     pieces2(dst) = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
     val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption(capDst2), 0, fullmoveNumber2)
-        val pieces3 = pieces.clone()
-        if(isEnp) {
-          pieces3(src2) = SidePieceOption.None
-          pieces3(capDst2) = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn)
-        } else {
-          pieces3(src2) = SidePieceOption.None
-          pieces3(mvDst2) = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn)          
-        }
-        val ba3 = (pieces3.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, fullmoveNumber3)
+    val pieces3 = pieces2.clone()
+    if(isEnp) {
+      pieces3(src2) = SidePieceOption.None
+      pieces3(move.destination) = SidePieceOption.None
+      pieces3(capDst2) = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn)
+    } else {
+      pieces3(src2) = SidePieceOption.None
+      pieces3(mvDst2) = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn)          
+    }
+    val ba3 = (pieces3.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, fullmoveNumber3)
 
-        (ba, List((move, ba2), (move2, ba3)))
+    (ba, List((move, ba2), (move2, ba3)))
   }
   
   // Roszada
@@ -867,7 +876,7 @@ class BoardTest extends Properties("Board")
                         ((Castling.AllCastling, oppCastling),       (Castling.KingsideCastling, oppCastling)))(j % 4)),
                 // Ruch królem.
                 (
-                    NormalMove(Piece.Rook, Square(7, 4), Square(7, 3), PieceOption.None),
+                    NormalMove(Piece.King, Square(7, 4), Square(7, 3), PieceOption.None),
                     Seq(BR, __, __, __, BK, __, __, BR,
                     	__, __, __, __, __, __, __, __,
                     	__, __, __, __, __, __, __, __,
@@ -897,83 +906,83 @@ class BoardTest extends Properties("Board")
                 ),
             // (move, pieces2, (castling, castling2))
             Seq(
-               // Roszada krótka.
-               (
-                   KingsideCastling(), 
-                   Seq(BR, __, __, __, __, BR, BK, __,
-                       BP, __, __, __, __, __, __, BP,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       WR, __, __, __, WK, __, __, WR
-                	   ),
-                   Seq(((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
-                	   ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 2)),
-               // Roszada długa.
-               (
-                   QueensideCastling(), 
-                   Seq(__, __, BK, BR, __, __, __, BR,
-                	   BP, __, __, __, __, __, __, BP,
-                	   __, __, __, __, __, __, __, __,
-                	   __, __, __, __, __, __, __, __,
-                	   __, __, __, __, __, __, __, __,
-                	   __, __, __, __, __, __, __, __,
-                	   __, __, __, __, __, __, __, __,
-                	   WR, __, __, __, WK, __, __, WR
-                	   ),
-                   Seq(((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
-                       ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 2)),
-               // Ruch prawą wieżą.
-               (
-                   QueensideCastling(), 
-                   Seq(BR, __, __, __, BK, __, BR, __,
-                       BP, __, __, __, __, __, __, BP,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       WR, __, __, __, WK, __, __, WR
-                	   ),
-                   Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
-                       ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
-                       ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.QueensideCastling)),
-                       ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.QueensideCastling)))(j % 4)),
-               // Ruch lewą wieżą.
-               (
-                   QueensideCastling(), 
-                   Seq(__, BR, __, __, BK, __, __, BR,
-                	   BP, __, __, __, __, __, __, BP,
-                	   __, __, __, __, __, __, __, __,
-                	   __, __, __, __, __, __, __, __,
-                	   __, __, __, __, __, __, __, __,
-                	   __, __, __, __, __, __, __, __,
-                	   __, __, __, __, __, __, __, __,
-                	   WR, __, __, __, WK, __, __, WR
-                      ),
-                   Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
-                       ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.KingsideCastling)),
-                       ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
-                       ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.KingsideCastling)))(j % 4)),
-               // Ruch królem.
-               (
-                   QueensideCastling(), 
-                   Seq(BR, __, __, __, __, BK, __, BR,
-                       BP, __, __, __, __, __, __, BP,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       __, __, __, __, __, __, __, __,
-                       WR, __, __, __, WK, __, __, WR
-                	   ),
-                   Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
-                       ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
-                       ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
-                       ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 4))
-               )(i)
+                // Roszada krótka.
+                (
+                    KingsideCastling(), 
+                    Seq(BR, __, __, __, __, BR, BK, __,
+                        BP, __, __, __, __, __, __, BP,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        WR, __, __, __, WK, __, __, WR
+                	    ),
+                    Seq(((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
+                    	((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 2)),
+                // Roszada długa.
+                (
+                    QueensideCastling(), 
+                    Seq(__, __, BK, BR, __, __, __, BR,
+                	    BP, __, __, __, __, __, __, BP,
+                	    __, __, __, __, __, __, __, __,
+                	    __, __, __, __, __, __, __, __,
+                	    __, __, __, __, __, __, __, __,
+                	    __, __, __, __, __, __, __, __,
+                	    __, __, __, __, __, __, __, __,
+                	    WR, __, __, __, WK, __, __, WR
+                	    ),
+                    Seq(((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 2)),
+                // Ruch prawą wieżą.
+                (
+                    NormalMove(Piece.Rook, Square(0, 7), Square(0, 6), PieceOption.None), 
+                    Seq(BR, __, __, __, BK, __, BR, __,
+                        BP, __, __, __, __, __, __, BP,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        WR, __, __, __, WK, __, __, WR
+                	    ),
+                    Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.QueensideCastling)),
+                        ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.QueensideCastling)))(j % 4)),
+                // Ruch lewą wieżą.
+                (
+                    NormalMove(Piece.Rook, Square(0, 0), Square(0, 1), PieceOption.None), 
+                    Seq(__, BR, __, __, BK, __, __, BR,
+                	    BP, __, __, __, __, __, __, BP,
+                	    __, __, __, __, __, __, __, __,
+                	    __, __, __, __, __, __, __, __,
+                	    __, __, __, __, __, __, __, __,
+                	    __, __, __, __, __, __, __, __,
+                	    __, __, __, __, __, __, __, __,
+                	    WR, __, __, __, WK, __, __, WR
+                       ),
+                    Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.KingsideCastling)),
+                        ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.KingsideCastling)))(j % 4)),
+                // Ruch królem.
+                (
+                    NormalMove(Piece.King, Square(0, 4), Square(0, 5), PieceOption.None),
+                    Seq(BR, __, __, __, __, BK, __, BR,
+                        BP, __, __, __, __, __, __, BP,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        __, __, __, __, __, __, __, __,
+                        WR, __, __, __, WK, __, __, WR
+                	    ),
+                    Seq(((oppCastling, Castling.NoneCastling),      (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.KingsideCastling),  (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.QueensideCastling), (oppCastling, Castling.NoneCastling)),
+                        ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.NoneCastling)))(j % 4))
+                )(i)
             )
     }
     val fullmoveNumber2 = side match {
@@ -988,7 +997,7 @@ class BoardTest extends Properties("Board")
   
   // Bicia wież dla roszad.
   
-  val lostCastlingsGen = Gen.choose(0, 4).map6(Gen.choose(0, 255), sideGen, castlingGen, halfmoveClockGen, fullmoveNumberGen)(lostCastlingsFun)
+  val lostCastlingsGen = Gen.choose(0, 1).map6(Gen.choose(0, 255), sideGen, castlingGen, halfmoveClockGen, fullmoveNumberGen)(lostCastlingsFun)
 
   def lostCastlingsFun(i: Int, j: Int, side: Side, oppCastling: Castling, halfmoveClock: Int, fullmoveNumber: Int) = {
     val (pieces, (move, pieces2, (castling, castling2))) = side match {
@@ -1008,7 +1017,7 @@ class BoardTest extends Properties("Board")
             Seq(
                 // Bicie prawą wieży.
                 (
-                    Capture(Piece.Bishop, Square(5, 2), Square(0, 7), PieceOption.None), 
+                    newCapture(Piece.Bishop, Square(5, 2), Square(0, 7), PieceOption.None), 
                     Seq(BR, __, __, __, BK, __, __, WB,
                     	BP, __, __, __, __, __, __, BP,
                     	__, __, __, __, __, __, __, __,
@@ -1024,7 +1033,7 @@ class BoardTest extends Properties("Board")
                         ((oppCastling, Castling.AllCastling),       (oppCastling, Castling.QueensideCastling)))(j % 4)),
                 // Bicie lewą wieżą.
                 (
-                    Capture(Piece.Rook, Square(5, 5), Square(0, 0), PieceOption.None),
+                    newCapture(Piece.Bishop, Square(5, 5), Square(0, 0), PieceOption.None),
                     Seq(WB, __, __, __, BK, __, __, BR,
                         BP, __, __, __, __, __, __, BP,
                         __, __, __, __, __, __, __, __,
@@ -1056,7 +1065,7 @@ class BoardTest extends Properties("Board")
             Seq(
                 // Ruch prawą wieżą.
                 (
-                	Capture(Piece.Bishop, Square(2, 2), Square(7, 7), PieceOption.None), 
+                	newCapture(Piece.Bishop, Square(2, 2), Square(7, 7), PieceOption.None), 
                     Seq(BR, __, __, __, BK, __, __, BR,
                     	__, __, __, __, __, __, __, __,
                     	__, __, __, __, __, BB, __, __,
@@ -1072,7 +1081,7 @@ class BoardTest extends Properties("Board")
                     	((Castling.AllCastling, oppCastling),       (Castling.QueensideCastling, oppCastling)))(j % 4)),
                 // Ruch lewą wieżą.
                 (
-                    Capture(Piece.Bishop, Square(2, 5), Square(7, 0), PieceOption.None), 
+                    newCapture(Piece.Bishop, Square(2, 5), Square(7, 0), PieceOption.None), 
                     Seq(BR, __, __, __, BK, __, __, BR,
                         __, __, __, __, __, __, __, __,
                         __, __, BB, __, __, __, __, __,
@@ -1112,7 +1121,7 @@ class BoardTest extends Properties("Board")
     }.getOrElse(z)
   }
   
-  Seq(("normal moves", movesGen),
+  Seq(("normal moves and captures", movesGen),
       ("promotions", promotionsGen),
       ("en passants", enPassantsGen),
       ("castlings", castlingsGen),
@@ -1210,4 +1219,21 @@ class BoardTest extends Properties("Board")
         foldSuccessorPropForIllegalMoves(gen)(foldSuccessorForUnsafeMakeMove)
     }
   }
+  
+  def stringToPieces(s: String) = s.split(", ").map {
+      case "_" => SidePieceOption.None
+      case "P" => SidePieceOption.WhitePawn
+      case "N" => SidePieceOption.WhiteKnight
+      case "B" => SidePieceOption.WhiteBishop
+      case "R" => SidePieceOption.WhiteRook
+      case "Q" => SidePieceOption.WhiteQueen
+      case "K" => SidePieceOption.WhiteKing
+      case "p" => SidePieceOption.BlackPawn
+      case "n" => SidePieceOption.BlackKnight
+      case "b" => SidePieceOption.BlackBishop
+      case "r" => SidePieceOption.BlackRook
+      case "q" => SidePieceOption.BlackQueen
+      case "k" => SidePieceOption.BlackKing
+      case _   => throw new Exception
+    }.toSeq
 }

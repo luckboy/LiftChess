@@ -1,11 +1,30 @@
 package pl.luckboy.liftchess.engine
 
-case class SquareOption(sq: Int)
+/** Klasa pola opcjonalnego.
+ * 
+ * @author Łukasz Szpakowski
+ */
+class SquareOption private(val id: Int, val name: String) extends EnumValue
 {
-  def foldLeft[T](z: T)(f: (T, Int) => T): T = throw new Exception
+  def square =
+    id
+  
+  def foldLeft[T](z: T)(f: (T, Int) => T): T = 
+    if(id == -1) z else f(z, id)    
 }
 
+/** Singleton pola opcjonalnego.
+ * 
+ * @author Łukasz Szpakowski
+ */
 object SquareOption
 {
-  val None = SquareOption(-1)
+  val None = new SquareOption(-1, "-")
+  
+  private val Values = (0 to 63).map { 
+    sq => new SquareOption(sq, ('a' to 'h')(Square.toColumn(sq)).toString + (8 - Square.toRow(sq)))
+  }
+  
+  def apply(sq: Int) =
+    Values(sq)
 }
