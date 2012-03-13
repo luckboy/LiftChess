@@ -620,17 +620,17 @@ class BoardTest extends Properties("Board")
   
   def movesFun(i: Int, side: Side, piece: Piece, spos: Seq[SidePieceOption], halfmoveClock: Int, fullmoveNumber: Int) = {
     val s0 = SidePieceOption.fromSideAndPiece(side, piece)
-    val Seq(o1, o2, o3, o4, o5, o6, s1, s2, s3) = spos
+    val Seq(o1, o2, o3, o4, o5, ok, s1, s2, sk) = spos
     import scala.collection.mutable.Seq
     val pieces = Seq(
-        __, __, __, __, __, __, __, s3,
+        __, __, __, __, __, __, __, sk,
         __, __, o1, __, __, __, __, __,
         s2, o2, __, __, o3, __, __, __,
         __, __, __, s0, __, __, o5, __,
         __, __, __, __, __, __, __, __,
         __, __, __, __, __, s1, __, __,
         o4, __, __, __, __, __, __, __,
-        __, __, __, __, o6, __, __, __
+        __, __, __, __, ok, __, __, __
         )
     val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
     val src = Square(3, 3)
