@@ -581,7 +581,7 @@ class BoardTest extends Properties("Board")
             val aBd = newBoardTupled(ba)
             val res = boardTest(aBd, ba)
             val res2 = foldSuccessor(aBd)(move)(true) { (_, _) => false }
-            res && boardTest(aBd, ba)
+            res && res2 && boardTest(aBd, ba)
         }
     }
   }
