@@ -638,7 +638,7 @@ class BoardTest extends Properties("Board")
     val src = Square(3, 3)
 
     val n = Square.foldMoveSquares(src, side, piece)(0) { (_, sq) => pieces(sq).isNone } { (n, _) => n + 1 } { (n, _) => n + 1 }
-    val (dst, _) = Square.foldMoveSquares(src, side, piece)(0, 0) { (_, sq) => pieces(sq).isNone } { 
+    val (dst, _) = Square.foldMoveSquares(src, side, piece)(-1, 0) { (_, sq) => pieces(sq).isNone } { 
       case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
     } {
       case ((oldDst, j), dst) => ((if(j == i % n) dst else oldDst), j + 1)
@@ -659,6 +659,50 @@ class BoardTest extends Properties("Board")
     
     val move = newMoveOrCapture(piece, src, dst, PieceOption.None, ba)
     
+    val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock2, fullmoveNumber2)
+        
+    (ba, List((move, ba2)))
+  }
+  
+  // Ruchy króla.
+  
+  def kingMovesGen = Gen.choose(0, 4).map4(sideGen, halfmoveClockGen, fullmoveNumberGen) {
+    (i, side, halfmoveClock, fullmoveNumber) => kingMovesFun(i, side, halfmoveClock, fullmoveNumber)
+  }
+  
+  def kingMovesFun(i: Int, side: Side, halfmoveClock: Int, fullmoveNumber: Int) = {
+    val piece = SidePieceOption.fromSideAndPiece(side, Piece.King)
+    val sk = piece    
+    val ob = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Bishop)
+    val or = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Rook)
+    val ok = SidePieceOption.fromSideAndPiece(side.opposite, Piece.King)
+    import scala.collection.mutable.Seq
+    val pieces = Seq(
+        __, __, __, __, __, __, __, __,
+        __, __, __, __, __, __, __, __,
+        __, ob, __, __, __, __, __, __,
+        __, __, sk, or, __, __, __, __,
+        __, ob, __, __, __, __, __, __,
+        __, __, __, __, __, __, __, __,
+        __, __, __, __, __, __, __, __,
+        __, __, __, __, __, ok, __, __
+        )
+    val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+    val src = Square(3, 2)
+    val dst = Seq(Square(2, 1), Square(2, 2), Square(3, 3), Square(4, 1), Square(4, 2))(i)
+
+    val pieces2 = pieces.clone()
+    pieces2(src) = SidePieceOption.None
+    pieces2(dst) = piece 
+    
+    val halfmoveClock2 = if(pieces(dst) == SidePieceOption.None) (halfmoveClock + 1) else 0
+    val fullmoveNumber2 = side match {
+       case Side.White => fullmoveNumber
+       case Side.Black => fullmoveNumber + 1
+    }
+    
+    val move = newMoveOrCapture(Piece.King, src, dst, PieceOption.None, ba)
+
     val ba2 = (pieces2.toSeq, side.opposite, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock2, fullmoveNumber2)
         
     (ba, List((move, ba2)))
@@ -1122,6 +1166,7 @@ class BoardTest extends Properties("Board")
   }
   
   Seq(("normal moves and captures", movesGen),
+      ("king moves", kingMovesGen),
       ("promotions", promotionsGen),
       ("en passants", enPassantsGen),
       ("castlings", castlingsGen),

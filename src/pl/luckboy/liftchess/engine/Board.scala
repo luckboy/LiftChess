@@ -381,20 +381,20 @@ class Board private(
     val src = move.source
     val dst = move.destination
     val savedDstPiece = mPieces(dst)
+    val savedDstSListIndex = mSListIndexes(dst)
     
     // Bierki.
     mPieces(dst) = SidePieceOption.fromSideAndPiece(side, move.promotionPiece.foldLeft(piece) { (_, promPiece) => promPiece })
     mPieces(src) = SidePieceOption.None
+    // Lista.
+    if(mSListIndexes(dst) != -1) mSList(mSListIndexes(dst)) = -1
+    mSList(mSListIndexes(src)) = dst
+    mSListIndexes(dst) = mSListIndexes(src)
+    mSListIndexes(src) = -1
     if(!inCheckNoCache) {
       val savedWhiteCastling = mCastlingArray(Square(7, 0)) | mCastlingArray(Square(7, 7))
       val savedBlackCastling = mCastlingArray(Square(0, 0)) | mCastlingArray(Square(0, 7))
-      val savedDstSListIndex = mSListIndexes(dst)
       
-      // Lista.
-      if(mSListIndexes(dst) != -1) mSList(mSListIndexes(dst)) = -1
-      mSList(mSListIndexes(src)) = dst
-      mSListIndexes(dst) = mSListIndexes(src)
-      mSListIndexes(src) = -1
       // Roszady.
       mCastlingArray(dst) = Castling.NoneCastling
       mCastlingArray(src) = Castling.NoneCastling
@@ -434,6 +434,12 @@ class Board private(
       mSide = mSide.opposite
       savedWhiteCastling.id | (savedBlackCastling.id << 4) | ((savedDstSListIndex & 255) << 8) | (savedDstPiece.id << 16)
     } else {
+      // Lista.
+      mSListIndexes(src) = mSListIndexes(dst)
+      mSListIndexes(dst) = savedDstSListIndex
+      mSList(mSListIndexes(src)) = src
+      if(mSListIndexes(dst) != -1) mSList(mSListIndexes(dst)) = dst
+      // Bierki.
       mPieces(src) = SidePieceOption.fromSideAndPiece(side, piece)
       mPieces(dst) = savedDstPiece
       -1
