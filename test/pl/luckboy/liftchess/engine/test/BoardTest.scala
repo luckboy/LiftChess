@@ -9,7 +9,6 @@ class BoardTest extends Properties("Board")
 {
   // TODO Dodać generatory combinacji dla wykonywania ruchów.
   // TODO Dodać generatory nielegalnych roszad.
-  // TODO Dodać testy dla ruchów dla króla (poprzednie nie były dobre).
   // TODO Posprawdzać dobrze testy.
   
   //
