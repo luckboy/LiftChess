@@ -8,7 +8,6 @@ import pl.luckboy.liftchess.engine._
 class BoardTest extends Properties("Board")
 {
   // TODO Dodać generatory combinacji dla wykonywania ruchów.
-  // TODO Dodać generatory nielegalnych roszad.
   // TODO Posprawdzać dobrze testy.
   
   //
@@ -665,9 +664,7 @@ class BoardTest extends Properties("Board")
   
   // Ruchy króla.
   
-  def kingMovesGen = Gen.choose(0, 4).map4(sideGen, halfmoveClockGen, fullmoveNumberGen) {
-    (i, side, halfmoveClock, fullmoveNumber) => kingMovesFun(i, side, halfmoveClock, fullmoveNumber)
-  }
+  def kingMovesGen = Gen.choose(0, 4).map4(sideGen, halfmoveClockGen, fullmoveNumberGen)(kingMovesFun)
   
   def kingMovesFun(i: Int, side: Side, halfmoveClock: Int, fullmoveNumber: Int) = {
     val piece = SidePieceOption.fromSideAndPiece(side, Piece.King)
@@ -1251,9 +1248,54 @@ class BoardTest extends Properties("Board")
     }
     (ba, moves)
   }
+
+  val illegalCastlingsGen = Gen.choose(0, 4).map5(Gen.choose(0, 2), sideGen, halfmoveClockGen, fullmoveNumberGen)(illegalCastlingsFun)
+  
+  def illegalCastlingsFun(i: Int, j: Int, side: Side, halfmoveClock: Int, fullmoveNumber: Int) = {
+    val Seq(b1, b2, b3, b4, b5) = (0 to 4).map { 
+      k => if(k == i) SidePieceOption.fromSideAndPiece(side.opposite, Piece.Bishop) else SidePieceOption.None
+    }.toSeq
+    val Seq(r1, r2, r3, r4, r5) = (0 to 4).map { 
+      k => if(k == i) SidePieceOption.fromSideAndPiece(side.opposite, Piece.Rook) else SidePieceOption.None
+    }.toSeq
+    val (moves, sideCastling) = (
+        Seq.fill(2)(Set(QueensideCastling()), Seq(Castling.QueensideCastling, Castling.AllCastling)(j % 2)) ++
+        Seq((Set(QueensideCastling(), KingsideCastling()), Castling.AllCastling)) ++
+        Seq.fill(2)(Set(KingsideCastling()), Seq(Castling.KingsideCastling, Castling.AllCastling)(j % 2))
+        ).apply(i)
+    val castling = side match {
+      case Side.White => (sideCastling, Castling.NoneCastling)
+      case Side.Black => (Castling.NoneCastling, sideCastling)
+    }
+    val pieces = side match {
+      case Side.White =>
+        Seq(__, __, __, __, BK, __, r4, __,
+            __, __, __, r2, __, __, __, __,
+            __, __, __, __, __, __, __, __,
+            __, __, __, __, __, __, __, __,
+            __, __, __, __, __, __, __, b3,
+            b1, __, __, __, __, __, __, b5,
+            WP, __, __, __, __, __, __, WP,
+            WR, __, __, __, WK, __, __, WR
+            )
+      case Side.Black =>
+        Seq(BR, __, __, __, BK, __, __, BR,
+            BP, __, __, __, __, __, __, BP,
+            b1, __, __, __, __, __, __, __,
+            b2, __, b4, __, __, __, __, __,
+            b3, __, __, __, __, __, __, __,
+            __, __, __, __, __, __, __, __,
+            __, __, __, __, __, __, __, __,
+            __, __, __, __, WK, __, r5, __
+            )
+    }
+    val ba = (pieces, side, castling, SquareOption.None, halfmoveClock, fullmoveNumber)
+    (ba, moves)
+  }  
   
   Seq(("illegal king moves", illegalKingMovesGen),
-      ("illegal king exposures", illegalKingExposuresGen)
+      ("illegal king exposures", illegalKingExposuresGen),
+      ("illegal castlings", illegalCastlingsGen)
       ).foreach {
     case (name, gen) => {
       property("unsafeFoldSuccessor for " + name + " should make move and undo move") =
