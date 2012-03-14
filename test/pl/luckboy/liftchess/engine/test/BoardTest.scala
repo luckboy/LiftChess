@@ -7,7 +7,6 @@ import pl.luckboy.liftchess.engine._
 @RunWith(classOf[org.scalacheck.contrib.ScalaCheckJUnitPropertiesRunner])
 class BoardTest extends Properties("Board")
 {
-  // TODO Dodać generatory combinacji dla wykonywania ruchów.
   // TODO Posprawdzać dobrze testy.
   
   //
@@ -834,7 +833,7 @@ class BoardTest extends Properties("Board")
     (ba, List((move, ba2), (move2, ba3)))
   }
   
-  // Roszada
+  // Roszada.
   
   val castlingsGen = Gen.choose(0, 4).map6(Gen.choose(0, 255), sideGen, castlingGen, halfmoveClockGen, fullmoveNumberGen)(castlingsFun)
   
@@ -1148,6 +1147,139 @@ class BoardTest extends Properties("Board")
     (ba, List((move, ba2)))
   }
     
+  // Kombinacje.
+  
+  val combinationsGen = {
+    sideGen.flatMap {
+      side => 
+        val obPieceGen = Gen.oneOf(Piece.Bishop, Piece.Queen)
+        val orPieceGen = Gen.oneOf(Piece.Rook, Piece.Queen)
+        val sbPieceGen = Gen.oneOf(Piece.Bishop, Piece.Queen)
+        val srPieceGen = Gen.oneOf(Piece.Rook, Piece.Queen)
+        obPieceGen.map6(orPieceGen, sbPieceGen, srPieceGen, halfmoveClockGen, fullmoveNumberGen) { 
+          (obPiece, orPiece, sbPiece, srPiece, halfmoveClock, fullmoveNumbe) =>
+            combinationsFun(side, obPiece, orPiece, sbPiece, srPiece, halfmoveClock, fullmoveNumbe)
+        }
+    }
+  }
+  
+  def combinationsFun(side: Side, obPiece: Piece, orPiece: Piece, sbPiece: Piece, srPiece: Piece, halfmoveClock: Int, fullmoveNumber: Int) = {
+    val op = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn)
+    val on = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Knight)
+    val ob = SidePieceOption.fromSideAndPiece(side.opposite, obPiece)
+    val or = SidePieceOption.fromSideAndPiece(side.opposite, orPiece)
+    val sb = SidePieceOption.fromSideAndPiece(side, sbPiece)
+    val sr = SidePieceOption.fromSideAndPiece(side, srPiece)
+    val pieces = Seq(
+        __, __, __, __, __, __, __, BK,
+        __, __, __, __, ob, __, __, __,
+        __, __, __, __, __, __, __, __,
+        __, __, op, __, __, sr, __, __,
+        __, __, __, __, __, __, __, __,
+        sb, __, __, on, __, __, __, __,
+        sr, __, op, __, or, __, __, __,
+        __, __, __, __, __, __, __, WK
+        )
+    val mpfs = List(
+        // bicie goncem (1).
+        (
+        	newCapture(sbPiece, Square(5, 0), Square(3, 2), PieceOption.None),
+        	Seq(__, __, __, __, __, __, __, BK,
+        	    __, __, __, __, ob, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, sb, __, __, sr, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, __, on, __, __, __, __,
+        	    sr, __, op, __, or, __, __, __,
+        	    __, __, __, __, __, __, __, WK
+        	    ),
+        	side.opposite,
+        	fullmoveNumber + (if(side == Side.Black) 1 else 0)
+            ),
+        // bicie skonczkiem (2).
+        (
+        	newCapture(Piece.Knight, Square(5, 3), Square(3, 2), PieceOption.None),
+        	Seq(__, __, __, __, __, __, __, BK,
+        	    __, __, __, __, ob, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, on, __, __, sr, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    sr, __, op, __, or, __, __, __,
+        	    __, __, __, __, __, __, __, WK
+        	    ),
+        	side,
+        	fullmoveNumber + 1
+            ),
+        // bicie wieżą (3).
+        (
+        	newCapture(srPiece, Square(6, 0), Square(6, 2), PieceOption.None),
+        	Seq(__, __, __, __, __, __, __, BK,
+        	    __, __, __, __, ob, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, on, __, __, sr, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, sr, __, or, __, __, __,
+        	    __, __, __, __, __, __, __, WK
+        	    ),
+        	side.opposite,
+        	fullmoveNumber + 1 + (if(side == Side.Black) 1 else 0)
+            ),
+        // bicie wieżą (4).
+        (
+        	newCapture(orPiece, Square(6, 4), Square(6, 2), PieceOption.None),
+        	Seq(__, __, __, __, __, __, __, BK,
+        	    __, __, __, __, ob, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, on, __, __, sr, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, or, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, WK
+        	    ),
+        	side,
+        	fullmoveNumber + 2
+            ),
+        // bicie wieżą (5).
+        (
+        	newCapture(srPiece, Square(3, 5), Square(3, 2), PieceOption.None),
+        	Seq(__, __, __, __, __, __, __, BK,
+        	    __, __, __, __, ob, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, sr, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, or, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, WK
+        	    ),
+        	side.opposite,
+        	fullmoveNumber + 2 + (if(side == Side.Black) 1 else 0)
+            ),
+        // nicie goncem (6).
+        (
+        	newCapture(obPiece, Square(1, 4), Square(3, 2), PieceOption.None),
+        	Seq(__, __, __, __, __, __, __, BK,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, ob, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, __,
+        	    __, __, or, __, __, __, __, __,
+        	    __, __, __, __, __, __, __, WK
+        	    ),
+        	side,
+        	fullmoveNumber + 3
+            )
+        )
+    val ba = (pieces, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+    val mbas = mpfs.map {
+      case (move, pieces2, side2, fullmoveNumber2) =>
+        (move, (pieces2, side2, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, fullmoveNumber2))
+    }
+    (ba, mbas)
+  }
+  
   //
   // Testy wykonywania legalnych ruchów.
   //
@@ -1166,7 +1298,8 @@ class BoardTest extends Properties("Board")
       ("promotions", promotionsGen),
       ("en passants", enPassantsGen),
       ("castlings", castlingsGen),
-      ("lost castlings", lostCastlingsGen)
+      ("lost castlings", lostCastlingsGen),
+      ("combinations", combinationsGen)
       ).foreach {
     case (name, gen) => {
       property("unsafeFoldSuccessor for " + name + " should make move and undo move") =
