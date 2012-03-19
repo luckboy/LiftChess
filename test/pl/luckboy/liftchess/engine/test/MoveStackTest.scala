@@ -8,9 +8,50 @@ class MoveStackTest extends Properties("MoveStack")
 {
   import TestHelper._
 
+  val enPassantsGen = {
+    Gen.choose(0, 7).map5(Gen.listOfN(2, Gen.oneOf(false, true)), sideGen, halfmoveClockGen, fullmoveNumberGen) {
+      case (col, bs, side, halfmoveClock, fullmoveNumber) =>
+        import scala.collection.mutable.Seq
+        val pieces = (
+            Seq.fill(7)(SidePieceOption.None) ++ Seq(SidePieceOption.BlackKing) ++
+            Seq.fill(6 * 8)(SidePieceOption.None) ++
+            Seq.fill(7)(SidePieceOption.None) ++ Seq(SidePieceOption.WhiteKing)
+        	)
+        side match {
+          case Side.White =>
+            pieces(Square(3, col)) = SidePieceOption.BlackPawn
+            Square.foldPawnCaptureSquares(Square(2, col), Side.Black)(0) { (_, _) => true } {
+              (i, src) => if(bs(i)) pieces(src) = SidePieceOption.WhitePawn; i + 1
+            }
+          case Side.Black =>
+            pieces(Square(4, col)) = SidePieceOption.WhitePawn
+            Square.foldPawnCaptureSquares(Square(5, col), Side.White)(0) { (_, _) => true } {
+              (i, src) => if(bs(i)) pieces(src) = SidePieceOption.BlackPawn; i + 1
+            }
+        }
+        val (tmpEnPassant, moves) = side match {
+          case Side.White =>
+            (
+                SquareOption(Square(2, col)), 
+                Square.foldPawnCaptureSquares(Square(2, col), Side.Black)((Set[Move](), 0)) { (_, _) => true } {
+                  case ((moves, i), src) => (if(bs(i)) moves + EnPassant(src, Square(2, col)) else moves, i + 1)
+                }._1)
+          case Side.Black =>
+            (
+                SquareOption(Square(5, col)),
+                Square.foldPawnCaptureSquares(Square(5, col), Side.White)((Set[Move](), 0)) { (_, _) => true } {
+                  case ((moves, i), src) => (if(bs(i)) moves + EnPassant(src, Square(5, col)) else moves, i + 1)
+                }._1)
+        }
+        val enPassant = if(moves.isEmpty) SquareOption.None else tmpEnPassant
+        val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), enPassant, halfmoveClock, fullmoveNumber)
+        (ba, moves, moves, (move: Move) => move.moveType == MoveType.EnPassant)
+    }
+  }
+  
   val castlingsGen = {
     sideGen.flatMap {
-      (side) =>
+      side =>
         val spoGen = Gen.oneOf(
             SidePieceOption.fromSideAndPiece(side, Piece.Knight),
             SidePieceOption.fromSideAndPiece(side, Piece.Bishop),
@@ -71,7 +112,8 @@ class MoveStackTest extends Properties("MoveStack")
   }  
   
 //  Seq[(String, Gen[(BoardArgs, Set[Move], Set[Move])], (Set[Move], Set[Move]) => Boolean)](
-  Seq(("castlings", castlingsGen)
+  Seq(("en passants", enPassantsGen),
+      ("castlings", castlingsGen)
       ).foreach {
     case (name, gen) => {
       property("generatePseudoLegalMoves for " + name + " should return moves") = Prop.forAllNoShrink(gen) {
