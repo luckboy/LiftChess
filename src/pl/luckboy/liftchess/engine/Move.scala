@@ -24,7 +24,7 @@ object MoveType
   val KingsideCastling = new MoveType(3, "KingsideCastling")
   val QueensideCastling = new MoveType(4, "QueensideCastling")
   
-  val Values = Array(NormalMove, EnPassant, KingsideCastling, QueensideCastling)
+  val Values = Array(NormalMove, Capture, EnPassant, KingsideCastling, QueensideCastling)
   
   def apply(id: Int): MoveType =
     Values(id)

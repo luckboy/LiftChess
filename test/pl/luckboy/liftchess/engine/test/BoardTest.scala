@@ -7,13 +7,13 @@ import pl.luckboy.liftchess.engine._
 @RunWith(classOf[org.scalacheck.contrib.ScalaCheckJUnitPropertiesRunner])
 class BoardTest extends Properties("Board")
 {
+  import TestHelper._
+  
   // TODO Posprawdzać dobrze testy.
   
   //
   // Generatory.
   //
-  
-  type BoardArgs = (Seq[SidePieceOption], Side, (Castling, Castling), SquareOption, Int, Int)
   
   val piecesGen = {
     val wp = Gen.oneOf(
@@ -51,19 +51,8 @@ class BoardTest extends Properties("Board")
     }
   }
   
-  val sideGen = Gen.oneOf(Side.White, Side.Black)
-   
-  val halfmoveClockGen = Gen.choose(0, 99)
-
-  val fullmoveNumberGen = Gen.choose(1, 100)
-
   val boardArgsGen = piecesGen.map6(sideGen, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClockGen, fullmoveNumberGen) { case args => args }
-
-  val pieceGen = Gen.oneOf(Piece.Pawn, Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen, Piece.King)  
-  
-  def newBoardTupled(args: BoardArgs) =
-    (Board.apply _).tupled(args)
-     
+       
   //
   // Testy.
   //
@@ -158,31 +147,9 @@ class BoardTest extends Properties("Board")
 
   property("side should return side") =
     Prop.forAllNoShrink(boardArgsGen) { args => newBoardTupled(args).side == args._2 }
-  
-  val __ = SidePieceOption.None
-
-  val WP = SidePieceOption.WhitePawn
-  val WN = SidePieceOption.WhiteKnight
-  val WB = SidePieceOption.WhiteBishop
-  val WR = SidePieceOption.WhiteRook
-  val WQ = SidePieceOption.WhiteQueen
-  val WK = SidePieceOption.WhiteKing
-
-  val BP = SidePieceOption.BlackPawn
-  val BN = SidePieceOption.BlackKnight
-  val BB = SidePieceOption.BlackBishop
-  val BR = SidePieceOption.BlackRook
-  val BQ = SidePieceOption.BlackQueen
-  val BK = SidePieceOption.BlackKing
-  
+    
   val castlingPiecesGen = Gen.value(Seq(BR, __, __, __, BK, __, __, BR) ++ Seq.fill(6 * 8)(SidePieceOption.None) ++ Seq(WR, __, __, __, WK, __, __, WR))
   
-  val castlingGen = Gen.oneOf(
-      Castling.NoneCastling,
-      Castling.KingsideCastling,
-      Castling.QueensideCastling,
-      Castling.AllCastling)
-
   val castlingBoardArgsGen = castlingPiecesGen.map6(sideGen, castlingGen.map2(castlingGen) { case p => p }, SquareOption.None, halfmoveClockGen, fullmoveNumberGen) { case args => args }
   
   property("castling should return castling") = 
@@ -482,17 +449,7 @@ class BoardTest extends Properties("Board")
   //
   // Fukcje dla testów wykonywania ruchów.
   //
-  
-  def newCapture(piece: Piece, src: Int, dst: Int, promPiece: PieceOption) = 
-    Capture(piece, src, dst, promPiece)
     
-  def newMoveOrCapture(piece: Piece, src: Int, dst: Int, promPiece: PieceOption, args: BoardArgs) = {
-    args._1(dst) match {
-      case SidePieceOption.None => NormalMove(piece, src, dst, promPiece)
-      case _                    => Capture(piece,src, dst, promPiece)
-    }
-  }
-  
   def boardTest(bd: Board, args: BoardArgs) = {
     val (aPieces, aSide, aCastling, aEnPassant, aHalfmoveClock, aFullmoveNumber) = args
    

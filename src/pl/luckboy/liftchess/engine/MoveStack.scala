@@ -86,7 +86,7 @@ class MoveStack(maxDepth: Int, maxMoves: Int)
       if(bd(Square(row1, 5)) == SidePieceOption.None && bd(Square(row1, 6)) == SidePieceOption.None)
         pushMove(Piece.King, 4, 6, PieceOption.None, MoveType.KingsideCastling)
     // Roszada długa.
-    if((bd.castling(side) & Castling.KingsideCastling) != Castling.NoneCastling)
+    if((bd.castling(side) & Castling.QueensideCastling) != Castling.NoneCastling)
       if(bd(Square(row1, 1)) == SidePieceOption.None && bd(Square(row1, 2)) == SidePieceOption.None && bd(Square(row1, 3)) == SidePieceOption.None)
         pushMove(Piece.King, 4, 2, PieceOption.None, MoveType.QueensideCastling)
     // Inne ruchy.

@@ -7,6 +7,8 @@ import pl.luckboy.liftchess.engine._
 @RunWith(classOf[org.scalacheck.contrib.ScalaCheckJUnitPropertiesRunner])
 class SquareTest extends Properties("Square")
 {
+  import TestHelper._
+  
   property("apply should return square of row and column") =
 	Prop.forAllNoShrink(Gen.choose(0, 7), Gen.choose(0, 7)) {
 	  (row, col) => Square(row, col) == (row * 8) + col
@@ -173,10 +175,6 @@ class SquareTest extends Properties("Square")
   val queenMoveSquareMarks = 
     slidingMoveSquareMarks(Seq((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))) _
     
-  val squareGen = Gen.choose(0, 63) 
-  
-  val sideGen = Gen.value(Side.White) | Gen.value(Side.Black)
-
   property("foldPawnCaptureSquares should return square set") =
     Prop.forAllNoShrink(squareGen, sideGen) {
       (sq, side) =>
