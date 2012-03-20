@@ -8,6 +8,70 @@ class MoveStackTest extends Properties("MoveStack")
 {
   import TestHelper._
 
+  val movesGen = {
+    sideGen.flatMap {
+      side =>
+        val ssGen = Gen.listOfN(2, Gen.oneOf(
+            SidePieceOption.fromSideAndPiece(side, Piece.Bishop),
+            SidePieceOption.fromSideAndPiece(side, Piece.Rook),
+            SidePieceOption.fromSideAndPiece(side, Piece.Queen)
+            ))
+        val osGen = Gen.listOfN(5, Gen.oneOf(
+            SidePieceOption.None,
+            SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn),
+            SidePieceOption.fromSideAndPiece(side.opposite, Piece.Knight),
+            SidePieceOption.fromSideAndPiece(side.opposite, Piece.Bishop),
+            SidePieceOption.fromSideAndPiece(side.opposite, Piece.Rook),
+            SidePieceOption.fromSideAndPiece(side.opposite, Piece.Queen)
+            ))
+        ssGen.map4(osGen, halfmoveClockGen, fullmoveNumberGen) {
+          (ss, os, halfmoveClock, fullmoveNumber) =>
+            val Seq(s1, s2) = ss
+            val Seq(o1, o2, o3, o4, o5) = os
+            val pieces = side match {
+              case Side.White => 
+                Seq(__, __, __, __, BK, __, __, __,
+                    __, __, __, o5, __, o1, __, __,
+                    __, __, o2, __, __, __, __, __,
+                    __, __, __, __, WN, __, __, __,
+                    __, s1, __, __, o4, __, s2, __,
+                    WP, __, o3, __, WP, __, __, __,
+                    __, __, __, WP, __, WP, __, __,
+                    __, __, __, __, WK, __, __, __
+                    )
+              case Side.Black =>
+                Seq(__, __, __, __, BK, __, __, __,
+                    __, __, __, BP, __, BP, __, __,
+                    BP, __, o3, __, BP, __, __, __,
+                    __, s1, __, __, o4, __, __, __,
+                    __, __, __, __, BN, __, s2, __,
+                    __, __, o2, __, __, __, __, __,
+                    __, __, __, o4, __, o1, __, __,
+                    __, __, __, __, WK, __, __, __
+                    )
+            }
+            val ba = (pieces, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+            val (moves, captures) = (0 to 63).filter { src => pieces(src).isSide(side) }.foldLeft(Set[Move](), Set[Move]()) {
+              case ((moves, captures), src) =>
+                pieces(src).foldPiece(moves, captures) {
+                  case ((moves, captures), piece) =>
+                    Square.foldMoveSquares(src, side, piece)(moves, captures) { (_, dst) => pieces(dst).isNone } {
+                      case ((moves, captures), dst) => 
+                        (moves + NormalMove(piece, src, dst, PieceOption.None), captures)
+                    } {
+                      case ((moves, captures), dst) =>
+                        if(pieces(dst).isSide(side.opposite))
+                          (moves, captures + Capture(piece, src, dst, PieceOption.None))
+                        else
+                          (moves, captures)
+                    }
+                }
+            }
+            (ba, moves ++ captures, captures, (move: Move) => true)
+        }
+    }
+  }
+  
   val promotionsGen = {
     val bsGen = Gen.listOfN(3, Gen.oneOf(false, true))
     val spoGen = Gen.oneOf(
@@ -172,7 +236,8 @@ class MoveStackTest extends Properties("MoveStack")
   }  
   
 //  Seq[(String, Gen[(BoardArgs, Set[Move], Set[Move])], (Set[Move], Set[Move]) => Boolean)](
-  Seq(("promotions", promotionsGen),
+  Seq(("normal moves and captures", movesGen),
+      ("promotions", promotionsGen),
       ("en passants", enPassantsGen),
       ("castlings", castlingsGen)
       ).foreach {
