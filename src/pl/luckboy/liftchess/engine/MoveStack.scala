@@ -124,7 +124,7 @@ class MoveStack(maxDepth: Int, maxMoves: Int)
       (_, src) =>
         bd(src).foldPiece(()) {
           (_, piece) => 
-            if(piece == Piece.Pawn)
+            if(piece == Piece.Pawn && Square.toRow(src) == promSrcRow)
               // Promocje.
               generatePseudoLegalPromotionsFrom(bd, src)
             else
@@ -172,7 +172,7 @@ class MoveStack(maxDepth: Int, maxMoves: Int)
 
   /** Liczba ruchów. */
   def size: Int =
-    mEndMoveIndex - mStartMoveIndex
+    (mEndMoveIndex - mStartMoveIndex) >> 1
   
   /** Podaje ruch o danym indeksie.
    * @param i			indeks.

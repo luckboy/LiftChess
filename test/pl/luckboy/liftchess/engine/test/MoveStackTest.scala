@@ -8,9 +8,69 @@ class MoveStackTest extends Properties("MoveStack")
 {
   import TestHelper._
 
+  val promotionsGen = {
+    val bsGen = Gen.listOfN(3, Gen.oneOf(false, true))
+    val spoGen = Gen.oneOf(
+        SidePieceOption.WhiteKnight,
+        SidePieceOption.WhiteBishop,
+        SidePieceOption.WhiteRook,
+        SidePieceOption.WhiteQueen,
+        SidePieceOption.BlackKnight,
+        SidePieceOption.BlackBishop,
+        SidePieceOption.BlackRook,
+        SidePieceOption.BlackQueen
+        )
+    val sposGen = Gen.listOfN(3, spoGen)
+    Gen.choose(0, 7).map6(bsGen, sposGen, sideGen, halfmoveClockGen, fullmoveNumberGen) {
+      (col, bs, spos, side, halfmoveClock, fullmoveNumber) =>
+        import scala.collection.mutable.Seq
+        val pieces = side match {
+          case Side.White =>
+            Seq.fill(6 * 8)(SidePieceOption.None) ++
+            Seq.fill(2)(SidePieceOption.WhitePawn) ++
+            Seq.fill(4)(SidePieceOption.None) ++
+            Seq.fill(2)(SidePieceOption.WhitePawn) ++
+            Seq(SidePieceOption.WhiteKing) ++
+            Seq.fill(6)(SidePieceOption.None) ++
+            Seq(SidePieceOption.BlackKing)
+          case Side.Black =>
+            Seq(SidePieceOption.WhiteKing) ++
+            Seq.fill(6)(SidePieceOption.None) ++
+            Seq(SidePieceOption.BlackKing) ++
+            Seq.fill(2)(SidePieceOption.BlackPawn) ++
+            Seq.fill(4)(SidePieceOption.None) ++
+            Seq.fill(2)(SidePieceOption.BlackPawn) ++
+            Seq.fill(6 * 8)(SidePieceOption.None)
+        }
+        val row = if(side == Side.White) 1 else 6
+        val src = Square(row, col)
+        pieces(src) = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
+        val captures = Square.foldPawnCaptureSquares(src, side)((Set[Move](), 0)) { (_, _) => true } {
+          case ((captures, i), dst) => 
+            if(bs(i) && spos(i).isSide(side.opposite)) {
+              pieces(dst) = spos(i)
+              (captures ++ Set(Capture(Piece.Pawn, src, dst, PieceOption.Queen), Capture(Piece.Pawn, src, dst, PieceOption.Knight)), i + 1)
+            } else {
+              (captures, i + 1)
+            }
+        }._1
+        val moves = Square.foldPawnMoveSquares(src, side)((Set[Move](), 2)) { (_, _) => true } {
+          case ((moves, i), dst) =>
+            if(bs(i)) {
+              (moves ++ Set(NormalMove(Piece.Pawn, src, dst, PieceOption.Queen), NormalMove(Piece.Pawn, src, dst, PieceOption.Knight)), i + 1)
+            } else {
+              pieces(dst) = spos(i)
+              (moves, i + 1)
+            }
+        }._1
+        val ba = (pieces.toSeq, side, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, halfmoveClock, fullmoveNumber)
+        (ba, moves ++ captures, moves ++ captures, (move: Move) => move.promotionPiece != PieceOption.None)
+    }
+  }
+  
   val enPassantsGen = {
     Gen.choose(0, 7).map5(Gen.listOfN(2, Gen.oneOf(false, true)), sideGen, halfmoveClockGen, fullmoveNumberGen) {
-      case (col, bs, side, halfmoveClock, fullmoveNumber) =>
+      (col, bs, side, halfmoveClock, fullmoveNumber) =>
         import scala.collection.mutable.Seq
         val pieces = (
             Seq.fill(7)(SidePieceOption.None) ++ Seq(SidePieceOption.BlackKing) ++
@@ -112,7 +172,8 @@ class MoveStackTest extends Properties("MoveStack")
   }  
   
 //  Seq[(String, Gen[(BoardArgs, Set[Move], Set[Move])], (Set[Move], Set[Move]) => Boolean)](
-  Seq(("en passants", enPassantsGen),
+  Seq(("promotions", promotionsGen),
+      ("en passants", enPassantsGen),
       ("castlings", castlingsGen)
       ).foreach {
     case (name, gen) => {
