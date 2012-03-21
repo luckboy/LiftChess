@@ -1,6 +1,7 @@
 package pl.luckboy.liftchess.engine.test
 import org.scalacheck._
 import org.junit.runner.RunWith
+import scala.util.Random
 import pl.luckboy.liftchess.engine._
 
 @RunWith(classOf[org.scalacheck.contrib.ScalaCheckJUnitPropertiesRunner])
@@ -273,4 +274,198 @@ class MoveStackTest extends Properties("MoveStack")
       }
     }
   }
+
+  val recMovesGen = {
+    Gen.value(()).map {
+      _ => {
+        // Pierwszy test.
+        val pieces1 = Seq(
+            BK, __, __, __, __, __, __, __,
+            __, __, __, __, __, __, __, __,
+            __, __, __, __, __, __, __, __,
+            __, __, __, __, __, __, __, __,            
+            __, __, __, BR, __, __, WP, __,
+            __, __, BP, __, __, __, __, WP,
+            __, __, __, __, WN, __, __, __,
+            __, __, __, __, __, __, __, WK
+            )
+        val moves1 = Set(
+            // pionki
+            NormalMove(Piece.Pawn, Square(4, 6), Square(3, 6), PieceOption.None),
+            NormalMove(Piece.Pawn, Square(5, 7), Square(4, 7), PieceOption.None),
+            // skoczek
+            Capture(Piece.Knight, Square(6, 4), Square(4, 3), PieceOption.None),
+            NormalMove(Piece.Knight, Square(6, 4), Square(4, 5), PieceOption.None),
+            Capture(Piece.Knight, Square(6, 4), Square(5, 2), PieceOption.None),
+            NormalMove(Piece.Knight, Square(6, 4), Square(5, 6), PieceOption.None),
+            NormalMove(Piece.Knight, Square(6, 4), Square(7, 2), PieceOption.None),
+            NormalMove(Piece.Knight, Square(6, 4), Square(7, 6), PieceOption.None),
+            // król            
+            NormalMove(Piece.King, Square(7, 7), Square(6, 6), PieceOption.None),
+            NormalMove(Piece.King, Square(7, 7), Square(6, 7), PieceOption.None),
+            NormalMove(Piece.King, Square(7, 7), Square(7, 6), PieceOption.None)
+        )
+        val captures1 = Set(
+            Capture(Piece.Knight, Square(6, 4), Square(4, 3), PieceOption.None),
+            Capture(Piece.Knight, Square(6, 4), Square(5, 2), PieceOption.None)
+            )
+        val test1 = ((pieces1, Side.White, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, 1), moves1, captures1)
+        // Drugi test.
+        val pieces2 = Seq(
+            __, __, __, __, BK, __, __, __,
+            __, __, __, __, __, BP, __, __,
+            __, __, BB, __, __, __, BP, __,
+            __, __, __, __, __, __, __, __,            
+            __, __, __, __, WP, __, __, __,
+            __, __, __, __, __, WP, __, __,
+            __, __, __, __, __, __, __, __,
+            __, __, __, __, WK, __, __, __
+            )
+        val moves2 = Set(
+            // pionki
+            NormalMove(Piece.Pawn, Square(1, 5), Square(2, 5), PieceOption.None),
+            NormalMove(Piece.Pawn, Square(1, 5), Square(3, 5), PieceOption.None),
+            NormalMove(Piece.Pawn, Square(2, 6), Square(3, 6), PieceOption.None),
+            // goniec
+            NormalMove(Piece.Bishop, Square(2, 2), Square(0, 0), PieceOption.None),
+            NormalMove(Piece.Bishop, Square(2, 2), Square(1, 1), PieceOption.None),
+            NormalMove(Piece.Bishop, Square(2, 2), Square(1, 3), PieceOption.None),
+            NormalMove(Piece.Bishop, Square(2, 2), Square(3, 1), PieceOption.None),            
+            NormalMove(Piece.Bishop, Square(2, 2), Square(4, 0), PieceOption.None),
+            NormalMove(Piece.Bishop, Square(2, 2), Square(3, 3), PieceOption.None),            
+            Capture(Piece.Bishop, Square(2, 2), Square(4, 4), PieceOption.None),
+            // król
+            NormalMove(Piece.King, Square(0, 4), Square(0, 3), PieceOption.None),
+            NormalMove(Piece.King, Square(0, 4), Square(0, 5), PieceOption.None),
+            NormalMove(Piece.King, Square(0, 4), Square(1, 3), PieceOption.None),
+            NormalMove(Piece.King, Square(0, 4), Square(1, 4), PieceOption.None)
+            )
+        val captures2 = Set(Capture(Piece.Bishop, Square(2, 2), Square(4, 4), PieceOption.None))
+        val test2 = ((pieces2, Side.Black, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, 1), moves2, captures2)
+        // Trzeci test.
+        val pieces3 = Seq(
+            __, __, __, __, BK, __, __, __,
+            BR, __, BB, __, __, __, __, __,
+            __, BN, __, __, __, __, __, __,
+            __, __, __, __, __, __, __, __,            
+            __, __, __, WP, __, __, __, __,
+            WR, __, WP, __, __, __, __, __,
+            __, __, __, __, __, __, __, __,
+            __, __, __, __, WK, __, __, WN
+            )
+        val moves3 = Set(
+            // pionki
+            NormalMove(Piece.Pawn, Square(5, 2), Square(4, 2), PieceOption.None),
+            NormalMove(Piece.Pawn, Square(4, 3), Square(3, 3), PieceOption.None),
+            // skoczek
+            NormalMove(Piece.Knight, Square(7, 7), Square(5, 6), PieceOption.None),
+            NormalMove(Piece.Knight, Square(7, 7), Square(6, 5), PieceOption.None),
+            // wieża
+            Capture(Piece.Rook, Square(5, 0), Square(1, 0), PieceOption.None),
+            NormalMove(Piece.Rook, Square(5, 0), Square(2, 0), PieceOption.None),
+            NormalMove(Piece.Rook, Square(5, 0), Square(3, 0), PieceOption.None),
+            NormalMove(Piece.Rook, Square(5, 0), Square(4, 0), PieceOption.None),
+            NormalMove(Piece.Rook, Square(5, 0), Square(5, 1), PieceOption.None),
+            NormalMove(Piece.Rook, Square(5, 0), Square(6, 0), PieceOption.None),
+            NormalMove(Piece.Rook, Square(5, 0), Square(7, 0), PieceOption.None),
+            // król
+            NormalMove(Piece.King, Square(7, 4), Square(6, 3), PieceOption.None),
+            NormalMove(Piece.King, Square(7, 4), Square(6, 4), PieceOption.None),
+            NormalMove(Piece.King, Square(7, 4), Square(6, 5), PieceOption.None),
+            NormalMove(Piece.King, Square(7, 4), Square(7, 3), PieceOption.None),
+            NormalMove(Piece.King, Square(7, 4), Square(7, 5), PieceOption.None)
+            )
+        val captures3 = Set(Capture(Piece.Rook, Square(5, 0), Square(1, 0), PieceOption.None))
+        val test3 = ((pieces3, Side.White, (Castling.NoneCastling, Castling.NoneCastling), SquareOption.None, 0, 1), moves3, captures3)
+        
+        (Random.shuffle(List(test1, test2, test3)), Random.shuffle(List(test1, test2, test3)))
+      }
+    }
+  }
+  
+  property("generatePseudoLegalMoves and popMoves should recursively push and pop nested moves") = 
+    Prop.forAllNoShrink(recMovesGen) { 
+      case (tests1, tests2) => {
+        val moveStack = new MoveStack(tests1.size.max(tests2.size), tests1.size.max(tests2.size) * 256)
+        Seq(tests1, tests2).forall {
+          tests =>
+            val res1 = tests.forall {
+              case (ba, moves, _) =>
+                moveStack.generatePseudoLegalMoves(newBoardTupled(ba))
+                (0 until moveStack.size).map(moveStack.move).toSet == moves
+            }
+            val res2 = tests.reverse.forall {
+              case (_, moves, _) =>
+                val b = (0 until moveStack.size).map(moveStack.move).toSet == moves
+                moveStack.popMoves()
+                b
+            }
+            res1 && res2
+        }
+      }
+    }
+
+  property("generatePseudoLegalGoodMoves and popMoves should recursively push and pop moves for many boards") = 
+    Prop.forAllNoShrink(recMovesGen) { 
+      case (tests1, tests2) => {
+        val moveStack = new MoveStack(tests1.size.max(tests2.size), tests1.size.max(tests2.size) * 256)
+        Seq(tests1, tests2).forall {
+          tests =>
+            val res1 = tests.forall {
+              case (ba, _, goodMoves) =>
+                moveStack.generatePseudoLegalGoodMoves(newBoardTupled(ba))
+                  (0 until moveStack.size).map(moveStack.move).toSet == goodMoves
+            }
+            val res2 = tests.reverse.forall {
+              case (_, _, goodMoves) =>
+                val b = (0 until moveStack.size).map(moveStack.move).toSet == goodMoves
+                moveStack.popMoves()
+                b
+            }
+            res1 && res2
+        }
+      }
+    }
+
+  property("generatePseudoLegalMovesWithPopMoves should recursively push and pop many moves for many boards") = 
+    Prop.forAllNoShrink(recMovesGen) {
+      case (tests1, tests2) => {
+        val moveStack = new MoveStack(tests1.size.max(tests2.size), tests1.size.max(tests2.size) * 256)
+        def g(ts: List[(BoardArgs, Set[Move], Set[Move])]): Boolean =
+          ts match {
+            case Nil                  => true
+            case (ba, moves, _) :: us => 
+              moveStack.generatePseudoLegalMovesWithPopMoves(newBoardTupled(ba)) {
+                val res1 = (0 until moveStack.size).map(moveStack.move).toSet == moves
+                val res2 = g(us)
+                val res3 = (0 until moveStack.size).map(moveStack.move).toSet == moves
+                res1 && res2 && res3
+              }
+          }
+        val res1 = g(tests1) 
+        val res2 = g(tests2)
+        res1 && res2
+      }
+    }
+    
+  property("generatePseudoLegalGoodMovesWithPopMoves should recursively push and pop many moves") =
+    Prop.forAllNoShrink(recMovesGen) {
+      case (tests1, tests2) => {
+        val moveStack = new MoveStack(tests1.size.max(tests2.size), tests1.size.max(tests2.size) * 256)
+        def g(ts: List[(BoardArgs, Set[Move], Set[Move])]): Boolean =
+          ts match {
+            case Nil                  => true
+            case (ba, _, goodMoves) :: us => 
+              moveStack.generatePseudoLegalGoodMovesWithPopMoves(newBoardTupled(ba)) {
+                val res1 = (0 until moveStack.size).map(moveStack.move).toSet == goodMoves
+                val res2 = g(us)
+                val res3 = (0 until moveStack.size).map(moveStack.move).toSet == goodMoves
+                res1 && res2 && res3
+              }
+          }
+        val res1 = g(tests1) 
+        val res2 = g(tests2)
+        res1 && res2
+      }
+    }
 }

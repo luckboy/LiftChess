@@ -22,14 +22,7 @@ class MoveStack(maxDepth: Int, maxMoves: Int)
   private val mMoves = new Array[Int](maxMoves * 2)
   
   mStack(0) = 0
-  
-  /** Rozpoczyna wstawianie nowych ruchów. Używane w metodach generujących ruchy. */
-  private def startPushMoves() = {
-    mStartMoveIndex = mStack(mSp)
-    mSp += 1
-    mStack(mSp) = mEndMoveIndex
-  }
-  
+    
   /** Wkłada ruch na stos.
    * @param piece		bierka.
    * @param src			pole źródła ruchu.
@@ -138,9 +131,16 @@ class MoveStack(maxDepth: Int, maxMoves: Int)
     generatePseudoLegalEnPassants(bd)
   }
 
+  /** Rozpoczyna wstawianie nowych ruchów. Używane w metodach generujących ruchy. */
+  private def startPushMoves() = {
+    mSp += 1
+    mStack(mSp) = mEndMoveIndex
+    mStartMoveIndex = mEndMoveIndex
+  }
+
   /** Zdejmuje ruchy z stosu. */
   def popMoves(): Unit = {
-    mEndMoveIndex = mStack(mSp)
+    mEndMoveIndex = mStartMoveIndex
     mSp -= 1
     mStartMoveIndex = mStack(mSp)
   }
