@@ -468,4 +468,30 @@ class MoveStackTest extends Properties("MoveStack")
         res1 && res2
       }
     }
+  
+  property("swap should exchange moves and scores") =
+    Prop.forAllNoShrink(movesGen.flatMap { case (ba, moves, _, _) =>  Gen.choose(0, moves.size - 1).map2(Gen.choose(0, moves.size - 1)) { (i, j) => (ba, moves, i, j) } }) {
+      case (ba, moves, i, j) =>
+        val moveStack = new MoveStack(1, 256)
+        moveStack.generatePseudoLegalMoves(newBoardTupled(ba))
+        (0 until moves.size).foreach { k => moveStack.setScore(k, k) }
+        val tmpMove1 = moveStack.move(i)
+        val tmpMove2 = moveStack.move(j)
+        val eMove1 = Move(tmpMove1.piece, tmpMove1.source, tmpMove1.destination, tmpMove1.promotionPiece, tmpMove1.moveType)
+        val eMove2 = Move(tmpMove2.piece, tmpMove2.source, tmpMove2.destination, tmpMove2.promotionPiece, tmpMove2.moveType)
+        val eScore1 = moveStack.score(i)
+        val eScore2 = moveStack.score(j)
+        moveStack.swap(i, j)
+        val aMove2 = moveStack.move(i)
+        val aMove1 = moveStack.move(j)
+        val aScore2 = moveStack.score(i)
+        val aScore1 = moveStack.score(j)
+        val aMoves = (0 until moveStack.size).filter { k => k != i && k != j }.map(moveStack.move).toSet
+        val eMoves = moves.filter { move => move != eMove1 && move != eMove2 }.toSet
+        val eScores = (0 until moveStack.size).filter { k => k != i && k != j }.map(moveStack.score).toSet
+        val aScores = (0 until moveStack.size).filter { k => k != i && k != j }.toSet
+        moves.size == moveStack.size &&
+        aMove1 == eMove1 && aMove2 == eMove2 && aMoves == eMoves &&
+        aScore1 == eScore1 && aScore2 == eScore2 && aScores == eScores
+    }
 }
