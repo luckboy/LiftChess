@@ -27,4 +27,7 @@ object Side
     
   def makeArray[T](w: T, b: T)(implicit m: ClassManifest[T]) =
     Array(w, b)
+    
+  implicit def toSideOption(side: Side): SideOption =
+    SideOption(side.id)
 }

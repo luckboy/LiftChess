@@ -26,4 +26,7 @@ object Piece
     
   def makeArray[T](p: T, n: T, b: T, r: T, q: T, k: T)(implicit m: ClassManifest[T]): Array[T] = 
     Array(p, n, b, r, q, k)
+    
+  implicit def toPieceOption(piece: Piece): PieceOption =
+    PieceOption(piece.id)
 }

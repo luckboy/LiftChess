@@ -54,7 +54,7 @@ object SidePiece
       Piece.makeArray(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )
   
-  /** Tworzy bierke strony opcjonalna z strony i bierki.
+  /** Tworzy bierke strony z strony i bierki.
    * @param side		strona.
    * @param piece		bierka.
    * @return			bierka strony.
@@ -62,10 +62,17 @@ object SidePiece
   def fromSideAndPiece(side: Side, piece: Piece): SidePiece =
     Values(side.id)(piece.id)
    
-  /** Tworzy bierkę strony opcjonalnej z identyfikatora.
+  /** Tworzy bierkę strony z identyfikatora.
    * @param id			identyfikator.
    * @return			bierka strony.
    */
   def apply(id: Int): SidePiece = 
     Values((id >> 4) - 1)(id & 15)    
+    
+  /** Przektałcza biękę strony na opcjonalną bierkę strony.
+   * @param sidePiece	bierka strony.
+   * @return			opcjonalna bierka strony.
+   */
+  implicit def toSidePieceOption(sidePiece: SidePiece): SidePieceOption =
+    SidePieceOption(sidePiece.id)
 }
