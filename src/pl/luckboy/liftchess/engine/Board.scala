@@ -159,6 +159,12 @@ class Board private(
     }
     sum
   }
+
+  /** Podaje liczbę pustych pól.
+   * @return			liczba pustych pól.
+   */
+  def countEmptySquares: Int =
+    64 - countAllPieces
   
   /** Składa określone bierki danej strony.
    * @param side		strona.
@@ -296,6 +302,25 @@ class Board private(
         i += 1
       }
       k += 1
+    }
+    y
+  }
+  
+  /** Składa puste pola.
+   * @param z			wartość początkowa.
+   * @param p			funkcja przerwania (gdy false przerywa).
+   * @param f			funkcja składania.
+   * @return			wynik składania.
+   */
+  def foldEmptySquares[T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+    var y = z
+    var sq = 0
+    while(sq < 64) {
+      if(this(sq) == SidePieceOption.None) {
+        if(!p(y, sq)) return y
+        y = f(y, sq)
+      }
+      sq += 1
     }
     y
   }
