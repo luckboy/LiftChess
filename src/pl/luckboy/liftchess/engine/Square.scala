@@ -11,6 +11,7 @@ object Square
    * @param col			kolmna.
    * @return			pole.
    */
+  @inline
   def apply(row: Int, col: Int): Int =
     (row << 3) + col
 
@@ -18,12 +19,14 @@ object Square
    * @param	sq 			pole.
    * @return			kolumna.
    */
+  @inline
   def toColumn(sq: Int): Int =
     sq & 7
 
   /** Podaje wiersz z pola.
    * @param sq		pole.
    */
+  @inline
   def toRow(sq: Int): Int =
     sq >> 3
 
@@ -60,7 +63,7 @@ object Square
    * @return			wynik składania.
    */
   @inline 
-  final def foldPawnCaptureSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  def foldPawnCaptureSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     val dst1 = Lookup88(sq) + (if(side == Side.White) -17 else 15)
     val dst2 = Lookup88(sq) + (if(side == Side.White) -15 else 17)
     val y1 = if((dst1 & 0x88) == 0) {
@@ -89,7 +92,7 @@ object Square
    * @return			wynik składania.
    */
   @inline
-  final def foldPawnMoveSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  def foldPawnMoveSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     val step = if(side == Side.White) -16 else 16
     val rowDst2 = if(side == Side.White) 0x40 else 0x30
     val dst1 = Lookup88(sq) + step
@@ -114,7 +117,7 @@ object Square
    * @return			wynik składania.
    */
   @inline
-  final def foldNonSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  def foldNonSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     var y = z
     var i = 0
     while(i < 8) {
@@ -141,7 +144,7 @@ object Square
    * @return			wynik składania.
    */
   @inline
-  final def foldSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T) => Boolean)(l: (T) => T)(q: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
+  def foldSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T) => Boolean)(l: (T) => T)(q: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
     var y = z
     var i = 0
     while(i < SlidingSteps(piece.id).length && p(y)) {
@@ -173,17 +176,52 @@ object Square
   @inline
   def foldMoveSquares[@specialized T](sq: Int, side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T =
     if(IsSliding(piece.id)) {
-      foldSlidingMoveSquares(sq, piece)(z) {_ => true } { y => y } (p)(f)(g)
+      var y = z
+      var i = 0
+      while(i < SlidingSteps(piece.id).length) {
+        val step = SlidingSteps(piece.id)(i)
+        var dst = Lookup88(sq) + step
+        while((dst & 0x88) == 0  && p(y, Mailbox88(dst))) {
+          y = f(y, Mailbox88(dst))
+          dst += step
+        }
+        if((dst & 0x88) == 0) y = g(y, Mailbox88(dst))
+        i += 1
+      }
+      y
     } else {
       if(piece == Piece.Pawn) {
-        val y = foldPawnCaptureSquares(sq, side)(z) { (_, _) => true } { 
-          (x, dst) => if(p(x, dst)) x else g(x, dst)
+        val step = if(side == Side.White) -16 else 16
+        // bicia.
+        val cDst1 = Lookup88(sq) + step - 1
+        val cDst2 = Lookup88(sq) + step + 1
+        val cY1 = if((cDst1 & 0x88) == 0 && !p(z, Mailbox88(cDst1))) g(z, Mailbox88(cDst1)) else z
+        val cY2 = if((cDst2 & 0x88) == 0 && !p(cY1, Mailbox88(cDst2))) g(cY1, Mailbox88(cDst2)) else cY1
+        // nie bicia.
+        val rowDst2 = if(side == Side.White) 0x40 else 0x30
+        val dst1 = Lookup88(sq) + step
+        if((dst1 & 0x88) == 0 && p(cY2, Mailbox88(dst1))) {
+          val y = f(cY2, Mailbox88(dst1))
+          val dst2 = dst1 + step
+          if((dst2 & 0xf0) == rowDst2 && p(y, Mailbox88(dst2)))
+            f(y, Mailbox88(dst2))
+          else
+            y
+        } else {
+          cY2
         }
-        foldPawnMoveSquares(sq, side)(y)(p)(f)    
       } else {
-        foldNonSlidingMoveSquares(sq, piece)(z) { (_, _) => true } { 
-          (x, dst) => if(p(x, dst)) f(x, dst) else g(x, dst)
+        var y = z
+        var i = 0
+        while(i < 8) {
+          val dst = Lookup88(sq) + NonSlidingSteps(piece.id)(i)
+          if((dst & 0x88) == 0) {
+            val dst64 = Mailbox88(dst)
+            y = if(p(y, dst64)) f(y, dst64) else g(y, dst64)
+          }
+          i += 1
         }
+        y
       }
     }
 }
