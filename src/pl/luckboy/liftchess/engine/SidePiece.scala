@@ -4,12 +4,13 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class SidePiece private(val id: Int, val name: String) extends EnumValue
+final class SidePiece private(val id: Int, val name: String) extends EnumValue
 {
   /** Sprawdza czy czy bierka strony jest danej strony.
    * @param side		strona.
    * @return			jeśli jest danej strony to true.
    */
+  @inline
   def isSide(side: Side): Boolean =
     (id >> 4) == side.id + 1
 
@@ -17,14 +18,17 @@ class SidePiece private(val id: Int, val name: String) extends EnumValue
    * @param	piece		typ bierki.
    * @return			jeśli jest danego typu to true.
    */
+  @inline
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
   
   /** Podaje strone bierki */
+  @inline
   def side: Side =
     Side((id >> 4) - 1)
 
   /** Podaje typ bierki */ 
+  @inline
   def piece: Piece =
     Piece(id & 15)
 }

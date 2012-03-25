@@ -4,13 +4,13 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-case class Move(piece: Piece, source: Int, destination: Int, promotionPiece: PieceOption, moveType: MoveType)
+final case class Move(piece: Piece, source: Int, destination: Int, promotionPiece: PieceOption, moveType: MoveType)
 
 /** Klasa typu ruchu.
  * 
  * @author Łukasz Szpakowski
  */
-class MoveType private(val id: Int, val name: String) extends EnumValue
+final class MoveType private(val id: Int, val name: String) extends EnumValue
 
 /** Singleton typu ruchu.
  * 

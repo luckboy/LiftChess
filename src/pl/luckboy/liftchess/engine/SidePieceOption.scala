@@ -4,9 +4,10 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class SidePieceOption private(val id: Int, val name: String) extends EnumValue
+final class SidePieceOption private(val id: Int, val name: String) extends EnumValue
 {
   /** Sprawdza czy bierka strony opcjonalna nie zawiera bierki. */
+  @inline
   def isNone: Boolean =
     id == 54
   
@@ -14,6 +15,7 @@ class SidePieceOption private(val id: Int, val name: String) extends EnumValue
    * @param side		strona.
    * @return			jeśli jest danej strony to true.
    */
+  @inline
   def isSide(side: Side): Boolean =
     (id >> 4) == side.id + 1
       
@@ -21,6 +23,7 @@ class SidePieceOption private(val id: Int, val name: String) extends EnumValue
    * @param side		strona.
    * @return			jeśli nie zawiera bierki lub jest danej strony to true.
    */
+  @inline
   def isNoneOrSide(side: Side): Boolean =
     ((id >> 4) & (side.id + 1)) != 0
   
@@ -28,6 +31,7 @@ class SidePieceOption private(val id: Int, val name: String) extends EnumValue
    * @param	piece		typ bierki.
    * @return			jeśli jest danego typu to true.
    */
+  @inline
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
   
@@ -36,7 +40,8 @@ class SidePieceOption private(val id: Int, val name: String) extends EnumValue
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldLeft[T](z: T)(f: (T, SidePiece) => T): T =
+  @inline
+  def foldLeft[@specialized T](z: T)(f: (T, SidePiece) => T): T =
     if(id != 54) f(z, SidePiece(id)) else z
     
   /** Składa stronę.
@@ -44,7 +49,8 @@ class SidePieceOption private(val id: Int, val name: String) extends EnumValue
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldSide[T](z: T)(f: (T, Side) => T): T =
+  @inline
+  def foldSide[@specialized T](z: T)(f: (T, Side) => T): T =
     if((id & 48) != 48) f(z, Side((id >> 4) - 1)) else z
     
   /** Składa tylko bierkę.
@@ -52,7 +58,8 @@ class SidePieceOption private(val id: Int, val name: String) extends EnumValue
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldPiece[T](z: T)(f: (T, Piece) => T): T =
+  @inline
+  def foldPiece[@specialized T](z: T)(f: (T, Piece) => T): T =
     if((id & 15) != 6) f(z, Piece(id & 15)) else z
 }
 

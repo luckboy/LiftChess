@@ -4,8 +4,8 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/usr/share/scala/lib/scalacheck.jar"/>
-	<classpathentry kind="lib" path="/usr/share/scala/lib/scalacheck-contrib_2.9.0-1-20110916.jar"/>
+	<classpathentry exported="true" kind="lib" path="/usr/share/scala/lib/scalacheck.jar"/>
+	<classpathentry exported="true" kind="lib" path="/usr/share/scala/lib/scalacheck-contrib_2.9.0-1-20110916.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

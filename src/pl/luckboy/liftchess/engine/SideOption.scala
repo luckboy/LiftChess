@@ -4,7 +4,7 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class SideOption private(val id: Int, val name: String) extends EnumValue
+final class SideOption private(val id: Int, val name: String) extends EnumValue
 {
   /** Podaje stronę przeciwną */
   def opposite: SideOption =
@@ -15,7 +15,8 @@ class SideOption private(val id: Int, val name: String) extends EnumValue
    * @param f			funkcja składająca.
    * @return			wynik składania.
    */
-  def foldLeft[T](z: T)(f: (T, Side) => T): T =
+  @inline
+  def foldLeft[@specialized T](z: T)(f: (T, Side) => T): T =
     if(id != 2) f(z, Side(id)) else z
 }
 

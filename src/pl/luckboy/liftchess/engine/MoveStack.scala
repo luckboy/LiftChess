@@ -4,22 +4,22 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class MoveStack(maxDepth: Int, maxMoves: Int)
+final class MoveStack(maxDepth: Int, maxMoves: Int)
 {
   /** Wskaźnik stosu indeksów. */
-  private var mSp = 0
+  protected var mSp = 0
   
   /** Stos indeksów. */
-  private val mStack = new Array[Int](maxDepth + 1)
+  protected val mStack = new Array[Int](maxDepth + 1)
   
   /** Początkowy indeks aktualnie wygenerowanych ruchów. */
-  private var mStartMoveIndex = 0
+  protected var mStartMoveIndex = 0
   
   /** Konczowy indeks aktualnie wygenerowanych ruchów. */
-  private var mEndMoveIndex = 0
+  protected var mEndMoveIndex = 0
   
   /** Tablica ruchów (zawiera też ich punkty). */
-  private val mMoves = new Array[Int](maxMoves * 2)
+  protected val mMoves = new Array[Int](maxMoves * 2)
   
   mStack(0) = 0
     

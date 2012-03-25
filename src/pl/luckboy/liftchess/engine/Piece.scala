@@ -4,7 +4,7 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class Piece private(val id: Int, val name: String) extends EnumValue
+final class Piece private(val id: Int, val name: String) extends EnumValue
 
 /** Singleton bierki.
  * 

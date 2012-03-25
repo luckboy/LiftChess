@@ -4,9 +4,10 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class PieceOption private(val id: Int, val name: String) extends EnumValue
+final class PieceOption private(val id: Int, val name: String) extends EnumValue
 {
-  def foldLeft[T](z: T)(f: (T, Piece) => T): T =
+  @inline
+  def foldLeft[@specialized T](z: T)(f: (T, Piece) => T): T =
     if(id != 6) f(z, Piece(id)) else z
 }
 

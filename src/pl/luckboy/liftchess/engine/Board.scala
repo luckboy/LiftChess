@@ -4,7 +4,7 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class Board private(
+final class Board private(
     pieces: Seq[SidePieceOption],
     private var mSide: Side,
     castlingPair: (Castling, Castling),
@@ -47,10 +47,10 @@ class Board private(
   require(mFullmoveNumber >= 1)
   
   /** Tablica bierek. */
-  private val mPieces = pieces.toArray
+  protected val mPieces = pieces.toArray
   
   /** Tablica dla roszad. Zawiera znaczniki roszad w odpowiednich pozycjach. */
-  private val mCastlingArray = (
+  protected val mCastlingArray = (
       Array(castlingPair._2 & Castling.QueensideCastling) ++
       Array.fill(6)(Castling.NoneCastling) ++
       Array(castlingPair._2 & Castling.KingsideCastling) ++ 
@@ -61,7 +61,7 @@ class Board private(
       )
   
   /** Lista statyczna zawierająca pola poszczególnych bierek. */
-  private val mSList = {
+  protected val mSList = {
     val slist = Array.fill(40)(-1)
     val lastSListIndexes = Side.makeArray(
         StartSListIndexes(Side.White.id).clone(),
@@ -83,7 +83,7 @@ class Board private(
   }
 
   /** Indeksy do listy statycznej w postaci mapy (pole -> indeks do listy). */
-  private val mSListIndexes = {
+  protected val mSListIndexes = {
     val slistIndexes = Array.fill(64)(-1)
 
     (0 to 39).foreach { i => if(mSList(i) != -1) { slistIndexes(mSList(i)) = i } }
@@ -91,7 +91,7 @@ class Board private(
   }  
   
   /** Hash key. */
-  private var mHashKey = 0L
+  protected var mHashKey = 0L
   
   /** Podaje liczbę wystąpień danej bierki danej strony.
    * @param side		strona.
@@ -174,7 +174,8 @@ class Board private(
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldSidePieces[T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  @inline
+  def foldSidePieces[@specialized T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     if(piece == Piece.King) {
       val sq = mSList(StartSListIndexes(side.id)(Piece.King.id))
       if(p(z, sq)) f(z, sq)  else z
@@ -214,7 +215,8 @@ class Board private(
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldPieces[T](piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  @inline
+  def foldPieces[@specialized T](piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     if(piece == Piece.King) {
       val sq = mSList(StartSListIndexes(Side.White.id)(Piece.King.id))
       if(p(z, sq)) {
@@ -265,7 +267,8 @@ class Board private(
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldAllSidePieces[T](side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  @inline
+  def foldAllSidePieces[@specialized T](side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     var y = z
     var i = MinStartSListIndexes(side.id)
     val n = MaxEndSListIndexes(side.id)
@@ -286,7 +289,8 @@ class Board private(
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldAllPieces[T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  @inline
+  def foldAllPieces[@specialized T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     var y = z
     var k = 0
     while(k < 2) {
@@ -312,7 +316,8 @@ class Board private(
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldEmptySquares[T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  @inline
+  def foldEmptySquares[@specialized T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     var y = z
     var sq = 0
     while(sq < 64) {

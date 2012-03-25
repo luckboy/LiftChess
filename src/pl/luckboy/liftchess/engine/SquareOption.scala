@@ -4,12 +4,13 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class SquareOption private(val id: Int, val name: String) extends EnumValue
+final class SquareOption private(val id: Int, val name: String) extends EnumValue
 {
   def square =
     id
   
-  def foldLeft[T](z: T)(f: (T, Int) => T): T = 
+  @inline
+  def foldLeft[@specialized T](z: T)(f: (T, Int) => T): T = 
     if(id == -1) z else f(z, id)    
 }
 

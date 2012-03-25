@@ -27,11 +27,11 @@ object Square
   def toRow(sq: Int): Int =
     sq >> 3
 
-  private val Mailbox88 = (0 to 7).map { row => (0 to 7).map { Square(row, _) }.toArray ++ Array.fill(8)(-1) }.flatten.toArray
+  val Mailbox88 = (0 to 7).map { row => (0 to 7).map { Square(row, _) }.toArray ++ Array.fill(8)(-1) }.flatten.toArray
   
-  private val Lookup88 = (0 to 63).map { sq => (Square.toRow(sq) << 4) + Square.toColumn(sq) }.toArray
+  val Lookup88 = (0 to 63).map { sq => (Square.toRow(sq) << 4) + Square.toColumn(sq) }.toArray
   
-  private val NonSlidingSteps = Piece.makeArray[Array[Int]](
+  val NonSlidingSteps = Piece.makeArray[Array[Int]](
       Array(),
       Array(-33, -31, -18, -14, 14, 18, 31, 33),
       Array(),
@@ -40,7 +40,7 @@ object Square
       Array(-17, -16, -15, -1, 1, 15, 16, 17)
       )
       
-  private val SlidingSteps = Piece.makeArray[Array[Int]](
+  val SlidingSteps = Piece.makeArray[Array[Int]](
       Array(),
       Array(),
       Array(-17, -15, 15, 17),
@@ -49,7 +49,7 @@ object Square
       Array()
       )
       
-  private val IsSliding = Piece.makeArray(false, false, true, true, true, false)
+  val IsSliding = Piece.makeArray(false, false, true, true, true, false)
     
   /** Składa pola bic pionka na danym polu.
    * @param sq 			pole.
@@ -59,7 +59,8 @@ object Square
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldPawnCaptureSquares[T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  @inline 
+  final def foldPawnCaptureSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     val dst1 = Lookup88(sq) + (if(side == Side.White) -17 else 15)
     val dst2 = Lookup88(sq) + (if(side == Side.White) -15 else 17)
     val y1 = if((dst1 & 0x88) == 0) {
@@ -87,7 +88,8 @@ object Square
    * @param f			funkcja składania przed przerwaniem linii.
    * @return			wynik składania.
    */
-  def foldPawnMoveSquares[T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  @inline
+  final def foldPawnMoveSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     val step = if(side == Side.White) -16 else 16
     val rowDst2 = if(side == Side.White) 0x40 else 0x30
     val dst1 = Lookup88(sq) + step
@@ -111,7 +113,8 @@ object Square
    * @param f			funkcja składania.
    * @return			wynik składania.
    */
-  def foldNonSlidingMoveSquares[T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
+  @inline
+  final def foldNonSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
     var y = z
     var i = 0
     while(i < 8) {
@@ -137,7 +140,8 @@ object Square
    * @param g			funkcja składania po przerwaniu linii.
    * @return			wynik składania.
    */
-  def foldSlidingMoveSquares[T](sq: Int, piece: Piece)(z: T)(p: (T) => Boolean)(l: (T) => T)(q: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
+  @inline
+  final def foldSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T) => Boolean)(l: (T) => T)(q: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
     var y = z
     var i = 0
     while(i < SlidingSteps(piece.id).length && p(y)) {
@@ -166,7 +170,8 @@ object Square
    * @param g			funkcja składania po przerwaniu linii.
    * @return			wynik składania.
    */
-  def foldMoveSquares[T](sq: Int, side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T =
+  @inline
+  def foldMoveSquares[@specialized T](sq: Int, side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T =
     if(IsSliding(piece.id)) {
       foldSlidingMoveSquares(sq, piece)(z) {_ => true } { y => y } (p)(f)(g)
     } else {

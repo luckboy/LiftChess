@@ -4,14 +4,17 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class Castling private(val id: Int, val name: String) extends EnumValue
+final class Castling private(val id: Int, val name: String) extends EnumValue
 {
+  @inline
   def unary_~ : Castling =
     Castling(id ^ 3)
   
+  @inline
   def &(castling: Castling): Castling =
     Castling(id & castling.id)
-    
+  
+  @inline
   def |(castling: Castling): Castling =
     Castling(id | castling.id)
 }

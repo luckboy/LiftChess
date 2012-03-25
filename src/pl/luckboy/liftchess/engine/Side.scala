@@ -4,9 +4,10 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
-class Side private(val id: Int, val name: String) extends EnumValue
+final class Side private(val id: Int, val name: String) extends EnumValue
 {
   /** Podaje stronę przeciwną */
+  @inline
   def opposite: Side =
     Side(id ^ 1)
 }
