@@ -15,7 +15,6 @@ final class SidePieceOption private(val id: Int, val name: String) extends EnumV
    * @param side		strona.
    * @return			jeśli jest danej strony to true.
    */
-  @inline
   def isSide(side: Side): Boolean =
     (id >> 4) == side.id + 1
       
@@ -23,7 +22,6 @@ final class SidePieceOption private(val id: Int, val name: String) extends EnumV
    * @param side		strona.
    * @return			jeśli nie zawiera bierki lub jest danej strony to true.
    */
-  @inline
   def isNoneOrSide(side: Side): Boolean =
     ((id >> 4) & (side.id + 1)) != 0
   
@@ -31,7 +29,6 @@ final class SidePieceOption private(val id: Int, val name: String) extends EnumV
    * @param	piece		typ bierki.
    * @return			jeśli jest danego typu to true.
    */
-  @inline
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
   

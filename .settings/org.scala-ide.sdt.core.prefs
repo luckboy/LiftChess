@@ -1,4 +1,4 @@
-#Sun Mar 25 19:13:37 CEST 2012
+#Mon Mar 26 20:02:52 CEST 2012
 Xcheck-null=false
 Xcheckinit=false
 Xdisable-assertions=false
@@ -55,6 +55,9 @@ g=vars
 no-specialization=false
 nowarn=false
 optimise=true
+organizeimports.expandcollapse=expand
+organizeimports.groups=java$scala$org$com
+organizeimports.wildcards=scalaz$scalaz.Scalaz
 scala.compiler.useProjectSettings=true
 syntaxColouring.bracket.bold=false
 syntaxColouring.bracket.colour=0,0,0

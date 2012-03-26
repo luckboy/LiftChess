@@ -66,6 +66,19 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
         }
     }
   
+  /** Generuje pseudo legalne normalne ruchy i bicia i wkłada na stos.
+   * @param bd			plansza.
+   * @param src			pole źródła ruchu.
+   * @param piece		bierka.
+   */
+  private def generatePseudoLegalNormalMovesAndCapturesFrom(bd: Board, src: Int, piece: Piece) = {
+    Square.foldMoveSquares(src, bd.side, piece)(()) { (_, dst) => bd(dst).isNone } {
+      (_, dst) => pushMove(piece, src, dst, PieceOption.None, MoveType.NormalMove)
+    } {
+      (_, dst) => if(!bd(dst).isSide(bd.side)) pushMove(piece, src, dst, PieceOption.None, MoveType.Capture)
+    }
+  }
+    
   /** Generuje pseudo legalne ruchy i wkłada na stos.
    * @param bd			plansza.
    */
@@ -93,17 +106,23 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
               generatePseudoLegalPromotionsFrom(bd, src)
             else
               // Nie promocje.
-              Square.foldMoveSquares(src, side, piece)(()) { (_, dst) => bd(dst).isNone } {
-                (_, dst) => pushMove(piece, src, dst, PieceOption.None, MoveType.NormalMove)
-              } {
-                (_, dst) => if(!bd(dst).isSide(side)) pushMove(piece, src, dst, PieceOption.None, MoveType.Capture)
-              }
+              generatePseudoLegalNormalMovesAndCapturesFrom(bd, src, piece)
         }
     }
     // Bicia w przelocie.
     generatePseudoLegalEnPassants(bd)
   }
 
+  /** Generuje pseudo legalne bicia i wkłada na stos.
+   * @param bd			plansza.
+   * @param src			pole źródła ruchu.
+   * @param piece		bierka.
+   */
+  private def generatePseudoLegalCapturesFrom(bd: Board, src: Int, piece: Piece) = {
+    Square.foldMoveSquares(src, bd.side, piece)(()) { (_, dst) => bd(dst).isNone } { (_, _) => () } {
+      (_, dst) => if(!bd(dst).isSide(bd.side)) pushMove(piece, src, dst, PieceOption.None, MoveType.Capture)
+    }
+  }
   /** Generuje pseudo legalne ruchy które mogą być potencjalnie dobre i wkłada na stos.
    * @param bd			plansza.
    */
@@ -122,9 +141,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
               generatePseudoLegalPromotionsFrom(bd, src)
             else
               // Bicia
-              Square.foldMoveSquares(src, side, piece)(()) { (_, dst) => bd(dst).isNone } { (_, _) => () } {
-                (_, dst) => if(!bd(dst).isSide(side)) pushMove(piece, src, dst, PieceOption.None, MoveType.Capture)
-              }
+              generatePseudoLegalCapturesFrom(bd, src, piece)
         }
     }
     // Bicia w przelocie.

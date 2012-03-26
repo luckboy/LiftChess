@@ -53,7 +53,12 @@ object Square
       )
       
   val IsSliding = Piece.makeArray(false, false, true, true, true, false)
-    
+
+  val PawnSteps = Side.makeArray(
+      Array(-17, -15, -16, -32),
+      Array(15, 17, 16, 32)
+      )
+  
   /** Składa pola bic pionka na danym polu.
    * @param sq 			pole.
    * @param side		strona.
@@ -192,24 +197,23 @@ object Square
     } else {
       if(piece == Piece.Pawn) {
         val step = if(side == Side.White) -16 else 16
-        // bicia.
-        val cDst1 = Lookup88(sq) + step - 1
-        val cDst2 = Lookup88(sq) + step + 1
-        val cY1 = if((cDst1 & 0x88) == 0 && !p(z, Mailbox88(cDst1))) g(z, Mailbox88(cDst1)) else z
-        val cY2 = if((cDst2 & 0x88) == 0 && !p(cY1, Mailbox88(cDst2))) g(cY1, Mailbox88(cDst2)) else cY1
-        // nie bicia.
-        val rowDst2 = if(side == Side.White) 0x40 else 0x30
-        val dst1 = Lookup88(sq) + step
-        if((dst1 & 0x88) == 0 && p(cY2, Mailbox88(dst1))) {
-          val y = f(cY2, Mailbox88(dst1))
-          val dst2 = dst1 + step
-          if((dst2 & 0xf0) == rowDst2 && p(y, Mailbox88(dst2)))
-            f(y, Mailbox88(dst2))
-          else
-            y
-        } else {
-          cY2
+        var y = z
+        var i = 0
+        val n = if(Square.toRow(sq) == (if(side == Side.White) 6 else 1)) 4 else 3
+        while(i < n) {
+          val dst = Lookup88(sq) + PawnSteps(side.id)(i)
+          if((dst & 0x88) == 0) {
+            val dst64 = Mailbox88(dst)
+            val b = p(y, dst64)
+            if(i >= 2) {
+              if(!b) return y
+              y = f(y, dst64)
+            }
+            if(i < 2 && !b) y = g(y, dst64) 
+          }
+          i += 1
         }
+        y
       } else {
         var y = z
         var i = 0
