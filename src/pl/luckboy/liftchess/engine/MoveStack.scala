@@ -35,19 +35,19 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     mEndMoveIndex += 2
   }
 
+  private def generatePseudoLegalEnPassantsTo(bd: Board, dst: Int) = {
+    val side = bd.side
+    val pawn = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
+    Square.foldPawnCaptureSquares(dst, side.opposite)(()) { (_, _) => true } {
+      (_, src) => if(bd(src) eq pawn) pushMove(Piece.Pawn, src, dst, PieceOption.None, MoveType.EnPassant)
+    }
+  }
+  
   /** Generuje pseudo legalne bicia w przelocie i wkłada na stos.
    * @param bd			plansza.
    */
-  private def generatePseudoLegalEnPassants(bd: Board) = {
-    val side = bd.side
-    val pawn = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
-    bd.enPassant.foldLeft(()) {
-      (_, dst) =>
-        Square.foldPawnCaptureSquares(dst, side.opposite)(()) { (_, _) => true } {
-          (_, src) => if(bd(src) == pawn) pushMove(Piece.Pawn, src, dst, PieceOption.None, MoveType.EnPassant)
-        }
-    }
-  }
+  private def generatePseudoLegalEnPassants(bd: Board) =
+    bd.enPassant.foldLeft(()) { (_, dst) => generatePseudoLegalEnPassantsTo(bd, dst) }
   
   /** Generuje pseudo legalne promocje i wkłada na stos.
    * @param bd			plansza.
@@ -78,7 +78,19 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
       (_, dst) => if(!bd(dst).isSide(bd.side)) pushMove(piece, src, dst, PieceOption.None, MoveType.Capture)
     }
   }
-    
+
+  private def generatePseudoLegalMovesFrom(bd: Board, src: Int, promSrcRow: Int) = {
+    bd(src).foldPiece(()) {
+      (_, piece) => 
+        if((piece eq Piece.Pawn) && Square.toRow(src) == promSrcRow)
+          // Promocje.
+          generatePseudoLegalPromotionsFrom(bd, src)
+        else
+          // Nie promocje.
+          generatePseudoLegalNormalMovesAndCapturesFrom(bd, src, piece)
+    }
+  }
+  
   /** Generuje pseudo legalne ruchy i wkłada na stos.
    * @param bd			plansza.
    */
@@ -87,27 +99,18 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     val side = bd.side
     
     // Roszada krótka.
-    val row1 = if(side == Side.White) 7 else 0
-    if((bd.castling(side) & Castling.KingsideCastling) != Castling.NoneCastling) 
-      if(bd(Square(row1, 5)) == SidePieceOption.None && bd(Square(row1, 6)) == SidePieceOption.None)
+    val row1 = if(side eq Side.White) 7 else 0
+    if((bd.castling(side) & Castling.KingsideCastling) ne Castling.NoneCastling) 
+      if((bd(Square(row1, 5)) eq SidePieceOption.None) && (bd(Square(row1, 6)) eq SidePieceOption.None))
         pushMove(Piece.King, 4, 6, PieceOption.None, MoveType.KingsideCastling)
     // Roszada długa.
-    if((bd.castling(side) & Castling.QueensideCastling) != Castling.NoneCastling)
-      if(bd(Square(row1, 1)) == SidePieceOption.None && bd(Square(row1, 2)) == SidePieceOption.None && bd(Square(row1, 3)) == SidePieceOption.None)
+    if((bd.castling(side) & Castling.QueensideCastling) ne Castling.NoneCastling)
+      if((bd(Square(row1, 1)) eq SidePieceOption.None) && (bd(Square(row1, 2)) eq SidePieceOption.None) && (bd(Square(row1, 3)) eq SidePieceOption.None))
         pushMove(Piece.King, 4, 2, PieceOption.None, MoveType.QueensideCastling)
     // Inne ruchy.
-    val promSrcRow = if(side == Side.White) 1 else 6
-    bd.foldAllSidePieces(side)(()) { (_, _) => true } {
-      (_, src) =>
-        bd(src).foldPiece(()) {
-          (_, piece) => 
-            if(piece == Piece.Pawn && Square.toRow(src) == promSrcRow)
-              // Promocje.
-              generatePseudoLegalPromotionsFrom(bd, src)
-            else
-              // Nie promocje.
-              generatePseudoLegalNormalMovesAndCapturesFrom(bd, src, piece)
-        }
+    val promSrcRow = if(side eq Side.White) 1 else 6
+    bd.foldAllSidePieces(side)(()) { (_, _) => true } { 
+      (_, src) => generatePseudoLegalMovesFrom(bd, src, promSrcRow)
     }
     // Bicia w przelocie.
     generatePseudoLegalEnPassants(bd)
@@ -123,6 +126,19 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
       (_, dst) => if(!bd(dst).isSide(bd.side)) pushMove(piece, src, dst, PieceOption.None, MoveType.Capture)
     }
   }
+
+  private def generatePseudoLegalGoodMovesFrom(bd: Board, src: Int, promSrcRow: Int) = {
+    bd(src).foldPiece(()) {
+      (_, piece) => 
+        if((piece eq Piece.Pawn) && Square.toRow(src) == promSrcRow)
+          // Promocje.
+          generatePseudoLegalPromotionsFrom(bd, src)
+        else
+          // Bicia
+          generatePseudoLegalCapturesFrom(bd, src, piece)
+    }
+  }
+  
   /** Generuje pseudo legalne ruchy które mogą być potencjalnie dobre i wkłada na stos.
    * @param bd			plansza.
    */
@@ -131,18 +147,9 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     val side = bd.side
 
     // Inne ruchy.
-    val promSrcRow = if(side == Side.White) 1 else 6
+    val promSrcRow = if(side eq Side.White) 1 else 6
     bd.foldAllSidePieces(side)(()) { (_, _) => true } {
-      (_, src) =>
-        bd(src).foldPiece(()) {
-          (_, piece) => 
-            if(piece == Piece.Pawn && Square.toRow(src) == promSrcRow)
-              // Promocje.
-              generatePseudoLegalPromotionsFrom(bd, src)
-            else
-              // Bicia
-              generatePseudoLegalCapturesFrom(bd, src, piece)
-        }
+      (_, src) => generatePseudoLegalGoodMovesFrom(bd, src, promSrcRow)
     }
     // Bicia w przelocie.
     generatePseudoLegalEnPassants(bd)

@@ -99,11 +99,11 @@ final class Board private(
    * @return			liczba bierek.
    */
   def countSidePieces(side: Side, piece: Piece): Int = {
-    if(piece == Piece.King) {
+    if(piece eq Piece.King) {
       1
     } else {
       var sum = 0
-      if(piece != Piece.Pawn) {
+      if(piece ne Piece.Pawn) {
         val j = StartSListIndexes(side.id)(piece.id)
         if(mSList(j) != -1) sum += 1
         if(mSList(j + 1) != -1) sum += 1
@@ -176,12 +176,12 @@ final class Board private(
    */
   @inline
   def foldSidePieces[@specialized T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
-    if(piece == Piece.King) {
+    if(piece eq Piece.King) {
       val sq = mSList(StartSListIndexes(side.id)(Piece.King.id))
       if(p(z, sq)) f(z, sq)  else z
     } else {
       var y = z
-      if(piece != Piece.Pawn) {
+      if(piece ne Piece.Pawn) {
         val j = StartSListIndexes(side.id)(piece.id)
         if(mSList(j) != -1) {
           val sq = mSList(j)
@@ -217,7 +217,7 @@ final class Board private(
    */
   @inline
   def foldPieces[@specialized T](piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
-    if(piece == Piece.King) {
+    if(piece eq Piece.King) {
       val sq = mSList(StartSListIndexes(Side.White.id)(Piece.King.id))
       if(p(z, sq)) {
         val y = f(z, sq)
@@ -231,7 +231,7 @@ final class Board private(
       var k = 0
       while(k < 2) {
         val side = Sides(k)
-        if(piece != Piece.Pawn) {
+        if(piece ne Piece.Pawn) {
           var j = StartSListIndexes(side.id)(piece.id)
           if(mSList(j) != -1) {
             val sq = mSList(j)
@@ -321,7 +321,7 @@ final class Board private(
     var y = z
     var sq = 0
     while(sq < 64) {
-      if(this(sq) == SidePieceOption.None) {
+      if(this(sq) eq SidePieceOption.None) {
         if(!p(y, sq)) return y
         y = f(y, sq)
       }
@@ -431,12 +431,12 @@ final class Board private(
       piece match {
         case Piece.Pawn =>
           // Ustawia dla pola en passant.
-          val dstRow = if(side == Side.White) 4 else 3
+          val dstRow = if(side eq Side.White) 4 else 3
           val col = Square.toColumn(dst)
-          val enpSq = Square(if(side == Side.White) 5 else 2, col)
+          val enpSq = Square(if(side eq Side.White) 5 else 2, col)
           val pawn = SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn) 
           
-          if(Square.toRow(dst) == dstRow && Square.foldPawnCaptureSquares(enpSq, side)(false) { (b, _) => !b } { (_, sq) => this(sq) == pawn } ) {
+          if(Square.toRow(dst) == dstRow && Square.foldPawnCaptureSquares(enpSq, side)(false) { (b, _) => !b } { (_, sq) => this(sq) eq pawn } ) {
         	mEnPassant = SquareOption(enpSq)
           } else {
             mEnPassant = SquareOption.None
@@ -444,22 +444,22 @@ final class Board private(
           // Wzerowanie liczby półruchów.
           mHalfmoveClock = 0
         case Piece.King =>
-          val row = if(side == Side.White) 7 else 0
+          val row = if(side eq Side.White) 7 else 0
           // Ustawia roszady (usuwa je).
           mCastlingArray(Square(row, 0)) = Castling.NoneCastling
           mCastlingArray(Square(row, 7)) = Castling.NoneCastling
           // Ustawia dla pola en passant.
           mEnPassant = SquareOption.None
           // Zwiękrzenie liczby półruchów.
-          mHalfmoveClock = if(savedDstPiece == SidePieceOption.None) mHalfmoveClock + 1 else 0
+          mHalfmoveClock = if(savedDstPiece eq SidePieceOption.None) mHalfmoveClock + 1 else 0
         case _          =>
           // Ustawia dla pola en passant.
           mEnPassant = SquareOption.None
           // Zwiękrzenie liczby półruchów.
-          mHalfmoveClock = if(savedDstPiece == SidePieceOption.None) mHalfmoveClock + 1 else 0
+          mHalfmoveClock = if(savedDstPiece eq SidePieceOption.None) mHalfmoveClock + 1 else 0
       }
       // Liczba ruchów.
-      if(side == Side.Black) mFullmoveNumber += 1
+      if(side eq Side.Black) mFullmoveNumber += 1
       // Strona.
       mSide = mSide.opposite
       savedWhiteCastling.id | (savedBlackCastling.id << 4) | ((savedDstSListIndex & 255) << 8) | (savedDstPiece.id << 16)
@@ -494,7 +494,7 @@ final class Board private(
     // Strona.
     mSide = mSide.opposite
     // Liczba ruchów i półruchów.
-    if(side == Side.Black) mFullmoveNumber -= 1
+    if(side eq Side.Black) mFullmoveNumber -= 1
     mHalfmoveClock = savedHalfmoveClock
     // Pole en passant.
     mEnPassant = savedEnPassant
@@ -539,7 +539,7 @@ final class Board private(
       mEnPassant = SquareOption.None
       // Liczba ruchów i półruchów.
       mHalfmoveClock = 0
-      if(side == Side.Black) mFullmoveNumber += 1
+      if(side eq Side.Black) mFullmoveNumber += 1
       // Strona
       mSide = mSide.opposite
       savedCapSListIndex & 255
@@ -566,7 +566,7 @@ final class Board private(
     // Strona.
     mSide = mSide.opposite
     // Liczba ruchów i półruchów.
-    if(side == Side.Black) mFullmoveNumber -= 1
+    if(side eq Side.Black) mFullmoveNumber -= 1
     mHalfmoveClock = savedHalfmoveClock
     // Pole en passant.
     mEnPassant = savedEnPassant
@@ -590,8 +590,8 @@ final class Board private(
     val row = if(side == Side.White) 7 else 0
     val kingSrc = Square(row, move.source)
     val kingDst = Square(row, move.destination)
-    val rookSrc = Square(row, if(move.moveType == MoveType.KingsideCastling) 7 else 0)
-    val rookDst = Square(row, if(move.moveType == MoveType.KingsideCastling) 5 else 3)
+    val rookSrc = Square(row, if(move.moveType eq MoveType.KingsideCastling) 7 else 0)
+    val rookDst = Square(row, if(move.moveType eq MoveType.KingsideCastling) 5 else 3)
     
     if(!inCheck && !attack(rookDst, side.opposite) && !attack(kingDst, side.opposite)) {
       val savedCastling = mCastlingArray(Square(row, 0)) | mCastlingArray(Square(row, 7))
@@ -615,7 +615,7 @@ final class Board private(
       mEnPassant = SquareOption.None
       // Liczba ruchów oraz półruchów.
       mHalfmoveClock += 1
-      if(side == Side.Black) mFullmoveNumber += 1
+      if(side eq Side.Black) mFullmoveNumber += 1
       // Strona.
       mSide = mSide.opposite
       savedCastling.id
@@ -634,14 +634,14 @@ final class Board private(
     val row = if(side == Side.Black) 7 else 0
     val kingSrc = Square(row, move.source)
     val kingDst = Square(row, move.destination)
-    val rookSrc = Square(row, if(move.moveType == MoveType.KingsideCastling) 7 else 0)
-    val rookDst = Square(row, if(move.moveType == MoveType.KingsideCastling) 5 else 3)
+    val rookSrc = Square(row, if(move.moveType eq MoveType.KingsideCastling) 7 else 0)
+    val rookDst = Square(row, if(move.moveType eq MoveType.KingsideCastling) 5 else 3)
     val savedCastling = Castling(undo)
 
     // Strona.
     mSide = mSide.opposite
     // Liczba ruchów oraz półruchów.
-    if(side == Side.Black) mFullmoveNumber -= 1
+    if(side eq Side.Black) mFullmoveNumber -= 1
     mHalfmoveClock = savedHalfmoveClock
     // Pole en passant.
     mEnPassant = savedEnPassant
@@ -755,20 +755,20 @@ final class Board private(
   def attack(sq: Int, side: Side): Boolean = {
     {
       val pawn = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
-      Square.foldPawnCaptureSquares(sq, side.opposite)(false) { (b, _) => !b } { (_, src) => this(src) == pawn }
+      Square.foldPawnCaptureSquares(sq, side.opposite)(false) { (b, _) => !b } { (_, src) => this(src) eq pawn }
     } || {
       val knight = SidePieceOption.fromSideAndPiece(side, Piece.Knight)
-      Square.foldNonSlidingMoveSquares(sq, Piece.Knight)(false) { (b, _) => !b } { (_, src) => this(src) == knight }
+      Square.foldNonSlidingMoveSquares(sq, Piece.Knight)(false) { (b, _) => !b } { (_, src) => this(src) eq knight }
     } || {
       val king = SidePieceOption.fromSideAndPiece(side, Piece.King)
-      Square.foldNonSlidingMoveSquares(sq, Piece.King)(false) { (b, _) => !b } { (_, src) => this(src) == king }
+      Square.foldNonSlidingMoveSquares(sq, Piece.King)(false) { (b, _) => !b } { (_, src) => this(src) eq king }
     } || {
       val bishop = SidePieceOption.fromSideAndPiece(side, Piece.Bishop)
       val queen = SidePieceOption.fromSideAndPiece(side, Piece.Queen)
       Square.foldSlidingMoveSquares(sq, Piece.Bishop)(false) { !_ } { _ => false } { (_, src) => this(src).isNone } { 
         (_, _) => false 
       } { 
-        (_, src) => this(src) == bishop || this(src) == queen
+        (_, src) => (this(src) eq bishop) || (this(src) eq queen)
       }
     } || {
       val rook = SidePieceOption.fromSideAndPiece(side, Piece.Rook)
@@ -776,7 +776,7 @@ final class Board private(
       Square.foldSlidingMoveSquares(sq, Piece.Rook)(false) { !_ } { _ => false } { (_, src) => this(src).isNone } { 
         (_, _) => false 
       } { 
-        (_, src) => this(src) == rook || this(src) == queen
+        (_, src) => (this(src) eq rook) || (this(src) eq queen)
       }
     }
   }

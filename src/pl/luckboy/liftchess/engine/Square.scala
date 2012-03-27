@@ -69,8 +69,8 @@ object Square
    */
   @inline 
   def foldPawnCaptureSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
-    val dst1 = Lookup88(sq) + (if(side == Side.White) -17 else 15)
-    val dst2 = Lookup88(sq) + (if(side == Side.White) -15 else 17)
+    val dst1 = Lookup88(sq) + (if(side eq Side.White) -17 else 15)
+    val dst2 = Lookup88(sq) + (if(side eq Side.White) -15 else 17)
     val y1 = if((dst1 & 0x88) == 0) {
       val dst64 = Mailbox88(dst1)
       if(!p(z, dst64)) return z
@@ -98,8 +98,8 @@ object Square
    */
   @inline
   def foldPawnMoveSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
-    val step = if(side == Side.White) -16 else 16
-    val rowDst2 = if(side == Side.White) 0x40 else 0x30
+    val step = if(side eq Side.White) -16 else 16
+    val rowDst2 = if(side eq Side.White) 0x40 else 0x30
     val dst1 = Lookup88(sq) + step
     if((dst1 & 0x88) == 0 && p(z, Mailbox88(dst1))) {
       val y = f(z, Mailbox88(dst1))
@@ -195,11 +195,11 @@ object Square
       }
       y
     } else {
-      if(piece == Piece.Pawn) {
-        val step = if(side == Side.White) -16 else 16
+      if(piece eq Piece.Pawn) {
+        val step = if(side eq Side.White) -16 else 16
         var y = z
         var i = 0
-        val n = if(Square.toRow(sq) == (if(side == Side.White) 6 else 1)) 4 else 3
+        val n = if(Square.toRow(sq) == (if(side eq Side.White) 6 else 1)) 4 else 3
         while(i < n) {
           val dst = Lookup88(sq) + PawnSteps(side.id)(i)
           if((dst & 0x88) == 0) {

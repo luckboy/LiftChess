@@ -1,4 +1,4 @@
-#Mon Mar 26 20:02:52 CEST 2012
+#Tue Mar 27 20:09:57 CEST 2012
 Xcheck-null=false
 Xcheckinit=false
 Xdisable-assertions=false
@@ -26,7 +26,7 @@ Yrecursion=0
 Yself-in-annots=false
 Ystruct-dispatch=poly-cache
 Ywarn-dead-code=false
-buildmanager=sbt
+buildmanager=refined
 compileorder=Mixed
 deprecation=false
 eclipse.preferences.version=1
