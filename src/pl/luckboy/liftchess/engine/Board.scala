@@ -357,7 +357,7 @@ final class Board private(
   /** The hash key. */
   def hashKey: Long = throw new Exception
 
-  /** Returns piece for specified square. */
+  /** Returns piece at specified square. */
   def apply(sq: Int): SidePieceOption =
     mPieces(sq)
 

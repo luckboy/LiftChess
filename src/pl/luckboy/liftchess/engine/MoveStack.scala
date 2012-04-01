@@ -199,7 +199,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
   def size: Int =
     (mEndMoveIndex - mStartMoveIndex) >> 1
 
-  /** Returns move for specified index.
+  /** Returns move at specified index.
    * @param i			the index.
    * @return			the move.
    */
@@ -208,14 +208,14 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     Move(Piece(data & 15), (data >> 8) & 255, (data >> 16) & 255, PieceOption((data >> 4) & 15), MoveType(data >> 24))
   }
 
-  /** Return move score for specified index.
+  /** Returns move score at specified index.
    * @param	i			the index.
    * @return			the move.
    */
   def score(i: Int): Int =
     mMoves(mStartMoveIndex + (i << 1) + 1)
 
-  /** Sets move score for specified index.
+  /** Sets move score at specified index.
    * @param i 			the index.
    * @param score		the score.
    */
@@ -223,8 +223,8 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     mMoves(mStartMoveIndex + (i << 1) + 1) = score 
 
   /** Swap two moves and their score for specified indexes.
-   * @param i			the index of first move.
-   * @param j			the index of second move.
+   * @param i			the index for first move.
+   * @param j			the index for second move.
    */
   def swap(i: Int, j: Int): Unit = {
     val ii = mStartMoveIndex + (i << 1)
