@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa roszad. 
+/** A class for castling. 
  * 
  * @author Łukasz Szpakowski
  */
@@ -19,7 +19,7 @@ final class Castling private(val id: Int, val name: String) extends EnumValue
     Castling(id | castling.id)
 }
 
-/** Singleton roszad.
+/** A class for castling.
  * 
  * @author Łukasz Szpakowski
  */

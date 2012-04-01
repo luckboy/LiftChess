@@ -1,30 +1,31 @@
 package pl.luckboy.liftchess.engine
 
-/** Singleton pole.
+/** A square singleton.
  * 
  * @author Łukasz Szpakowski
  */
 object Square
 {
-  /** Utworzy pole z kolumny i wiersza.
-   * @param row			wiersz.
-   * @param col			kolmna.
-   * @return			pole.
+  /** Creates a square from column and row.
+   * @param row			the row.
+   * @param col			the column.
+   * @return 			the square.
    */
   @inline
   def apply(row: Int, col: Int): Int =
     (row << 3) + col
 
-  /** Podaje kolumne z pola.
-   * @param	sq 			pole.
-   * @return			kolumna.
+  /** Returns column of square.
+   * @param sq			the square.
+   * @return			the column.
    */
   @inline
   def toColumn(sq: Int): Int =
     sq & 7
 
-  /** Podaje wiersz z pola.
-   * @param sq		pole.
+  /** Returns row of square.
+   * @param sq			the square.
+   * @return			the row.
    */
   @inline
   def toRow(sq: Int): Int =
@@ -58,14 +59,14 @@ object Square
       Array(-17, -15, -16, -32),
       Array(15, 17, 16, 32)
       )
-  
-  /** Składa pola bic pionka na danym polu.
-   * @param sq 			pole.
-   * @param side		strona.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa).
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+
+  /** Folds squares of pawn captures for specified square. 
+   * @param sq			the square.
+   * @param side		the side.
+   * @param z			the start value.
+   * @param p			the function of stopping (if that function returns false, folding stops).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   @inline 
   def foldPawnCaptureSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -88,13 +89,13 @@ object Square
     y2
   }
 
-  /** Składa pola ruchów pionka na danym polu.
-   * @param sq 			pole.
-   * @param strona		strona.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania linii (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
-   * @param f			funkcja składania przed przerwaniem linii.
-   * @return			wynik składania.
+  /** Folds squares of pawn moves for specified squares.
+   * @param sq			the square.
+   * @param side		the side.
+   * @param z			the start value.
+   * @param p			the function of stopping (if that function returns false, folding stops).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   @inline
   def foldPawnMoveSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -113,13 +114,13 @@ object Square
     }
   }
 
-  /** Składa pola nieciągłe ruchy na danym polu.
-   * @param sq 			pole.
-   * @param piece		bierka.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa).
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+  /** Folds square of non-sliding moves for specified square.
+   * @param sq			the square.
+   * @param piece		the piece.
+   * @param z			the start value.
+   * @param p			the function of stopping (if that function returns false, folding stops).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   @inline
   def foldNonSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -137,16 +138,17 @@ object Square
     y
   }
   
-  /** Składa pola ciągłego ruchu bierki na danym polu.
-   * @param sq 			pole.
-   * @param piece		bierka.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania składania(gdy false przerywa).
-   * @param l			funkcja składania linii.
-   * @param q			funkcja przerwania linii (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
-   * @param f			funkcja składania przed przerwaniem linii.
-   * @param g			funkcja składania po przerwaniu linii.
-   * @return			wynik składania.
+  /** Folds squares of sliding moves for specified square.
+   * @param sq			the square.
+   * @param piece		the piece.
+   * @param z			the start value.
+   * @param p			the function of stopping (if this function returns false, there stops folding for all lines).
+   * @param l			the function of line.
+   * @param q			the function of line stopping (if this function returns false, there just stops folding for current
+   *                    line, but there doesn't stop folding for all lines).
+   * @param f			the function that folds before there stops folding for one line.
+   * @param g			the function that folds after there stops folding for one line.
+   * @return			the result of folding.
    */
   @inline
   def foldSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T) => Boolean)(l: (T) => T)(q: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
@@ -166,17 +168,17 @@ object Square
     y
   }
   
-  /** Składa pola ruchu bierki na danym polu. W przypadku pionka funkcja f jest obliczana tylko dla nie bicia oraz gdy 
-   * warunek przerwania jest spełniony. Zaś funkcja g jest oblicza tylko dla bic oraz gdy warunek przerwania nie jest 
-   * spełniony. 
-   * @param sq 			pole.
-   * @param side		strony.
-   * @param piece		bierka.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania linii (gdy false przerywa składanie dla aktualnej linii ale nie samo składanie).
-   * @param f			funkcja składania przed przerwaniem linii.
-   * @param g			funkcja składania po przerwaniu linii.
-   * @return			wynik składania.
+  /** Folds move squares for specified square. In case piece is pawn, just evaluates f function for non-captures and 
+   * break condition is satisfied. Just evaluates g function for captures and break condition isn't satisfied.
+   * @param sq			the square.
+   * @param side		the side.
+   * @param	piece		the piece.
+   * @param z			the start value.
+   * @param p			the function of line stopping (if this function returns false, there stops folding for current line
+   *                    but there doesn't stop folding for all line).
+   * @param f			the function that folds before there stops folding for line.
+   * @param g			the function that folds after there stops folding for line.
+   * @return			the result of folding.
    */
   @inline
   def foldMoveSquares[@specialized T](sq: Int, side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T =

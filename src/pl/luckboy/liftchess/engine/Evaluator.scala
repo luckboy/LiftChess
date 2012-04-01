@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** Cecha funkcji oceniającej.
+/** A treat for evalution function.
  * 
  * @author Łukasz Szpakowski
  */

@@ -1,18 +1,18 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa strony.
+/** A side class.
  * 
  * @author Łukasz Szpakowski
  */
 final class Side private(val id: Int, val name: String) extends EnumValue
 {
-  /** Podaje stronę przeciwną */
+  /** Returns opposite side. */
   @inline
   def opposite: Side =
     Side(id ^ 1)
 }
 
-/** Singleton strony.
+/** A side singleton.
  * 
  * @author Łukasz Szpakowski
  */

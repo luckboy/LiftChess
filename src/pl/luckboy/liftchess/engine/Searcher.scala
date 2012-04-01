@@ -1,32 +1,32 @@
 package pl.luckboy.liftchess.engine
 
-/** Cecha przeszukiwania drzewa gry.
+/** A treat for searches game tree. 
  * 
  * @author Łukasz Szpakowski
  */
 trait Searcher
 {  
-  /** Typ listenera */
+  /** The listener type */
   type SearchListener
   
-  /** Evaluator searchera. */
+  /** The evaluator for searcher. */
   def evaluator: Evaluator
 
-  /** Stan gry searchera. */
+  /** The game state for searcher. */
   def gameState: GameState
-  
-  /** Ustawia stan gry searchera. */
+
+  /** Sets game state for searcher. */
   def gameState_=(gs: GameState): Unit
-  
-  /** Listener przeszukiwania. */
+
+  /** The search listener. */
   def searchListener: SearchListener
-  
-  /** Ustawia listener przeszukiwania. */
+
+  /** Sets search listener. */
   def searchListener_=(listener: SearchListener): Unit
-  
-  /** Przeszukuje drzewa gry na daną głebokość.
-   * @param depth		głębokość.
-   * @return			wynik przeszukiwania.
+
+  /** Searches game tree for specified depth.
+   * @param depth		the depth.
+   * @return			the search result.
    */
   def search(depth: Int): Int
 }

@@ -1,31 +1,31 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa bierki strony.
+/** Class for side and piece.
  * 
  * @author Łukasz Szpakowski
  */
 final class SidePiece private(val id: Int, val name: String) extends EnumValue
 {
-  /** Sprawdza czy bierka strony jest danej strony.
-   * @param side		strona.
-   * @return			jeśli jest danej strony to true.
+  /** Checks whether side piece is specified side.
+   * @param side		the side.
+   * @return			true if it is specified side.
    */
   def isSide(side: Side): Boolean =
     (id >> 4) == side.id + 1
 
-  /** Sprawdza czy dana bierka jest danego typu.
-   * @param	piece		typ bierki.
-   * @return			jeśli jest danego typu to true.
+  /** Checks whether side piece is specified piece.
+   * @param piece		the piece.
+   * @return			true if it is specified piece.
    */
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
   
-  /** Podaje strone bierki */
+  /** Returns side. */
   @inline
   def side: Side =
     Side((id >> 4) - 1)
 
-  /** Podaje typ bierki */ 
+  /** Return piece. */
   @inline
   def piece: Piece =
     Piece(id & 15)
@@ -56,24 +56,24 @@ object SidePiece
       Piece.makeArray(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )
   
-  /** Tworzy bierke strony z strony i bierki.
-   * @param side		strona.
-   * @param piece		bierka.
-   * @return			bierka strony.
+  /** Creates a side piece from side and piece.
+   * @param side		the side.
+   * @param piece		the piece.
+   * @return 			the side piece.
    */
   def fromSideAndPiece(side: Side, piece: Piece): SidePiece =
     Values(side.id)(piece.id)
-   
-  /** Tworzy bierkę strony z identyfikatora.
-   * @param id			identyfikator.
-   * @return			bierka strony.
+
+  /** Creates a side piece from identifier.
+   * @param	id 			the identifier.
+   * @return			the side piece.
    */
   def apply(id: Int): SidePiece = 
     Values((id >> 4) - 1)(id & 15)    
-    
-  /** Przektałcza biękę strony na opcjonalną bierkę strony.
-   * @param sidePiece	bierka strony.
-   * @return			opcjonalna bierka strony.
+  
+  /** Converts side piece to optional side piece.
+   * @param sidePiece	the side piece.
+   * @return			the optional side piece.
    */
   implicit def toSidePieceOption(sidePiece: SidePiece): SidePieceOption =
     SidePieceOption(sidePiece.id)

@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** Fabryka funkcji oceniającej.
+/** A factory for evaluation function.
  * 
  * @author Łukasz Szpakowski
  */

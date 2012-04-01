@@ -1,81 +1,84 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa stanu gry.
+/** A class for state game.
  * 
  * @author Łukasz Szpakowski
  */
 class GameState
 {
-  /** Plasza w grze. */
+  /** The board. */
   def board: Board = throw new Exception
   
-  /** Podobnie jak unsafeFoldSuccessor w Board tylko dla gry.
-   * @param	move		ruch.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik funkcji lub wartość początkowa.
+  /** This method is like unsafeFoldSuccessor in Board but only for game state.
+   * @param move		the move
+   * @param z			the start move.
+   * @param f			the function of folding.
+   * @return			the result of function or start value.
    */
   def unsafeFoldSuccessor[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
 
-  /** Podobnie jak unsafeFoldNullSuccessor w Board tylko dla gry.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik funkcji lub wartość początkowa.
+  /** This method is like unsafeFoldNullSuccessor in Board but only for game state.
+   * @param z			the start move.
+   * @param f			the function of folding.
+   * @return			the result of function or start value.
    */
   def unsafeFoldNullSuccessor[T](z: T)(f: (T, GameState) => T): T = throw new Exception
 
-  /** Podobnie jak unsafeFoldSuccessorWithoutHashKey w Board tylko dla gry.
-   * @param	move		ruch.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik funkcji lub wartość początkowa.
+  /** This method is like unsafeFoldSuccessorWithoutHashKey in Board but only for game state.
+   * @param move		the move
+   * @param z			the start move.
+   * @param f			the function of folding.
+   * @return			the result of function or start value.
    */
   def unsafeFoldSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
 
-  /** Podobnie jak unsafeFoldNullSuccessorWithoutHashKey w Board tylko dla gry.
-   * @param	move		ruch.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik funkcji lub wartość początkowa.
+  /** This method is like unsafeFoldNullSuccessorWithoutHashKey in Board but only for game state.
+   * @param z			the start move.
+   * @param f			the function of folding.
+   * @return			the result of function or start value.
    */
   def unsafeFoldNullSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
-  
-  /** Składa posortowane następniki stanu gry.
-   * @param mvStack		ruchy (bufor ruchów).
-   * @param mvEval		funkcja oceniająca ruchy.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania wykonywana przed ruchem (gdy false to przerwanie).
-   * @param q			funkcja przerwania wykonywana po ruchem (gdy false to przerwanie).
-   * @param f			funkcja składania.
-   * @return 			wynik składania.
+
+  /** Folds sorted successors for game state.
+   * @param mvStack		the moves (move buffer).
+   * @param mvEval		the evaluation function for move.
+   * @param z			the start value.
+   * @param p			the function of stopping that tests before makes move (if this function returns false, there 
+   *                    stops folding).
+   * @param q			the function of stopping that tests after makes move (if this function returns false, there
+   *                    stops folding).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   def foldSortedSuccessors[T](mv: MoveStack)(mvEval: (Move) => Int)(z: T)(p: (T, GameState, Move) => Boolean)(q: (T, GameState, Move) => Boolean)(f: (T, GameState, Move) => T): T = throw new Exception
 
-  /** Składa posortowane potencjalnie dobre następniki stanu gry.
-   * @param mvStack		ruchy (bufor ruchów).
-   * @param mvEval		funkcja oceniająca ruchy.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania wykonywana przed ruchem (gdy false to przerwanie).
-   * @param q			funkcja przerwania wykonywana po ruchem (gdy false to przerwanie).
-   * @param f			funkcja składania.
-   * @return 			wynik składania.
+  /** Folds sorted successors that may be potentially good for game state.
+   * @param mvStack		the moves (move buffer).
+   * @param mvEval		the evaluation function for move.
+   * @param z			the start value.
+   * @param p			the function of stopping that tests before makes move (if this function returns false, there 
+   *                    stops folding).
+   * @param q			the function of stopping that tests after makes move (if this function returns false, there
+   *                    stops folding).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   def foldSortedGoodSuccessors[T](mvStack: MoveStack)(mvEval: (Move) => Int)(z: T)(p: (T, GameState, Move) => Boolean)(q: (T, GameState, Move) => Boolean)(f: (T, GameState, Move) => Boolean): T = throw new Exception
   
-  /** Podaje true jeśli strona wygrała grę.
-   * @param side		strona.
-   * @return			jeśli wygrała grę to true.
+  /** Returns true if side won.
+   * @param				the side
+   * @return			true if side won.
    */
   def isWin(side: Side): Boolean = throw new Exception
 
-  /** Podaje true jeśli strona przegrała grę.
-   * @param side		strona.
-   * @return			jeśli przegrała grę to true.
+  /** Returns true if side lost.
+   * @param side		the side.
+   * @return			true if side lost.
    */
   def isLose(side: Side): Boolean = throw new Exception
   
-  /** Podaje true jeśli jest remis.
-   * @return 			jeśli remis to true.
+  /** Returns true if there is draw.
+   * @return			true if there is draw.
    */
   def isDraw: Boolean = throw new Exception  
 }

@@ -1,18 +1,18 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa ruchu.
+/** A move class.
  * 
  * @author Łukasz Szpakowski
  */
 final case class Move(piece: Piece, source: Int, destination: Int, promotionPiece: PieceOption, moveType: MoveType)
 
-/** Klasa typu ruchu.
+/** A class of move type.
  * 
  * @author Łukasz Szpakowski
  */
 final class MoveType private(val id: Int, val name: String) extends EnumValue
 
-/** Singleton typu ruchu.
+/** A singleton for move type.
  * 
  * @author Łukasz Szpakowski
  */
@@ -30,7 +30,7 @@ object MoveType
     Values(id)
 }
 
-/** Singleton ruchu normalnego.
+/** A singleton for normal move.
  * 
  * @author Łukasz Szpakowski
  */
@@ -46,7 +46,7 @@ object NormalMove
     }
 }
 
-/** Singleton bicie.
+/** A capture singleton.
  * 
  * @author Łukasz Szpakowski
  */
@@ -62,7 +62,7 @@ object Capture
     }
 }
 
-/** Singleton bicia w przelocie.
+/** A singleton for en passant.
  * 
  * @author Łukasz Szpakowski
  */
@@ -78,7 +78,7 @@ object EnPassant
     }
 }
 
-/** Singleton roszady krótkiej.
+/** A singleton for kingside castling.
  * 
  * @author Łukasz Szpakowski
  */
@@ -91,7 +91,7 @@ object KingsideCastling
     move.moveType == MoveType.KingsideCastling
 }
 
-/** Singleton roszady długiej.
+/** A singleton for queenside castling.
  * 
  * @author Łukasz Szpakowski
  */

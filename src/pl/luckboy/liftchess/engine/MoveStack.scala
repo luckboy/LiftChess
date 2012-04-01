@@ -1,34 +1,34 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa stosu ruchów.
+/** A class for move stack.
  * 
  * @author Łukasz Szpakowski
  */
 final class MoveStack(maxDepth: Int, maxMoves: Int)
 {
-  /** Wskaźnik stosu indeksów. */
+  /** The stack pointer for indexes. */
   protected var mSp = 0
   
-  /** Stos indeksów. */
+  /** The index stack. */
   protected val mStack = new Array[Int](maxDepth + 1)
   
-  /** Początkowy indeks aktualnie wygenerowanych ruchów. */
+  /** The start index for currently generated move. */
   protected var mStartMoveIndex = 0
-  
-  /** Konczowy indeks aktualnie wygenerowanych ruchów. */
+
+  /** The end index for currently generated move. */
   protected var mEndMoveIndex = 0
-  
-  /** Tablica ruchów (zawiera też ich punkty). */
+
+  /** The move array with score. */
   protected val mMoves = new Array[Int](maxMoves * 2)
   
   mStack(0) = 0
-    
-  /** Wkłada ruch na stos.
-   * @param piece		bierka.
-   * @param src			pole źródła ruchu.
-   * @param dst			pole przeznaczenia ruchu.
-   * @param promPiece	bierka na którą będzie promowany pionek.
-   * @param moveType	typ ruchu.
+
+  /** Pushs move into stack.
+   * @param piece		the piece.
+   * @param src			the move source.
+   * @param dst			the move destination.
+   * @param promPiece	the piece that will be  promotes by pawn.
+   * @param moveType	the move type.
    */
   private def pushMove(piece: Piece, src: Int, dst: Int, promPiece: PieceOption, moveType: MoveType) = {
     mMoves(mEndMoveIndex) = piece.id | (promPiece.id << 4) | (src << 8) | (dst << 16) | (moveType.id << 24) 
@@ -43,15 +43,15 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     }
   }
   
-  /** Generuje pseudo legalne bicia w przelocie i wkłada na stos.
-   * @param bd			plansza.
+  /** Generates pseudo legal en passants and, then pushes they into stack.
+   * @param bd			the board.
    */
   private def generatePseudoLegalEnPassants(bd: Board) =
     bd.enPassant.foldLeft(()) { (_, dst) => generatePseudoLegalEnPassantsTo(bd, dst) }
-  
-  /** Generuje pseudo legalne promocje i wkłada na stos.
-   * @param bd			plansza.
-   * @param src			pole źródła ruchu.
+
+  /** Generates pseudo legal promotions and, then pushes they into stack.
+   * @param bd			the board.
+   * @param src			the move source.
    */
   private def generatePseudoLegalPromotionsFrom(bd: Board, src: Int) =
     Square.foldMoveSquares(src, bd.side, Piece.Pawn)(()) { (_, dst) => bd(dst).isNone } {
@@ -66,10 +66,10 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
         }
     }
   
-  /** Generuje pseudo legalne normalne ruchy i bicia i wkłada na stos.
-   * @param bd			plansza.
-   * @param src			pole źródła ruchu.
-   * @param piece		bierka.
+  /** Generates pseudo legal normal move and captures and, then pushes they into stack.
+   * @param bd			the board.
+   * @param src			the source move.
+   * @param piece		the piece.
    */
   private def generatePseudoLegalNormalMovesAndCapturesFrom(bd: Board, src: Int, piece: Piece) = {
     Square.foldMoveSquares(src, bd.side, piece)(()) { (_, dst) => bd(dst).isNone } {
@@ -91,8 +91,8 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     }
   }
   
-  /** Generuje pseudo legalne ruchy i wkłada na stos.
-   * @param bd			plansza.
+  /** Generates pseudo legal moves and pushes they into stack.
+   * @param bd			the board.
    */
   def generatePseudoLegalMoves(bd: Board): Unit = {
     startPushMoves()
@@ -116,10 +116,10 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     generatePseudoLegalEnPassants(bd)
   }
 
-  /** Generuje pseudo legalne bicia i wkłada na stos.
-   * @param bd			plansza.
-   * @param src			pole źródła ruchu.
-   * @param piece		bierka.
+  /** Generates pseudo legal captures and, then pushes they into stack.
+   * @param bd			the board.
+   * @param src			the source move.
+   * @param piece		the piece.
    */
   private def generatePseudoLegalCapturesFrom(bd: Board, src: Int, piece: Piece) = {
     Square.foldMoveSquares(src, bd.side, piece)(()) { (_, dst) => bd(dst).isNone } { (_, _) => () } {
@@ -139,8 +139,8 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     }
   }
   
-  /** Generuje pseudo legalne ruchy które mogą być potencjalnie dobre i wkłada na stos.
-   * @param bd			plansza.
+  /** Generates pseudo legal moves those may be potentially good and, then pushes they into stack.
+   * @param bd			the board.
    */
   def generatePseudoLegalGoodMoves(bd: Board): Unit = {
     startPushMoves()
@@ -155,24 +155,24 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     generatePseudoLegalEnPassants(bd)
   }
 
-  /** Rozpoczyna wstawianie nowych ruchów. Używane w metodach generujących ruchy. */
+  /** Begin to push new moves. This method uses in move generators */
   private def startPushMoves() = {
     mSp += 1
     mStack(mSp) = mEndMoveIndex
     mStartMoveIndex = mEndMoveIndex
   }
 
-  /** Zdejmuje ruchy z stosu. */
+  /** Pops moves from stack. */
   def popMoves(): Unit = {
     mEndMoveIndex = mStartMoveIndex
     mSp -= 1
     mStartMoveIndex = mStack(mSp)
   }
   
-  /** Wkłada pseudo legalne ruchy i wykonuje funkcje. Następnie po wykonaniu funkcji zdejmuje ruchy z stosu.
-   * @param bd			plansza.
-   * @param f			funkcja.
-   * @return			wynik funkcji.
+  /** Pushes pseudo legal moves and, then evalute function and, then pops moves from stack. 
+   * @param bd			the board.
+   * @param f			the function.
+   * @return			the result of function.
    */
   def generatePseudoLegalMovesWithPopMoves[T](bd: Board)(f: => T): T = {
     generatePseudoLegalMoves(bd)
@@ -180,12 +180,13 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     popMoves()
     y
   }
-  
-  /** Wkłada pseudo legalne ruchy, które są potencjalie dobre i wykonuje funkcje. Następnie po wykonaniu funkcji 
-   * zdejmuje ruchy z stosu.
-   * @param bd			plansza.
-   * @param f			funkcja.
-   * @return			wynik funkcji.
+
+  /** Pushes pseudo legal moves those may be potentially good and, then evaluates function, and then pops moves from
+   * stack.
+   * @param bd			the board.
+   * @param f			the function.
+   * @return			the result of function.
+   * 
    */
   def generatePseudoLegalGoodMovesWithPopMoves[T](bd: Board)(f: => T): T = {
     generatePseudoLegalGoodMoves(bd)
@@ -194,36 +195,36 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     y
   }
 
-  /** Liczba ruchów. */
+  /** The number of moves */
   def size: Int =
     (mEndMoveIndex - mStartMoveIndex) >> 1
-  
-  /** Podaje ruch o danym indeksie.
-   * @param i			indeks.
-   * @return			ruch.
+
+  /** Returns move for specified index.
+   * @param i			the index.
+   * @return			the move.
    */
   def move(i: Int): Move = {
     val data = mMoves(mStartMoveIndex + (i << 1))
     Move(Piece(data & 15), (data >> 8) & 255, (data >> 16) & 255, PieceOption((data >> 4) & 15), MoveType(data >> 24))
   }
-  
-  /** Podaje punkty ruchu o danym indeksie.
-   * @param i			indeks.
-   * @return 			ruch.
+
+  /** Return move score for specified index.
+   * @param	i			the index.
+   * @return			the move.
    */
   def score(i: Int): Int =
     mMoves(mStartMoveIndex + (i << 1) + 1)
-  
-  /** Ustawia punkty ruchu o danym indeksie.
-   * @param i			indeks.
-   * @param score		punkty.
+
+  /** Sets move score for specified index.
+   * @param i 			the index.
+   * @param score		the score.
    */
   def setScore(i: Int, score: Int): Unit =
     mMoves(mStartMoveIndex + (i << 1) + 1) = score 
-  
-  /** Zamienia mieściami ruchy i ich punkty o danych indeksach.
-   * @param	i			indeks ruchu pierwszego.
-   * @param j			indeks ruchu drugiego.
+
+  /** Swap two moves and their score for specified indexes.
+   * @param i			the index of first move.
+   * @param j			the index of second move.
    */
   def swap(i: Int, j: Int): Unit = {
     val ii = mStartMoveIndex + (i << 1)

@@ -1,40 +1,40 @@
 package pl.luckboy.liftchess.engine
 
-/** Cecha nasłuchiwania przeszukiwania drzewa gry dla okna.
+/** A listener treat for alpha beta algorithm.
  * 
  * @author Łukasz Szpakowski
  */
 trait AlphaBetaSearchListener
 {
-  /** Wykonawana gdy wchodzi do węzła.
-   * @param i		poziom na którym jest wezeł (zero to korzeń).
-   * @param depth	głębokość.
-   * @param alpha	alfa.
-   * @param beta	beta.
+  /** Searcher invokes this method if it enters to node.
+   * @param i		the level of node (zero is root).
+   * @param depth	the depth.
+   * @param alpha	the alpha.
+   * @param beta	the beta.
    */
   def onPreorder(i: Int, depth: Int, alpha: Int, beta: Int): Unit
   
-  /** Wywoływana gdy wychodzi do węzła.
-   * @param i		poziom na którym jest wezeł (zero to korzeń).
-   * @param depth	głębokość.
-   * @param alpha	alfa.
-   * @param beta	beta.
+  /** Searcher invokes this method if it leaves from node.
+   * @param i		the level of node (zero is root).
+   * @param depth	the depth.
+   * @param alpha	the alpha.
+   * @param beta	the beta.
    */
   def onPostorder(i: Int, depth: Int, alpha: Int, beta: Int): Unit
   
-  /** Wywoływana gdy alfa się zmieniła.
-   * @param i		poziom na którym jest wezeł (zero to korzeń).
-   * @param depth	głębokość.
-   * @param alpha	alfa.
-   * @param move	ruch, przez który została zmieniona alfa.
+  /** Searcher invokes this method if it changes alpha.
+   * @param i		the level of node (zero is root).
+   * @param depth	the depth.
+   * @param alpha	the alpha.
+   * @param move	the move that been reason to change alpha.
    */
   def onAlphaChange(i: Int, depth: Int, alpha: Int, move: Move): Unit
   
-  /** Wywoływana gdy alfa się zmieniła.
-   * @param i		poziom na którym jest wezeł (zero to korzeń).
-   * @param depth	głębokość.
-   * @param alpha	alfa.
-   * @param move	ruch, przez który została zmieniona alfa.
+  /** Searcher invokes this method if it cut.
+   * @param i		the level of node (zero is root).
+   * @param depth	the depth.
+   * @param alpha	the alpha.
+   * @param move	the move that been reason to cut.
    */
   def onBetaCut(i: Int, depth: Int, alpha: Int, move: Move): Unit
 }

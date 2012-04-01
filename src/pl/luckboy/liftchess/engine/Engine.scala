@@ -1,17 +1,17 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa silnika.
+/** A engine class.
  * 
  * @author Łukasz Szpakowski
  */
 trait Engine
 {  
-  /** Stan gry silnika. */
+  /** The game state for engine. */
   def gameState: GameState
   
-  /** Ustawia stan gry silnika. */
+  /** Sets game state for engine */
   def gameState_=(gs: GameState): Unit
-  
-  /** Nalepszy ruch według silnika. */
+
+  /** The best move from engine. */
   def bestMove: Move
 }

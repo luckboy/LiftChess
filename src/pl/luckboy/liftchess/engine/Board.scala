@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa planszy. 
+/** A board class. 
  * 
  * @author Łukasz Szpakowski
  */
@@ -46,10 +46,10 @@ final class Board private(
   require(mHalfmoveClock >= 0)
   require(mFullmoveNumber >= 1)
   
-  /** Tablica bierek. */
+  /** The piece array. */
   protected val mPieces = pieces.toArray
   
-  /** Tablica dla roszad. Zawiera znaczniki roszad w odpowiednich pozycjach. */
+  /** The castling array. This array contains castling marks. */
   protected val mCastlingArray = (
       Array(castlingPair._2 & Castling.QueensideCastling) ++
       Array.fill(6)(Castling.NoneCastling) ++
@@ -59,8 +59,8 @@ final class Board private(
       Array.fill(6)(Castling.NoneCastling) ++
       Array(castlingPair._1 & Castling.KingsideCastling)
       )
-  
-  /** Lista statyczna zawierająca pola poszczególnych bierek. */
+
+  /** The list contains squares for pieces. */
   protected val mSList = {
     val slist = Array.fill(40)(-1)
     val lastSListIndexes = Side.makeArray(
@@ -82,7 +82,7 @@ final class Board private(
     slist
   }
 
-  /** Indeksy do listy statycznej w postaci mapy (pole -> indeks do listy). */
+  /** Indexes of static list as map (square -> index of list). */
   protected val mSListIndexes = {
     val slistIndexes = Array.fill(64)(-1)
 
@@ -93,10 +93,10 @@ final class Board private(
   /** Hash key. */
   protected var mHashKey = 0L
   
-  /** Podaje liczbę wystąpień danej bierki danej strony.
-   * @param side		strona.
-   * @param piece		bierka.
-   * @return			liczba bierek.
+  /** Returns number of occurrences of specified piece for specified side.
+   * @param side		the side.
+   * @param piece		the piece.
+   * @return			the number of pieces.
    */
   def countSidePieces(side: Side, piece: Piece): Int = {
     if(piece eq Piece.King) {
@@ -117,10 +117,10 @@ final class Board private(
       sum
     }
   }
-  
-  /** Podaje liczbę wystąpień bierki.
-   * @param piece		bierka.
-   * @return			liczba bierek.
+
+  /** Returns number of occurrences of piece for any side.
+   * @param piece		the piece.
+   * @return			the number of pieces.
    */
   def countPieces(piece: Piece): Int = {
     var sum = 0
@@ -132,9 +132,9 @@ final class Board private(
     sum
   }
   
-  /** Podaje liczbę wszystkich bierek danej strony.
-   * @param side		strona.
-   * @return			liczba bierek.
+  /** Returns number of all pieces for specified side.
+   * @param side 		the side.
+   * @return			the number of pieces.
    */
   def countAllSidePieces(side: Side): Int = {
     var sum = 0
@@ -147,8 +147,8 @@ final class Board private(
     sum
   }
   
-  /** Podaje liczbę wszystkich bierek.
-   * @return			liczba bierek.
+  /** Returns number of all pieces for any side.
+   * @return			the number of pieces.
    */
   def countAllPieces: Int = {
     var sum = 0
@@ -160,19 +160,19 @@ final class Board private(
     sum
   }
 
-  /** Podaje liczbę pustych pól.
-   * @return			liczba pustych pól.
+  /** Returns number of empty squares.
+   * @return			the number of empty squares.
    */
   def countEmptySquares: Int =
     64 - countAllPieces
-  
-  /** Składa określone bierki danej strony.
-   * @param side		strona.
-   * @param piece		bierka.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa).
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+
+  /** Folds occurrences of specified piece for specified side.
+   * @param side 		the side.
+   * @param piece		the piece.
+   * @param	z			the start value.
+   * @param p			the function of stopping (if this function returns false, there stops folding).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   @inline
   def foldSidePieces[@specialized T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -208,12 +208,12 @@ final class Board private(
     }
   }
   
-  /** Składa określone bierki.
-   * @param piece		bierka.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa).
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+  /** Folds occurrences of specified piece for any side.
+   * @param piece		the piece.
+   * @param	z			the start value.
+   * @param p			the function of stopping (if this function returns false, there stops folding).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   @inline
   def foldPieces[@specialized T](piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -260,12 +260,12 @@ final class Board private(
     }
   }
   
-  /** Składa wszystkie bierki danej strony.
-   * @param side		strona.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa).
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+  /** Folds all piece for specified side.
+   * @param side		the side.
+   * @param	z			the start value.
+   * @param p			the function of stopping (if this function returns false, there stops folding).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   @inline
   def foldAllSidePieces[@specialized T](side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -283,11 +283,11 @@ final class Board private(
     y
   }
 
-  /** Składa wszystkie bierki.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa).
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+  /** Folds all piece for any side.
+   * @param	z			the start value.
+   * @param p			the function of stopping (if this function returns false, there stops folding).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   @inline
   def foldAllPieces[@specialized T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -309,12 +309,12 @@ final class Board private(
     }
     y
   }
-  
-  /** Składa puste pola.
-   * @param z			wartość początkowa.
-   * @param p			funkcja przerwania (gdy false przerywa).
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+
+  /** Folds empty squares.
+   * @param	z			the start value.
+   * @param p			the function of stopping (if this function returns false, there stops folding).
+   * @param f			the function of folding.
+   * @return			the result of folding.
    */
   @inline
   def foldEmptySquares[@specialized T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -330,81 +330,78 @@ final class Board private(
     y
   }
 
-  /** Strona. */
+  /** The side. */
   def side: Side =
     mSide
 
-  /** Dostępne roszady dla danej strony.
-   * @param side		strona.
-   * @return			dostępne roszady.
+  /** The available castling for specified side.
+   * @param side		the side.
    */
   def castling(side: Side): Castling = {
     val row = if(side == Side.White) 7 else 0
     mCastlingArray(Square(row, 0)) | mCastlingArray(Square(row, 7))
   }
-  
-  /** Pole bicia w przelocie. */
+
+  /** The square for en passant. */
   def enPassant: SquareOption =
     mEnPassant
 
-  /** Liczba półruchów. */
+  /** The number of half move. */
   def halfmoveClock: Int =
     mHalfmoveClock
 
-  /** Liczna ruchów. */
+  /** The number of moves */ 
   def fullmoveNumber: Int =
     mFullmoveNumber
   
-  /** Hashowy klucz. */
+  /** The hash key. */
   def hashKey: Long = throw new Exception
-  
-  /** Podaje bierkę na określonym polu. */
+
+  /** Returns piece for specified square. */
   def apply(sq: Int): SidePieceOption =
     mPieces(sq)
 
-  /** Podobnie jak unsafeUndoNormalMoveOrCaptureWithoutHashKey tylko z obliczaniem hashkeya.
-   * @param move		ruch.
-   * @return 			dane używane do cofania ruchu lub -1 jeśli nie wykonano ruchu.
+  /** This method is like unsafeMakeNormalMoveOrCaptureWithoutHashKey but this method calculates hash key.
+   * @param move		the move.
+   * @return			the date used to undo move or value -1 if doesn't make move. 
    */
   private def unsafeMakeNormalMoveOrCapture(move: Move) =
     unsafeMakeNormalMoveOrCaptureWithoutHashKey(move)
      
-  /** Podobnie jak unsafeMakeEnPassantWithoutHashKey tylko z obliczaniem hashkeya.
-   * @param move		ruch.
-   * @return 			dane używane do cofania ruchu lub -1 jeśli nie wykonano ruchu.
+  /** This method is like unsafeMakeEnPassantWithoutHashKey but this method calculates hash key.
+   * @param move		the move.
+   * @return			the date used to undo move or -1 value if doesn't make move. 
    */
   private def unsafeMakeEnPassant(move: Move) =
     unsafeMakeEnPassantWithoutHashKey(move)
 
-  /** Podobnie jak unsafeMakeCastlingWithoutHashKey tylko z obliczeniem hashkey.
-   * @param move		ruch.
-   * @return 			dane używane do cofania ruchu lub -1 jeśli nie wykonano ruchu.
+  /** This method is like unsafeMakeCastlingWithoutHashKey but this method calculates hash key.
+   * @param move		the move.
+   * @return			the date used to undo move or -1 value if doesn't make move. 
    */
   private def unsafeMakeCastling(move: Move) =
     unsafeMakeCastlingWithoutHashKey(move)
 
-  /** Słada następnik planszy. W rzeczywistości wykonuje ruch jeśli jest legalny i wykonuje daną funkcje. Po 
-   * wykonaniu funkcji cofa ruch.
-   * @param	move		ruch.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik funkcji lub wartość początkowa.
+  /** Folds successor for board. Really, makes move if move is legal and, then evaluates function and, then undo move.
+   * @param move		the move.
+   * @param	z			the start value.
+   * @param f			the function of folding.
+   * @return			the result of function or start value.
    */
   def unsafeFoldSuccessor[T](move: Move)(z: T)(f: (T, Board) => T): T =
     unsafeFoldSuccessorWithoutHashKey(move)(z)(f)
 
-  /** Słada następnik planszy dla ruchu pustego. W rzeczywistości  wykonuje pusty ruch jeśli jest legalny i 
-   * wykonuje daną funkcje. Po wykonaniu funkcji cofa ruch pusty.
-   * @param z			wartość początkowa.
-   * @param f			funkcja.
-   * @return			wynik funkcji lub wartość początkowa.
-   */  
+  /** Folds successor for null move. Really makes move and, then evaluates function and, then undo move.
+   * @param z			the start value
+   * @param f			the function of folding.
+   * @return			the result of function or start value.
+   */
   def unsafeFoldNullSuccessor[T](z: T)(f: (T, Board) => T): T =
     unsafeFoldNullSuccessorWithoutHashKey(z)(f)
-  
-  /** Wykonuje normalny ruch lub bicie (nie jest to bicie w przelocie lub roszada) bez obliczania hash keya.
-   * @param move		ruch.
-   * @return 			dane używane do cofania ruchu lub -1 jeśli nie wykonano ruchu.
+
+  /** Makes normal move or capture (it haven't to been en pasant or castling) but this method doesn't calculate hash key.
+   * @param move		the move.
+   * @return			the date used to undo move or value -1 if doesn't make move. 
    */
   private def unsafeMakeNormalMoveOrCaptureWithoutHashKey(move: Move) = {
     val piece = move.piece
@@ -475,12 +472,12 @@ final class Board private(
       -1
     }
   }
-  
-  /** Cofa normalny ruch lub bicie (nie jest to bicie w przelocie lub roszada) bez obliczania hash keya.
-   * @param move				ruch.
-   * @param undo				dane używane do cofania ruchu.
-   * @param savedEnPassant		zachowane pole en passant.
-   * @param savedHalfmoveClock	zachowena liczba półruchów od bicia lub ruchu pionkiem.
+
+  /** Undoes normal move or capture (it haven't to been en passant or castling) but this method doesn't calculate hash key.
+   * @param move				the move.
+   * @param undo				the data for undo move.
+   * @param savedEnPassant		the saved square for en passant.
+   * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
    */
   private def unsafeUndoNormalMoveOrCaptureWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
     val piece = move.piece
@@ -513,9 +510,9 @@ final class Board private(
     mPieces(dst) = savedDstPiece
   }
 
-  /** Wykonuje bicie w przelocie bez obliczania hash keya.
-   * @param move		ruch.
-   * @return			dane uzywane do cofania ruchu lub -1 jeśli nie wykonano ruchu.
+  /** Makes en passant but this method doesn't hash key.
+   * @param move		the move.
+   * @return			the date used to undo move or value -1 if doesn't make move. 
    */
   private def unsafeMakeEnPassantWithoutHashKey(move: Move) = {
     val src = move.source
@@ -550,12 +547,12 @@ final class Board private(
       -1
     }
   }
-  
-  /** Cofa bicie w przelocie bez obliczania hash keya.
-   * @param move				ruch.
-   * @param undo				dane używane do cofania ruchu.
-   * @param savedEnPassant		zachowane pole en passant.
-   * @param savedHalfmoveClock	zachowena liczba półruchów od bicia lub ruchu pionkiem.
+
+  /** Undoes en passant but this method doesn't calculate hash key.
+   * @param move 				the move.
+   * @param	undo				the data for undo move.
+   * @param savedEnPassant		the saved square for en passant.
+   * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
    */
   private def unsafeUndoEnPassantWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
     val src = move.source
@@ -582,9 +579,9 @@ final class Board private(
     mPieces(src) = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
   }
 
-  /** Wykokuje roszadę bez obliczania hash keya.
-   * @param move		ruch.
-   * @return 			dane uzywane do cofania ruchu lub -1 jeśli nie wykonano ruchu.
+  /** Makes castling but this method doesn't hash key.
+   * @param move		the move.
+   * @return			the date used to undo move or value -1 if doesn't make move. 
    */
   private def unsafeMakeCastlingWithoutHashKey(move: Move) = {
     val row = if(side == Side.White) 7 else 0
@@ -624,11 +621,11 @@ final class Board private(
     }
   }
   
-  /** Cofa roszadę bez obliczania hash keya.
-   * @param move				ruch.
-   * @param undo				dane używane do cofania ruchu.
-   * @param savedEnPassant		zachowane pole en passant.
-   * @param savedHalfmoveClock  zachowana liczna półruchów od ruchu pionka lub bicia.
+  /** Undoes castling but this method doesn't calculate hash key.
+   * @param move 				the move.
+   * @param	undo				the data for undo move.
+   * @param savedEnPassant		the saved square for en passant.
+   * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
    */
   private def unsafeUndoCastlingWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
     val row = if(side == Side.Black) 7 else 0
@@ -662,12 +659,12 @@ final class Board private(
     mPieces(rookDst) = SidePieceOption.None
   }
   
-  /** Słada następnik planszy bez obliczania hash klucza. W rzeczywistości wykonuje ruch jeśli jest legalny i 
-   * wykonuje daną funkcje. Po wykonaniu funkcji cofa ruch.
-   * @param	move		ruch.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik funkcji lub wartość początkowa.
+  /** Folds successor for board but this method doesn't calculate hash key. Really makes move if move is legal and, then 
+   * evaluates function and, then undo move.
+   * @param move		the move.
+   * @param	z			the start value.
+   * @param f			the function of folding.
+   * @return			the result of function or start value.
    */
   def unsafeFoldSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, Board) => T): T = {
     val savedEnPassant = mEnPassant
@@ -703,22 +700,22 @@ final class Board private(
     }
   }
 
-  /** Słada następnik planszy dla ruchu pustego bez obliczania hash klucza. W rzeczywistości wykonuje pusty ruch 
-   * jeśli jest legalnyi wykonuje daną funkcje. Po wykonaniu funkcji cofa ruch pusty.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik funkcji lub wartość początkowa.
-   */  
+  /** Folds successor for null move but this method doesn't calculate hash key. Really makes move and, then evaluates 
+   * function and, then undo move.
+   * @param z			the start value
+   * @param f			the function of folding.
+   * @return			the result of function or start value.
+   */
   def unsafeFoldNullSuccessorWithoutHashKey[T](z: T)(f: (T, Board) => T): T = {
     mSide = mSide.opposite
     val y = f(z, this)
     mSide = mSide.opposite
     y
   }
-  
-  /** Wykonuje ruch.
-   * @param move		ruch.
-   * @return			dane używane do cofania ruchu.
+
+  /** Makes move.
+   * @param move		the move.
+   * @return			the data used to undo move.
    */
   def unsafeMakeMove(move: Move): Option[Undo] = {
     val savedEnPassant = mEnPassant
@@ -732,8 +729,8 @@ final class Board private(
     if(undoData != -1) Some(Undo(move, undoData, savedEnPassant, savedHalfmoveClock, savedHashKey)) else None
   }
 
-  /** Cofa ruch.
-   * @param undo		dane cofania ruchu.
+  /** Undoes move.
+   * @param undo		the data for undo move.
    */
   def unsafeUndoMove(undo: Undo): Unit = {
     undo.move.moveType match {
@@ -747,10 +744,10 @@ final class Board private(
     mHashKey = undo.hashKey
   }
   
-  /** Sprawdza czy dane pole jest atakowane przez daną stronę.
-   * @param sq			pole atakowane.
-   * @param side		strona atakującia.
-   * @return			jeśli strona atakuje to true.
+  /** Checks whether specified square be attack by specified side.
+   * @param sq			the square.
+   * @param side		the side.
+   * @return			true if side attack.
    */
   def attack(sq: Int, side: Side): Boolean = {
     {
@@ -780,23 +777,23 @@ final class Board private(
       }
     }
   }
-  
-  /** Sprawdza czy jest szach dla danej strony.
-   * @param side		strona.
-   * @return			jeśli jest szach to true.
+
+  /** Checks whether specified side is in check.
+   * @param side		the side.
+   * @return			true if side is in check.
    */
   def sideInCheck(side: Side): Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
-  
-  /** Sprawdza czy jest szach dla strony która ma ruch. */
+
+  /** Checks whether side that have move is in check. */
   def inCheck: Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
-    
-  /** Podobnie jak sideInCheck tylko nie używa cache */
+
+  /** The method is like sideInCheck but this method does't use cache. */
   def sideInCheckNoCache(side: Side): Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
     
-  /** Podobnie jak inCheck tylko nie używa cache */
+  /** The method is like inCheck but this method does't use cache. */
   def inCheckNoCache: Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
 }
@@ -806,25 +803,25 @@ final class Board private(
  */
 object Board
 {
-  /** Tablica stron dla implementacji planszy. */
+  /** The array of sides for board implementation. */ 
   private val Sides = Array(Side.White, Side.Black)
 
-  /** Tablica indeksów początkowych dla danej bierki o określonej strony. */
+  /** The array of start indexes of specified piece for specified side. */
   private val StartSListIndexes = Side.makeArray(
       Piece.makeArray(0, 8, 10, 12, 14, 16),
       Piece.makeArray(20, 28, 30, 32, 34, 36)
       )
 
-  /** Tablica indeksów konczowych dla danej bierki o określonej strony. */  
+  /** The array of end indexes of specified piece for specified side. */
   private val EndSListIndexes = Side.makeArray(
       Piece.makeArray(8, 10, 12, 14, 15, 17),
       Piece.makeArray(28, 30, 32, 34, 35, 37)
       )
 
-  /** Tablica minimalnych indesków początkowych dla danej strony. */
+  /** The array of minimal indexes of specified side. */
   private val MinStartSListIndexes = Side.makeArray(0, 20)
 
-  /** Tablica maksymalnych indesków konczowych dla danej strony. */
+  /** The array of maximal indexes of specified side. */
   private val MaxEndSListIndexes = Side.makeArray(17, 37)
   
   def apply(

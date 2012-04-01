@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** Cecha przeszukiwania drzewa gry dla okna.
+/** A treat for alpha beta algorithm. 
  * 
  * @author Łukasz Szpakowski
  */
@@ -8,11 +8,11 @@ trait AlphaBetaSearcher extends Searcher
 {
   override type SearchListener = AlphaBetaSearchListener
   
-  /** Przeszukiwanie drzewa gry na daną głębokość z określonym oknem.
-   * @param depth		głębokość.
-   * @param alpha		alfa.
-   * @param beta		beta.
-   * @return			wynik przeszukiwania.
+  /** Searches game tree for specified depth with specified window.
+   * @param depth		the depth.
+   * @param alpha		the alpha.
+   * @param beta		the beta.
+   * @return			the search result.
    */
   def searchWithAlphaBeta(depth: Int, alpha: Int, beta: Int): Int
 }

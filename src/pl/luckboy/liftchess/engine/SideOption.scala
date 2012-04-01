@@ -1,26 +1,26 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa strony opcjonalnej.
+/** A class for optional side.
  * 
  * @author Łukasz Szpakowski
  */
 final class SideOption private(val id: Int, val name: String) extends EnumValue
 {
-  /** Podaje stronę przeciwną */
+  /** Returns opposite side */
   def opposite: SideOption =
     if(id != 2) SideOption(id ^ 1) else this
 
-  /** Składa stronę.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składająca.
-   * @return			wynik składania.
+  /** Folds side.
+   * @param z			the start value.
+   * @param	f			the function of folding.
+   * @return			the result of folding.
    */
   @inline
   def foldLeft[@specialized T](z: T)(f: (T, Side) => T): T =
     if(id != 2) f(z, Side(id)) else z
 }
 
-/** Singleton strony opcjonalnej.
+/** A singleton for optional side.
  * 
  * @author Łukasz Szpakowski
  */

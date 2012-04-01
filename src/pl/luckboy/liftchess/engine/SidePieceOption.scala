@@ -1,66 +1,66 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa bierki strony opcjonalnej.
+/** A class for optional side piece.
  * 
  * @author Łukasz Szpakowski
  */
 final class SidePieceOption private(val id: Int, val name: String) extends EnumValue
 {
-  /** Sprawdza czy bierka strony opcjonalna nie zawiera bierki. */
+  /** Checks whether optional side piece doesn't contain piece. */
   @inline
   def isNone: Boolean =
     id == 54
-  
-  /** Sprawdza czy czy bierka strony opcjonalna jest danej strony.
-   * @param side		strona.
-   * @return			jeśli jest danej strony to true.
+
+  /** Checks whether optional side piece is specified side.
+   * @param side		the side.
+   * @return			true if it is specified side.
    */
   def isSide(side: Side): Boolean =
     (id >> 4) == side.id + 1
       
-  /** Sprawdza czy bierka strony opcjonalna nie zawiera bierki lub jest danej strony.
-   * @param side		strona.
-   * @return			jeśli nie zawiera bierki lub jest danej strony to true.
+  /** Checks whether optional side piece doesn't contain piece or is specified side.
+   * @param side		the side.
+   * @return			true if it doesn't contain piece or it is specified side.
    */
   def isNoneOrSide(side: Side): Boolean =
     ((id >> 4) & (side.id + 1)) != 0
   
-  /** Sprawdza czy dana bierka jest danego typu.
-   * @param	piece		typ bierki.
-   * @return			jeśli jest danego typu to true.
+  /** Checks whether optional side piece is specified piece.
+   * @param piece		the piece.
+   * @return			true if it is specified piece.
    */
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
-  
-  /** Składa bierkę strony.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+
+  /** Folds side piece.
+   * @param	z			the start value.
+   * @param f			the function of folding.
+   * @return 			the result of folding.
    */
   @inline
   def foldLeft[@specialized T](z: T)(f: (T, SidePiece) => T): T =
     if(id != 54) f(z, SidePiece(id)) else z
     
-  /** Składa stronę.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+  /** Folds side.
+   * @param	z			the start value.
+   * @param f			the function of folding.
+   * @return 			the result of folding.
    */
   @inline
   def foldSide[@specialized T](z: T)(f: (T, Side) => T): T =
     if((id & 48) != 48) f(z, Side((id >> 4) - 1)) else z
     
-  /** Składa tylko bierkę.
-   * @param z			wartość początkowa.
-   * @param f			funkcja składania.
-   * @return			wynik składania.
+  /** Folds piece.
+   * @param	z			the start value.
+   * @param f			the function of folding.
+   * @return 			the result of folding.
    */
   @inline
   def foldPiece[@specialized T](z: T)(f: (T, Piece) => T): T =
     if((id & 15) != 6) f(z, Piece(id & 15)) else z
 }
 
-/** Singleton bierki strony opcjonalnej.
+/** A singleton for optional side piece.
  * 
  * @author Łukasz Szpakowski
  */
@@ -87,17 +87,17 @@ object SidePieceOption
       Piece.makeArray(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )
 
-  /** Tworzy bierke strony opcjonalna z strony i bierki.
-   * @param side		strona.
-   * @param piece		bierka.
-   * @return			bierka strony.
+  /** Creates a optional side piece from side and piece.
+   * @param side		the side.
+   * @param piece		the piece.
+   * @return			the optional side piece.
    */
   def fromSideAndPiece(side: Side, piece: Piece): SidePieceOption =
     Values(side.id)(piece.id)
-    
-  /** Tworzy bierkę strony opcjonalnej z identyfikatora.
-   * @param id			identyfikator.
-   * @return			bierka strony.
+
+  /** Creates a optional side piece from identifier.
+   * @param				the identifier.
+   * @return			the optional side piece.
    */
   def apply(id: Int): SidePieceOption =
     if(id != None.id) Values((id >> 4) - 1)(id & 15) else None

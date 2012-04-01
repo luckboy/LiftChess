@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** Klasa pola opcjonalnego.
+/** A class for optional square.
  * 
  * @author Łukasz Szpakowski
  */
@@ -14,7 +14,7 @@ final class SquareOption private(val id: Int, val name: String) extends EnumValu
     if(id == -1) z else f(z, id)    
 }
 
-/** Singleton pola opcjonalnego.
+/** A singleton for optional square.
  * 
  * @author Łukasz Szpakowski
  */
