@@ -12,8 +12,8 @@ final class SideOption private(val id: Int, val name: String) extends EnumValue
 
   /** Folds side.
    * @param z			the start value.
-   * @param	f			the function of folding.
-   * @return			the result of folding.
+   * @param	f			the folding function.
+   * @return			the folding result.
    */
   @inline
   def foldLeft[@specialized T](z: T)(f: (T, Side) => T): T =

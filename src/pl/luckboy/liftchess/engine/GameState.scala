@@ -12,14 +12,14 @@ class GameState
   /** This method is like unsafeFoldSuccessor in Board but only for game state.
    * @param move		the move
    * @param z			the start move.
-   * @param f			the function of folding.
+   * @param f			the folding function.
    * @return			the result of function or start value.
    */
   def unsafeFoldSuccessor[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
 
   /** This method is like unsafeFoldNullSuccessor in Board but only for game state.
    * @param z			the start move.
-   * @param f			the function of folding.
+   * @param f			the folding function.
    * @return			the result of function or start value.
    */
   def unsafeFoldNullSuccessor[T](z: T)(f: (T, GameState) => T): T = throw new Exception
@@ -27,14 +27,14 @@ class GameState
   /** This method is like unsafeFoldSuccessorWithoutHashKey in Board but only for game state.
    * @param move		the move
    * @param z			the start move.
-   * @param f			the function of folding.
+   * @param f			the folding function.
    * @return			the result of function or start value.
    */
   def unsafeFoldSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
 
   /** This method is like unsafeFoldNullSuccessorWithoutHashKey in Board but only for game state.
    * @param z			the start move.
-   * @param f			the function of folding.
+   * @param f			the folding function.
    * @return			the result of function or start value.
    */
   def unsafeFoldNullSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, GameState) => T): T = throw new Exception
@@ -47,8 +47,8 @@ class GameState
    *                    stops folding).
    * @param q			the function of stopping that tests after makes move (if this function returns false, there
    *                    stops folding).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   def foldSortedSuccessors[T](mv: MoveStack)(mvEval: (Move) => Int)(z: T)(p: (T, GameState, Move) => Boolean)(q: (T, GameState, Move) => Boolean)(f: (T, GameState, Move) => T): T = throw new Exception
 
@@ -60,8 +60,8 @@ class GameState
    *                    stops folding).
    * @param q			the function of stopping that tests after makes move (if this function returns false, there
    *                    stops folding).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   def foldSortedGoodSuccessors[T](mvStack: MoveStack)(mvEval: (Move) => Int)(z: T)(p: (T, GameState, Move) => Boolean)(q: (T, GameState, Move) => Boolean)(f: (T, GameState, Move) => Boolean): T = throw new Exception
   

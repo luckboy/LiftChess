@@ -64,9 +64,9 @@ object Square
    * @param sq			the square.
    * @param side		the side.
    * @param z			the start value.
-   * @param p			the function of stopping (if that function returns false, folding stops).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param p			the stopping function (if that function returns false, folding stops).
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   @inline 
   def foldPawnCaptureSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -93,9 +93,9 @@ object Square
    * @param sq			the square.
    * @param side		the side.
    * @param z			the start value.
-   * @param p			the function of stopping (if that function returns false, folding stops).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param p			the stopping function (if that function returns false, folding stops).
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   @inline
   def foldPawnMoveSquares[@specialized T](sq: Int, side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -118,9 +118,9 @@ object Square
    * @param sq			the square.
    * @param piece		the piece.
    * @param z			the start value.
-   * @param p			the function of stopping (if that function returns false, folding stops).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param p			the stopping function (if that function returns false, folding stops).
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   @inline
   def foldNonSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -142,13 +142,13 @@ object Square
    * @param sq			the square.
    * @param piece		the piece.
    * @param z			the start value.
-   * @param p			the function of stopping (if this function returns false, there stops folding for all lines).
-   * @param l			the function of line.
+   * @param p			the stopping function (if this function returns false, there stops folding for all lines).
+   * @param l			the line function.
    * @param q			the function of line stopping (if this function returns false, there just stops folding for current
    *                    line, but there doesn't stop folding for all lines).
-   * @param f			the function that folds before there stops folding for one line.
-   * @param g			the function that folds after there stops folding for one line.
-   * @return			the result of folding.
+   * @param f			the folding function that folds before there stops folding for one line.
+   * @param g			the folding function that folds after there stops folding for one line.
+   * @return			the folding result.
    */
   @inline
   def foldSlidingMoveSquares[@specialized T](sq: Int, piece: Piece)(z: T)(p: (T) => Boolean)(l: (T) => T)(q: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T = {
@@ -176,9 +176,9 @@ object Square
    * @param z			the start value.
    * @param p			the function of line stopping (if this function returns false, there stops folding for current line
    *                    but there doesn't stop folding for all line).
-   * @param f			the function that folds before there stops folding for line.
-   * @param g			the function that folds after there stops folding for line.
-   * @return			the result of folding.
+   * @param f			the folding function that folds before there stops folding for line.
+   * @param g			the folding function that folds after there stops folding for line.
+   * @return			the folding result.
    */
   @inline
   def foldMoveSquares[@specialized T](sq: Int, side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T)(g: (T, Int) => T): T =

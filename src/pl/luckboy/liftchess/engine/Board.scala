@@ -170,9 +170,9 @@ final class Board private(
    * @param side 		the side.
    * @param piece		the piece.
    * @param	z			the start value.
-   * @param p			the function of stopping (if this function returns false, there stops folding).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param p			the stopping function (if this function returns false, there stops folding).
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   @inline
   def foldSidePieces[@specialized T](side: Side, piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -211,9 +211,9 @@ final class Board private(
   /** Folds occurrences of specified piece for any side.
    * @param piece		the piece.
    * @param	z			the start value.
-   * @param p			the function of stopping (if this function returns false, there stops folding).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param p			the stopping function (if this function returns false, there stops folding).
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   @inline
   def foldPieces[@specialized T](piece: Piece)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -263,9 +263,9 @@ final class Board private(
   /** Folds all piece for specified side.
    * @param side		the side.
    * @param	z			the start value.
-   * @param p			the function of stopping (if this function returns false, there stops folding).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param p			the stopping function (if this function returns false, there stops folding).
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   @inline
   def foldAllSidePieces[@specialized T](side: Side)(z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -285,9 +285,9 @@ final class Board private(
 
   /** Folds all piece for any side.
    * @param	z			the start value.
-   * @param p			the function of stopping (if this function returns false, there stops folding).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param p			the stopping function (if this function returns false, there stops folding).
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   @inline
   def foldAllPieces[@specialized T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -312,9 +312,9 @@ final class Board private(
 
   /** Folds empty squares.
    * @param	z			the start value.
-   * @param p			the function of stopping (if this function returns false, there stops folding).
-   * @param f			the function of folding.
-   * @return			the result of folding.
+   * @param p			the stopping function (if this function returns false, there stops folding).
+   * @param f			the folding function.
+   * @return			the folding result.
    */
   @inline
   def foldEmptySquares[@specialized T](z: T)(p: (T, Int) => Boolean)(f: (T, Int) => T): T = {
@@ -385,7 +385,7 @@ final class Board private(
   /** Folds successor for board. Really, makes move if move is legal and, then evaluates function and, then undo move.
    * @param move		the move.
    * @param	z			the start value.
-   * @param f			the function of folding.
+   * @param f			the folding function.
    * @return			the result of function or start value.
    */
   def unsafeFoldSuccessor[T](move: Move)(z: T)(f: (T, Board) => T): T =
@@ -393,7 +393,7 @@ final class Board private(
 
   /** Folds successor for null move. Really makes move and, then evaluates function and, then undo move.
    * @param z			the start value
-   * @param f			the function of folding.
+   * @param f			the folding function.
    * @return			the result of function or start value.
    */
   def unsafeFoldNullSuccessor[T](z: T)(f: (T, Board) => T): T =
@@ -663,7 +663,7 @@ final class Board private(
    * evaluates function and, then undo move.
    * @param move		the move.
    * @param	z			the start value.
-   * @param f			the function of folding.
+   * @param f			the folding function.
    * @return			the result of function or start value.
    */
   def unsafeFoldSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, Board) => T): T = {
@@ -703,7 +703,7 @@ final class Board private(
   /** Folds successor for null move but this method doesn't calculate hash key. Really makes move and, then evaluates 
    * function and, then undo move.
    * @param z			the start value
-   * @param f			the function of folding.
+   * @param f			the folding function.
    * @return			the result of function or start value.
    */
   def unsafeFoldNullSuccessorWithoutHashKey[T](z: T)(f: (T, Board) => T): T = {
