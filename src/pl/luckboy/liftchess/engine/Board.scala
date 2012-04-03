@@ -82,7 +82,7 @@ final class Board private(
     slist
   }
 
-  /** Indexes of static list as map (square -> index of list). */
+  /** The indexes of static list as map (square -> index of list). */
   protected val mSListIndexes = {
     val slistIndexes = Array.fill(64)(-1)
 
@@ -90,8 +90,19 @@ final class Board private(
     slistIndexes
   }  
   
-  /** Hash key. */
-  protected var mHashKey = 0L
+  /** The hash key. */
+  protected var mHashKey = (
+      (0 to 63).foldLeft(0L) { 
+        (key, sq) => 
+          mPieces(sq).foldLeft(key) { 
+            (key, sidePiece) => key ^ Zobrist.pieceSquareKeys(sq)(sidePiece.sideId)(sidePiece.pieceId)
+          }
+      } ^ 
+      Zobrist.sideKey(side) ^ 
+      Zobrist.castlingKeys(castling(Side.White).id) ^
+      Zobrist.castlingKeys(castling(Side.Black).id) ^
+      Zobrist.enPassantKeys(mEnPassant.id + 1)
+  )
   
   /** Returns number of occurrences of specified piece for specified side.
    * @param side		the side.
@@ -360,27 +371,94 @@ final class Board private(
   /** Returns piece at specified square. */
   def apply(sq: Int): SidePieceOption =
     mPieces(sq)
-
+  
   /** This method is like unsafeMakeNormalMoveOrCaptureWithoutHashKey but this method calculates hash key.
    * @param move		the move.
    * @return			the date used to undo move or value -1 if doesn't make move. 
    */
-  private def unsafeMakeNormalMoveOrCapture(move: Move) =
-    unsafeMakeNormalMoveOrCaptureWithoutHashKey(move)
+  private def unsafeMakeNormalMoveOrCapture(move: Move) = {
+    val savedSrcPiece = this(move.source)
+    val savedDstPiece = this(move.destination)
+    val savedWhiteCastling = mCastlingArray(Square(7, 0)) | mCastlingArray(Square(7, 7))
+    val savedBlackCastling = mCastlingArray(Square(0, 0)) | mCastlingArray(Square(0, 7))
+    val savedEnPassant = mEnPassant
+    val undo = unsafeMakeNormalMoveOrCaptureWithoutHashKey(move)
+    if(undo != -1) {
+      val piece = this(move.destination)
+      // Removes piece from source and stuff.
+      mHashKey ^= Zobrist.pieceSquareKeys(move.source)(savedSrcPiece.sideOptionId)(savedSrcPiece.pieceOptionId)
+      mHashKey ^= Zobrist.castlingKeys(savedWhiteCastling.id)
+      mHashKey ^= Zobrist.castlingKeys(savedBlackCastling.id)
+      mHashKey ^= Zobrist.enPassantKeys(savedEnPassant.id + 1)
+      mHashKey ^= Zobrist.sideKey(side.opposite)
+      // Removes captured piece.
+      mHashKey ^= savedDstPiece.foldLeft(0L) {
+        (_, sidePiece) => Zobrist.pieceSquareKeys(move.destination)(sidePiece.sideId)(sidePiece.pieceId)
+      }
+      // Sets piece on destination and stuff.
+      mHashKey ^= Zobrist.pieceSquareKeys(move.destination)(piece.sideOptionId)(piece.pieceOptionId)
+      mHashKey ^= Zobrist.castlingKeys((mCastlingArray(Square(7, 0)) | mCastlingArray(Square(7, 7))).id)
+      mHashKey ^= Zobrist.castlingKeys((mCastlingArray(Square(0, 0)) | mCastlingArray(Square(0, 7))).id)
+      mHashKey ^= Zobrist.enPassantKeys(mEnPassant.id + 1)
+      mHashKey ^= Zobrist.sideKey(side)
+    }
+    undo
+  }
      
   /** This method is like unsafeMakeEnPassantWithoutHashKey but this method calculates hash key.
    * @param move		the move.
    * @return			the date used to undo move or -1 value if doesn't make move. 
    */
-  private def unsafeMakeEnPassant(move: Move) =
-    unsafeMakeEnPassantWithoutHashKey(move)
+  private def unsafeMakeEnPassant(move: Move) = {
+    val savedEnPassant = mEnPassant
+    val undo = unsafeMakeEnPassantWithoutHashKey(move)
+    if(undo != -1) {
+      val oppSide = side.opposite
+      val capSq = Square(Square.toRow(move.source), Square.toColumn(move.destination))
+      // Removes pawn from source and stuff.      
+      mHashKey ^= Zobrist.pieceSquareKeys(move.source)(oppSide.id)(Piece.Pawn.id)
+      mHashKey ^= Zobrist.enPassantKeys(savedEnPassant.id + 1)
+      mHashKey ^= Zobrist.sideKey(oppSide)
+      // Removes captured pawn.
+      mHashKey ^= Zobrist.pieceSquareKeys(capSq)(side.id)(Piece.Pawn.id)
+      // Sets pawn on destination and stuff.
+      mHashKey ^= Zobrist.pieceSquareKeys(move.destination)(oppSide.id)(Piece.Pawn.id)
+      mHashKey ^= Zobrist.enPassantKeys(0)
+      mHashKey ^= Zobrist.sideKey(side)
+    }
+    undo
+  }
 
   /** This method is like unsafeMakeCastlingWithoutHashKey but this method calculates hash key.
    * @param move		the move.
    * @return			the date used to undo move or -1 value if doesn't make move. 
    */
-  private def unsafeMakeCastling(move: Move) =
-    unsafeMakeCastlingWithoutHashKey(move)
+  private def unsafeMakeCastling(move: Move) = {
+    val row = if(side eq Side.White) 7 else 0
+    val savedEnPassant = mEnPassant
+    val savedCastling = mCastlingArray(Square(row, 0)) | mCastlingArray(Square(row, 7))
+    val undo = unsafeMakeCastlingWithoutHashKey(move)
+    if(undo != -1) {
+      val oppSide = side.opposite
+      val kingSrc = Square(row, move.source)
+      val kingDst = Square(row, move.destination)
+      val rookSrc = Square(row, if(move.moveType eq MoveType.KingsideCastling) 7 else 0)
+      val rookDst = Square(row, if(move.moveType eq MoveType.KingsideCastling) 5 else 3)
+      mHashKey ^= Zobrist.sideKey(oppSide)
+      // Removes king and rook from sources and stuff.
+      mHashKey ^= Zobrist.pieceSquareKeys(kingSrc)(oppSide.id)(Piece.King.id)
+      mHashKey ^= Zobrist.pieceSquareKeys(rookSrc)(oppSide.id)(Piece.Rook.id)
+      mHashKey ^= Zobrist.castlingKeys(savedCastling.id)
+      mHashKey ^= Zobrist.enPassantKeys(savedEnPassant.id + 1)
+      // Sets king and rook on destinations and stuff.
+      mHashKey ^= Zobrist.pieceSquareKeys(kingDst)(oppSide.id)(Piece.King.id)
+      mHashKey ^= Zobrist.pieceSquareKeys(rookDst)(oppSide.id)(Piece.Rook.id)
+      mHashKey ^= Zobrist.castlingKeys(Castling.NoneCastling.id)
+      mHashKey ^= Zobrist.enPassantKeys(0)      
+      mHashKey ^= Zobrist.sideKey(side)
+    }
+    undo
+  }
 
   /** Folds successor for board. Really, makes move if move is legal and, then evaluates function and, then undo move.
    * @param move		the move.

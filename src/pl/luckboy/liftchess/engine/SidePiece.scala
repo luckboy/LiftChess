@@ -29,6 +29,16 @@ final class SidePiece private(val id: Int, val name: String) extends EnumValue
   @inline
   def piece: Piece =
     Piece(id & 15)
+
+  /** Returns side. */
+  @inline
+  def sideId: Int =
+    (id >> 4) - 1
+
+  /** Return piece. */
+  @inline
+  def pieceId: Int =
+    id & 15
 }
 
 /** Singleton bierki strony.

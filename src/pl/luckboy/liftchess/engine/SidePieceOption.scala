@@ -32,6 +32,26 @@ final class SidePieceOption private(val id: Int, val name: String) extends EnumV
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
 
+  /** Returns optional side. */
+  @inline
+  def sideOption: SideOption =
+    SideOption((id >> 4) - 1)
+
+  /** Returns optional piece. */
+  @inline
+  def pieceOption: PieceOption =
+    PieceOption(id & 15)
+
+  /** Returns identifier of optional side. */
+  @inline
+  def sideOptionId: Int =
+    (id >> 4) - 1
+
+  /** Returns identifier of optional piece. */
+  @inline
+  def pieceOptionId: Int =
+    id & 15
+    
   /** Folds side piece.
    * @param	z			the start value.
    * @param f			the folding function.
