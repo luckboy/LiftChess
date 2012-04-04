@@ -95,13 +95,13 @@ final class Board private(
       (0 to 63).foldLeft(0L) { 
         (key, sq) => 
           mPieces(sq).foldLeft(key) { 
-            (key, sidePiece) => key ^ Zobrist.pieceSquareKeys(sq)(sidePiece.sideId)(sidePiece.pieceId)
+            (key, sidePiece) => key ^ Zobrist.pieceSquareKey(sq, sidePiece.side, sidePiece.piece)
           }
       } ^ 
       Zobrist.sideKey(side) ^ 
-      Zobrist.castlingKeys(castling(Side.White).id) ^
-      Zobrist.castlingKeys(castling(Side.Black).id) ^
-      Zobrist.enPassantKeys(mEnPassant.id + 1)
+      Zobrist.castlingKey(Side.White, castling(Side.White)) ^
+      Zobrist.castlingKey(Side.Black, castling(Side.Black)) ^
+      Zobrist.enPassantKey(mEnPassant)
   )
   
   /** Returns number of occurrences of specified piece for specified side.
@@ -377,7 +377,6 @@ final class Board private(
    * @return			the date used to undo move or value -1 if doesn't make move. 
    */
   private def unsafeMakeNormalMoveOrCapture(move: Move) = {
-    val savedSrcPiece = this(move.source)
     val savedDstPiece = this(move.destination)
     val savedWhiteCastling = mCastlingArray(Square(7, 0)) | mCastlingArray(Square(7, 7))
     val savedBlackCastling = mCastlingArray(Square(0, 0)) | mCastlingArray(Square(0, 7))
@@ -386,20 +385,20 @@ final class Board private(
     if(undo != -1) {
       val piece = this(move.destination)
       // Removes piece from source and stuff.
-      mHashKey ^= Zobrist.pieceSquareKeys(move.source)(savedSrcPiece.sideOptionId)(savedSrcPiece.pieceOptionId)
-      mHashKey ^= Zobrist.castlingKeys(savedWhiteCastling.id)
-      mHashKey ^= Zobrist.castlingKeys(savedBlackCastling.id)
-      mHashKey ^= Zobrist.enPassantKeys(savedEnPassant.id + 1)
+      mHashKey ^= Zobrist.pieceSquareKey(move.source, side.opposite, move.piece)
+      mHashKey ^= Zobrist.castlingKey(Side.White, savedWhiteCastling)
+      mHashKey ^= Zobrist.castlingKey(Side.Black, savedBlackCastling)
+      mHashKey ^= Zobrist.enPassantKey(savedEnPassant)
       mHashKey ^= Zobrist.sideKey(side.opposite)
       // Removes captured piece.
       mHashKey ^= savedDstPiece.foldLeft(0L) {
-        (_, sidePiece) => Zobrist.pieceSquareKeys(move.destination)(sidePiece.sideId)(sidePiece.pieceId)
+        (_, sidePiece) => Zobrist.pieceSquareKey(move.destination, sidePiece.side, sidePiece.piece)
       }
       // Sets piece on destination and stuff.
-      mHashKey ^= Zobrist.pieceSquareKeys(move.destination)(piece.sideOptionId)(piece.pieceOptionId)
-      mHashKey ^= Zobrist.castlingKeys((mCastlingArray(Square(7, 0)) | mCastlingArray(Square(7, 7))).id)
-      mHashKey ^= Zobrist.castlingKeys((mCastlingArray(Square(0, 0)) | mCastlingArray(Square(0, 7))).id)
-      mHashKey ^= Zobrist.enPassantKeys(mEnPassant.id + 1)
+      mHashKey ^= Zobrist.pieceSquareKey(move.destination, side.opposite, move.promotionPiece.foldLeft(move.piece) { (_, promPiece) => promPiece })
+      mHashKey ^= Zobrist.castlingKey(Side.White, mCastlingArray(Square(7, 0)) | mCastlingArray(Square(7, 7)))
+      mHashKey ^= Zobrist.castlingKey(Side.Black, mCastlingArray(Square(0, 0)) | mCastlingArray(Square(0, 7)))
+      mHashKey ^= Zobrist.enPassantKey(mEnPassant)
       mHashKey ^= Zobrist.sideKey(side)
     }
     undo
@@ -413,17 +412,16 @@ final class Board private(
     val savedEnPassant = mEnPassant
     val undo = unsafeMakeEnPassantWithoutHashKey(move)
     if(undo != -1) {
-      val oppSide = side.opposite
       val capSq = Square(Square.toRow(move.source), Square.toColumn(move.destination))
       // Removes pawn from source and stuff.      
-      mHashKey ^= Zobrist.pieceSquareKeys(move.source)(oppSide.id)(Piece.Pawn.id)
-      mHashKey ^= Zobrist.enPassantKeys(savedEnPassant.id + 1)
-      mHashKey ^= Zobrist.sideKey(oppSide)
+      mHashKey ^= Zobrist.pieceSquareKey(move.source, side.opposite, Piece.Pawn)
+      mHashKey ^= Zobrist.enPassantKey(savedEnPassant)
+      mHashKey ^= Zobrist.sideKey(side.opposite)
       // Removes captured pawn.
-      mHashKey ^= Zobrist.pieceSquareKeys(capSq)(side.id)(Piece.Pawn.id)
+      mHashKey ^= Zobrist.pieceSquareKey(capSq, side, Piece.Pawn)
       // Sets pawn on destination and stuff.
-      mHashKey ^= Zobrist.pieceSquareKeys(move.destination)(oppSide.id)(Piece.Pawn.id)
-      mHashKey ^= Zobrist.enPassantKeys(0)
+      mHashKey ^= Zobrist.pieceSquareKey(move.destination, side.opposite, Piece.Pawn)
+      mHashKey ^= Zobrist.enPassantKey(SquareOption.None)
       mHashKey ^= Zobrist.sideKey(side)
     }
     undo
@@ -446,15 +444,15 @@ final class Board private(
       val rookDst = Square(row, if(move.moveType eq MoveType.KingsideCastling) 5 else 3)
       mHashKey ^= Zobrist.sideKey(oppSide)
       // Removes king and rook from sources and stuff.
-      mHashKey ^= Zobrist.pieceSquareKeys(kingSrc)(oppSide.id)(Piece.King.id)
-      mHashKey ^= Zobrist.pieceSquareKeys(rookSrc)(oppSide.id)(Piece.Rook.id)
-      mHashKey ^= Zobrist.castlingKeys(savedCastling.id)
-      mHashKey ^= Zobrist.enPassantKeys(savedEnPassant.id + 1)
+      mHashKey ^= Zobrist.pieceSquareKey(kingSrc, side.opposite, Piece.King)
+      mHashKey ^= Zobrist.pieceSquareKey(rookSrc, side.opposite, Piece.Rook)
+      mHashKey ^= Zobrist.castlingKey(side.opposite, savedCastling)
+      mHashKey ^= Zobrist.enPassantKey(savedEnPassant)
       // Sets king and rook on destinations and stuff.
-      mHashKey ^= Zobrist.pieceSquareKeys(kingDst)(oppSide.id)(Piece.King.id)
-      mHashKey ^= Zobrist.pieceSquareKeys(rookDst)(oppSide.id)(Piece.Rook.id)
-      mHashKey ^= Zobrist.castlingKeys(Castling.NoneCastling.id)
-      mHashKey ^= Zobrist.enPassantKeys(0)      
+      mHashKey ^= Zobrist.pieceSquareKey(kingDst, side.opposite, Piece.King)
+      mHashKey ^= Zobrist.pieceSquareKey(rookDst, side.opposite, Piece.Rook)
+      mHashKey ^= Zobrist.castlingKey(side.opposite, Castling.NoneCastling)
+      mHashKey ^= Zobrist.enPassantKey(SquareOption.None)
       mHashKey ^= Zobrist.sideKey(side)
     }
     undo
