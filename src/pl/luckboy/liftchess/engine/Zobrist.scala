@@ -50,4 +50,32 @@ object Zobrist
   /** The key for side. */
   def sideKey(side: Side): Long =
     side.id
+
+  /** The generator of pseudo random number */
+  private var mRandom = new LongRandom(System.currentTimeMillis())
+  
+  /** Resets key arrays. 
+   * @param r			the generator of pseudo random number.
+   */
+  def reset(r: LongRandom): Unit = {
+    mRandom = r
+    (0 to 63).foreach {
+      sq => List(Side.White, Side.Black).foreach {
+        side => List(Piece.Pawn, Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen, Piece.King).foreach {
+          piece => mPieceSquareKeys(sq)(side.id)(piece.id) = mRandom.nextLong() << 1
+        }
+      }
+    }
+    List(Side.White, Side.Black).foreach {
+      side =>
+        mCastlingKeys(side.id)(Castling.NoneCastling.id) = 0  
+        List(Castling.KingsideCastling, Castling.QueensideCastling, Castling.AllCastling).foreach {
+          castling => mCastlingKeys(side.id)(castling.id) = mRandom.nextLong() << 1
+        }
+    }
+    mEnPassantKeys(0) = 0
+    (1 to 64).foreach { id => mEnPassantKeys(id) = mRandom.nextLong() << 1 }
+  }
+  
+  reset(mRandom)
 }
