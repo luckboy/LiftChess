@@ -4,6 +4,7 @@ package pl.luckboy.liftchess.engine
  * 
  * @author Łukasz Szpakowski
  */
+@cloneable
 final class Board private(
     pieces: Seq[SidePieceOption],
     private var mSide: Side,
@@ -872,6 +873,25 @@ final class Board private(
   /** The method is like inCheck but this method does't use cache. */
   def inCheckNoCache: Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
+    
+  override def equals(that: Any): Boolean =
+    that match {
+      case bd: Board => 
+        (0 to 63).forall { sq => this(sq) == bd(sq) } &&
+        side == bd.side &&
+        castling(Side.White) == castling(Side.Black) &&
+        enPassant == bd.enPassant &&
+        halfmoveClock == bd.halfmoveClock &&
+        fullmoveNumber == bd.fullmoveNumber
+      case _        =>
+        false
+    }
+
+  override def hashCode: Int =
+    hashKey.toInt 
+  
+  override def clone(): Board =
+    Board((0 to 63).map { this(_) }, side, (castling(Side.White), castling(Side.Black)), enPassant, halfmoveClock, fullmoveNumber)
 }
 
 /**
