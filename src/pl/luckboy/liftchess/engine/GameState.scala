@@ -170,13 +170,13 @@ final class GameState(bd: Board)
       while(i < n && dontStop) {
         sortMove(mvStack, i)
         val move = mvStack.move(i)
-        y = mBoard.unsafeFoldSuccessor(move)(z) { 
-          (x, _) => 
+        y = unsafeFoldSuccessor(move)(z) { 
+          (x, gs) => 
             var y = x
-            dontStop = p(y, this, move)
+            dontStop = p(y, gs, move)
             if(!dontStop) {
-              y = f(x, this, move) 
-              dontStop = q(y, this, move)
+              y = f(x, gs, move) 
+              dontStop = q(y, gs, move)
             }
             nLegalMoves += 1
             y
@@ -214,13 +214,13 @@ final class GameState(bd: Board)
       while(i < n && dontStop) {
         sortMove(mvStack, i)
         val move = mvStack.move(i)
-        y = mBoard.unsafeFoldSuccessor(move)(z) { 
-          (x, _) => 
+        y = unsafeFoldSuccessor(move)(z) { 
+          (x, gs) => 
             var y = x
-            dontStop = p(y, this, move)
+            dontStop = p(y, gs, move)
             if(!dontStop) {
-              y = f(x, this, move) 
-              dontStop = q(y, this, move)
+              y = f(x, gs, move) 
+              dontStop = q(y, gs, move)
             }
             y
         }
@@ -257,13 +257,13 @@ final class GameState(bd: Board)
       while(i < n && dontStop) {
         sortMove(mvStack, i)
         val move = mvStack.move(i)
-        y = mBoard.unsafeFoldSuccessorWithoutHashKey(move)(z) { 
-          (x, _) => 
+        y = unsafeFoldSuccessorWithoutHashKey(move)(z) { 
+          (x, gs) => 
             var y = x
-            dontStop = p(y, this, move)
+            dontStop = p(y, gs, move)
             if(!dontStop) {
-              y = f(x, this, move) 
-              dontStop = q(y, this, move)
+              y = f(x, gs, move) 
+              dontStop = q(y, gs, move)
             }
             nLegalMoves += 1
             y
@@ -301,13 +301,13 @@ final class GameState(bd: Board)
       while(i < n && dontStop) {
         sortMove(mvStack, i)
         val move = mvStack.move(i)
-        y = mBoard.unsafeFoldSuccessorWithoutHashKey(move)(z) { 
-          (x, _) => 
+        y = unsafeFoldSuccessorWithoutHashKey(move)(z) { 
+          (x, gs) => 
             var y = x
-            dontStop = p(y, this, move)
+            dontStop = p(y, gs, move)
             if(!dontStop) {
-              y = f(x, this, move) 
-              dontStop = q(y, this, move)
+              y = f(x, gs, move) 
+              dontStop = q(y, gs, move)
             }
             y
         }
@@ -318,7 +318,7 @@ final class GameState(bd: Board)
   }
 
   /** Returns number of legal moves. */
-  private def countLegalMoves = {
+  protected def countLegalMoves = {
     val mvStack = new MoveStack(1, 256)
     mvStack.generatePseudoLegalMovesWithPopMoves(mBoard) {
       (0 until mvStack.size).foldLeft(0) { (sum, i) => sum + mBoard.unsafeFoldSuccessor(mvStack.move(i))(0) { (_, _) => 1 } }
