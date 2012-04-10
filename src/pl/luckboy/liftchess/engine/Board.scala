@@ -19,7 +19,7 @@ final class Board private(
   require(pieces.size == 64)
   require(pieces.count { _ == SidePieceOption.WhiteKing } == 1 && pieces.count { _ == SidePieceOption.BlackKing } == 1)
   
-  // Sprawdzenie czy en passant jest dobrze ustawiony.
+  // Checks whether en passant is correct.
   require(mEnPassant.foldLeft(true) {  
     (_, enpSq) =>
       val (enpRow, prevDstRow) = side match {
@@ -32,8 +32,8 @@ final class Board private(
       pieces(prevDst) == SidePieceOption.fromSideAndPiece(side.opposite, Piece.Pawn) &&
       Square.foldPawnCaptureSquares(enpSq, side.opposite)(false) { (b, _) => !b } { (_, sq) => pieces(sq) == pawn }
   })
-  
-  // Sprawdzenie czy dobrze ustawiono roszady.
+
+  // Checks whether castling is correct.
   Seq((Side.White, castlingPair._1, 7), (Side.Black, castlingPair._2, 0)).foreach {
     case (side, castling, row) =>
       if(castling != Castling.NoneCastling) 
@@ -367,7 +367,8 @@ final class Board private(
     mFullmoveNumber
   
   /** The hash key. */
-  def hashKey: Long = throw new Exception
+  def hashKey: Long =
+    mHashKey
 
   /** Returns piece at specified square. */
   def apply(sq: Int): SidePieceOption =
@@ -377,7 +378,7 @@ final class Board private(
    * @param move		the move.
    * @return			the date used to undo move or value -1 if doesn't make move. 
    */
-  private def unsafeMakeNormalMoveOrCapture(move: Move) = {
+  protected def unsafeMakeNormalMoveOrCapture(move: Move) = {
     val savedDstPiece = this(move.destination)
     val savedWhiteCastling = mCastlingArray(Square(7, 0)) | mCastlingArray(Square(7, 7))
     val savedBlackCastling = mCastlingArray(Square(0, 0)) | mCastlingArray(Square(0, 7))
@@ -409,7 +410,7 @@ final class Board private(
    * @param move		the move.
    * @return			the date used to undo move or -1 value if doesn't make move. 
    */
-  private def unsafeMakeEnPassant(move: Move) = {
+  protected def unsafeMakeEnPassant(move: Move) = {
     val savedEnPassant = mEnPassant
     val undo = unsafeMakeEnPassantWithoutHashKey(move)
     if(undo != -1) {
@@ -432,7 +433,7 @@ final class Board private(
    * @param move		the move.
    * @return			the date used to undo move or -1 value if doesn't make move. 
    */
-  private def unsafeMakeCastling(move: Move) = {
+  protected def unsafeMakeCastling(move: Move) = {
     val row = if(side eq Side.White) 7 else 0
     val savedEnPassant = mEnPassant
     val savedCastling = mCastlingArray(Square(row, 0)) | mCastlingArray(Square(row, 7))
@@ -465,22 +466,75 @@ final class Board private(
    * @param f			the folding function.
    * @return			the result of function or start value.
    */
-  def unsafeFoldSuccessor[T](move: Move)(z: T)(f: (T, Board) => T): T =
-    unsafeFoldSuccessorWithoutHashKey(move)(z)(f)
+  @inline
+  def unsafeFoldSuccessor[@specialized T](move: Move)(z: T)(f: (T, Board) => T): T = {
+    val savedEnPassant = mEnPassant
+    val savedHalfmoveClock = mHalfmoveClock
+    val savedHashKey = mHashKey
+    move.moveType match {
+      case MoveType.NormalMove | MoveType.Capture =>
+      	val undo = unsafeMakeNormalMoveOrCapture(move)
+      	if(undo != -1) {
+      	  try {
+      	    f(z, this)
+      	  } finally {
+      	    unsafeUndoNormalMoveOrCaptureWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
+      	    mHashKey = savedHashKey
+      	  }
+      	} else {
+      	  z
+      	}
+      case MoveType.EnPassant                     =>
+      	val undo = unsafeMakeEnPassant(move)
+      	if(undo != -1) {
+      	  try {
+      	    f(z, this)
+      	  } finally {
+      	    unsafeUndoEnPassantWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
+      	    mHashKey = savedHashKey
+      	  }
+      	} else {
+      	  z
+      	}
+      case _                                      =>
+      	val undo = unsafeMakeCastling(move)
+      	if(undo != -1) {
+      	  try {
+      	    f(z, this)
+      	  } finally {
+      	    unsafeUndoCastlingWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
+      	    mHashKey = savedHashKey
+      	  }
+      	} else {
+      	  z
+      	}
+    }
+  }
 
   /** Folds successor for null move. Really makes move and, then evaluates function and, then undo move.
    * @param z			the start value
    * @param f			the folding function.
    * @return			the result of function or start value.
    */
-  def unsafeFoldNullSuccessor[T](z: T)(f: (T, Board) => T): T =
-    unsafeFoldNullSuccessorWithoutHashKey(z)(f)
+  @inline
+  def unsafeFoldNullSuccessor[@specialized T](z: T)(f: (T, Board) => T): T = {
+    val savedHashKey = mHashKey
+    mSide = side.opposite
+    mHashKey ^= Zobrist.sideKey(mSide.opposite)
+    mHashKey ^= Zobrist.sideKey(mSide)
+    try {
+      f(z, this)
+    } finally {
+      mSide = side.opposite
+      mHashKey = mHashKey
+    }
+  }
 
   /** Makes normal move or capture (it haven't to been en pasant or castling) but this method doesn't calculate hash key.
    * @param move		the move.
    * @return			the date used to undo move or value -1 if doesn't make move. 
    */
-  private def unsafeMakeNormalMoveOrCaptureWithoutHashKey(move: Move) = {
+  protected def unsafeMakeNormalMoveOrCaptureWithoutHashKey(move: Move) = {
     val piece = move.piece
     val src = move.source
     val dst = move.destination
@@ -556,7 +610,7 @@ final class Board private(
    * @param savedEnPassant		the saved square for en passant.
    * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
    */
-  private def unsafeUndoNormalMoveOrCaptureWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
+  protected def unsafeUndoNormalMoveOrCaptureWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
     val piece = move.piece
     val src = move.source
     val dst = move.destination
@@ -591,7 +645,7 @@ final class Board private(
    * @param move		the move.
    * @return			the date used to undo move or value -1 if doesn't make move. 
    */
-  private def unsafeMakeEnPassantWithoutHashKey(move: Move) = {
+  protected def unsafeMakeEnPassantWithoutHashKey(move: Move) = {
     val src = move.source
     val dst = move.destination
     val capSq = Square(Square.toRow(src), Square.toColumn(dst))
@@ -631,7 +685,7 @@ final class Board private(
    * @param savedEnPassant		the saved square for en passant.
    * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
    */
-  private def unsafeUndoEnPassantWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
+  protected def unsafeUndoEnPassantWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
     val src = move.source
     val dst = move.destination
     val capSq = Square(Square.toRow(src), Square.toColumn(dst))
@@ -660,7 +714,7 @@ final class Board private(
    * @param move		the move.
    * @return			the date used to undo move or value -1 if doesn't make move. 
    */
-  private def unsafeMakeCastlingWithoutHashKey(move: Move) = {
+  protected def unsafeMakeCastlingWithoutHashKey(move: Move) = {
     val row = if(side == Side.White) 7 else 0
     val kingSrc = Square(row, move.source)
     val kingDst = Square(row, move.destination)
@@ -704,7 +758,7 @@ final class Board private(
    * @param savedEnPassant		the saved square for en passant.
    * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
    */
-  private def unsafeUndoCastlingWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
+  protected def unsafeUndoCastlingWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
     val row = if(side == Side.Black) 7 else 0
     val kingSrc = Square(row, move.source)
     val kingDst = Square(row, move.destination)
@@ -743,34 +797,41 @@ final class Board private(
    * @param f			the folding function.
    * @return			the result of function or start value.
    */
-  def unsafeFoldSuccessorWithoutHashKey[T](move: Move)(z: T)(f: (T, Board) => T): T = {
+  @inline
+  def unsafeFoldSuccessorWithoutHashKey[@specialized T](move: Move)(z: T)(f: (T, Board) => T): T = {
     val savedEnPassant = mEnPassant
     val savedHalfmoveClock = mHalfmoveClock
     move.moveType match {
       case MoveType.NormalMove | MoveType.Capture =>
         val undo = unsafeMakeNormalMoveOrCaptureWithoutHashKey(move)
         if(undo != -1) {
-          val y = f(z, this)
-          unsafeUndoNormalMoveOrCaptureWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
-          y
+          try {
+            f(z, this)
+          } finally {
+            unsafeUndoNormalMoveOrCaptureWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
+          }
         } else {
           z
         }
       case MoveType.EnPassant                     =>
         val undo = unsafeMakeEnPassantWithoutHashKey(move)
         if(undo != -1) {
-          val y = f(z, this)
-          unsafeUndoEnPassantWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
-          y
+          try {
+            f(z, this)
+          } finally {
+            unsafeUndoEnPassantWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
+          }
         } else {
           z
         }
       case _                                      =>
         val undo = unsafeMakeCastlingWithoutHashKey(move)
         if(undo != -1) {
-          val y = f(z, this)
-          unsafeUndoCastlingWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
-          y
+          try {
+            f(z, this)
+          } finally {
+            unsafeUndoCastlingWithoutHashKey(move, undo, savedEnPassant, savedHalfmoveClock)
+          }
         } else {
           z
         }
@@ -783,11 +844,14 @@ final class Board private(
    * @param f			the folding function.
    * @return			the result of function or start value.
    */
-  def unsafeFoldNullSuccessorWithoutHashKey[T](z: T)(f: (T, Board) => T): T = {
+  @inline
+  def unsafeFoldNullSuccessorWithoutHashKey[@specialized T](z: T)(f: (T, Board) => T): T = {
     mSide = mSide.opposite
-    val y = f(z, this)
-    mSide = mSide.opposite
-    y
+    try {
+      f(z, this)
+    } finally {
+      mSide = mSide.opposite
+    }
   }
 
   /** Makes move.

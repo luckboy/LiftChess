@@ -23,7 +23,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
   
   mStack(0) = 0
 
-  /** Pushs move into stack.
+  /** Pushes move into stack.
    * @param piece		the piece.
    * @param src			the move source.
    * @param dst			the move destination.
@@ -174,11 +174,10 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
    * @param f			the function.
    * @return			the result of function.
    */
-  def generatePseudoLegalMovesWithPopMoves[T](bd: Board)(f: => T): T = {
+  @inline
+  def generatePseudoLegalMovesWithPopMoves[@specialized T](bd: Board)(f: => T): T = {
     generatePseudoLegalMoves(bd)
-    val y = f
-    popMoves()
-    y
+    try { f } finally { popMoves() }
   }
 
   /** Pushes pseudo legal moves those may be potentially good and, then evaluates function, and then pops moves from
@@ -186,13 +185,11 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
    * @param bd			the board.
    * @param f			the function.
    * @return			the result of function.
-   * 
    */
-  def generatePseudoLegalGoodMovesWithPopMoves[T](bd: Board)(f: => T): T = {
+  @inline
+  def generatePseudoLegalGoodMovesWithPopMoves[@specialized T](bd: Board)(f: => T): T = {
     generatePseudoLegalGoodMoves(bd)
-    val y = f
-    popMoves()
-    y
+    try { f } finally { popMoves() }
   }
 
   /** The number of moves */

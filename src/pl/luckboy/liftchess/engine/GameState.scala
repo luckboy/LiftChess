@@ -103,12 +103,13 @@ final class GameState(bd: Board)
   @inline
   def unsafeFoldSuccessorWithoutHashKey[@specialized T](move: Move)(z: T)(f: (T, GameState) => T): T = {
     val savedNumberOfLegalMoves = mNumberOfLegalMoves
+    val savedCanCheckRep = mCanCheckRep
     mNumberOfLegalMoves = -1
     mCanCheckRep = false
     try {
       mBoard.unsafeFoldSuccessorWithoutHashKey(move)(z) { (x, _) => f(x, this) }
     } finally {
-      mCanCheckRep = true
+      mCanCheckRep = savedCanCheckRep
       mNumberOfLegalMoves = savedNumberOfLegalMoves
     }
   }
@@ -121,12 +122,13 @@ final class GameState(bd: Board)
   @inline
   def unsafeFoldNullSuccessorWithoutHashKey[@specialized T](z: T)(f: (T, GameState) => T): T = {
     val savedNumberOfLegalMoves = mNumberOfLegalMoves
+    val savedCanCheckRep = mCanCheckRep
     mNumberOfLegalMoves = -1
     mCanCheckRep = false
     try {
       mBoard.unsafeFoldNullSuccessorWithoutHashKey(z) { (x, _) => f(x, this) }
     } finally {
-      mCanCheckRep = true
+      mCanCheckRep = savedCanCheckRep
       mNumberOfLegalMoves = savedNumberOfLegalMoves
     }
   }
