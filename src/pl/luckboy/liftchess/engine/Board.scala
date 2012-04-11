@@ -952,10 +952,10 @@ final class Board private(
     }
 
   override def hashCode: Int =
-    hashKey.toInt 
+    (mPieces.toSeq, side.hashCode, castling(Side.White), castling(Side.Black), enPassant, halfmoveClock, fullmoveNumber).hashCode
   
   override def clone(): Board =
-    Board((0 to 63).map { this(_) }, side, (castling(Side.White), castling(Side.Black)), enPassant, halfmoveClock, fullmoveNumber)
+    Board(mPieces.toSeq, side, (castling(Side.White), castling(Side.Black)), enPassant, halfmoveClock, fullmoveNumber)
 }
 
 /**
