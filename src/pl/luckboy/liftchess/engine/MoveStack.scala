@@ -12,10 +12,10 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
   /** The index stack. */
   protected val mStack = new Array[Int](maxDepth + 1)
   
-  /** The start index for currently generated move. */
+  /** The start index for currently generated moves. */
   protected var mStartMoveIndex = 0
 
-  /** The end index for currently generated move. */
+  /** The end index for currently generated moves. */
   protected var mEndMoveIndex = 0
 
   /** The move array with score. */
@@ -205,14 +205,14 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     Move(Piece(data & 15), (data >> 8) & 255, (data >> 16) & 255, PieceOption((data >> 4) & 15), MoveType(data >> 24))
   }
 
-  /** Returns move score at specified index.
+  /** Returns the move score at specified index.
    * @param	i			the index.
    * @return			the move.
    */
   def score(i: Int): Int =
     mMoves(mStartMoveIndex + (i << 1) + 1)
 
-  /** Sets move score at specified index.
+  /** Sets the move score at specified index.
    * @param i 			the index.
    * @param score		the score.
    */
