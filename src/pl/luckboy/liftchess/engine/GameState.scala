@@ -1,25 +1,28 @@
-
 package pl.luckboy.liftchess.engine
 
-/** A class for state game.
+/** A class for game state.
  * 
  * @author Łukasz Szpakowski
  */
-final class GameState(bd: Board)
+@cloneable
+final class GameState private(bd: Board, hashKeys: Seq[Long])
 {
   import GameState._
 
   /** The board. */
   protected val mBoard = bd.clone()
   
-  /** The index for mRepHashKeys array. */
+  /** The index for mRepHashKeys array. This index refers to next hash key but this index doesn't refer to current hash 
+   * key. 
+   */
   protected var mRepIndex = 0
   
   /** The array contains hash key for repetitions. */
   protected val mRepHashKeys = new Array[Long](MaxRepHashKeys)
   
   /** The array contains the counters for repetitions. If counter of array has value 0, hash key of counter hasn't correct 
-   * value. */
+   * value. 
+   */
   protected val mRepCounters = Array.fill(MaxRepHashKeys)(0)
   
   /** Whether can check repetition of position. */
@@ -27,6 +30,8 @@ final class GameState(bd: Board)
 
   /** The number of legal moves. */
   protected var mNumberOfLegalMoves = -1
+  
+  hashKeys.foreach(pushHashKey)
   
   /** Pushes hash key. 
    * @param key			the hash key.
@@ -374,10 +379,51 @@ final class GameState(bd: Board)
       }
     }
   }
+
+  /** This method is like unsafeMakeMove in Board but only for game state.
+   * @param move		the move.
+   * @return			the data for undo move.
+   */
+  def unsafeMakeMove(move: Move): Option[GameStateUndo] = {
+    val savedRepHashKey = pushHashKey(mBoard.hashKey)
+    val savedNumberOfLegalMoves = mNumberOfLegalMoves
+    mNumberOfLegalMoves = -1
+    mBoard.unsafeMakeMove(move).map { GameStateUndo(_, savedRepHashKey, savedNumberOfLegalMoves) }
+  }
+  
+  /** This method is like unsafeUndoMove in Board but only for game state.
+   * @param undo	the data for undo move.
+   */
+  def unsafeUndoMove(undo: GameStateUndo): Unit = {
+    mBoard.unsafeUndoMove(undo.undo)
+    mNumberOfLegalMoves = undo.numberOfLegalMoves
+    popHashKey(undo.repHashKey)
+  }
+  
+  /** Returns hash keys for repetition of position. */
+  private def repHashKeys: Seq[Long] =
+    (0 until MaxRepHashKeys).flatMap { 
+      i => 
+        val j = (mRepIndex + MaxRepHashKeys - i - 1) % MaxRepHashKeys
+        if(mRepCounters(j) > 0) Seq(mRepHashKeys(j)) else Seq()
+    }.reverse
+  
+  override def clone(): GameState =
+    new GameState(mBoard, repHashKeys)
 }
 
 object GameState
 {
   /** The maximal number of the hash key for the repetition of position. */
   val MaxRepHashKeys: Int = 32
+  
+  /** Creates a game state from board.
+   * @param	bd			the board.
+   * @return			the game state.
+   */
+  def fromBoard(bd: Board): GameState =
+    new GameState(bd, Seq())  
+  
+  def apply(bd: Board): GameState =
+    fromBoard(bd)
 }
