@@ -61,6 +61,19 @@ package object liftchess
   implicit def sidePieceToTuple2(sidePiece: SidePiece): (Side, Piece) =
     (sidePiece.side, sidePiece.piece)
     
-  implicit def Tuple2ToSidePiece(p: (Side, Piece)): SidePiece =
+  implicit def tuple2ToSidePiece(p: (Side, Piece)): SidePiece =
     SidePiece.fromSideAndPiece(p._1, p._2)
+    
+  //
+  // The implicit conversions for SquareOption.
+  //
+    
+  implicit def squareOptionToOption(sqOption: SquareOption): Option[Int] =
+    sqOption.foldLeft(None: Option[Int]) { (_, sq) => Some(sq) }
+
+  implicit def squareOptionToIterable(sqOption: SquareOption): Iterable[Int] =
+    squareOptionToOption(sqOption)
+    
+  implicit def optionToSquareOption(option: Option[Int]): SquareOption =
+    option.foldLeft(SquareOption.None) { (_, sq) => SquareOption(sq) }
 }
