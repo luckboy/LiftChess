@@ -149,9 +149,9 @@ final class GameState(bd: Board)
    * @param mvStack		the moves (move buffer).
    * @param mvEval		the evaluation function for move.
    * @param z			the start value.
-   * @param p			the function of stopping that tests before evaluates f function (if this function returns false, there 
+   * @param p			the stopping function that tests before evaluates f function (if this function returns false, there 
    *                    stops folding).
-   * @param q			the function of stopping that tests after evaluates f function (if this function returns false, there
+   * @param q			the stopping function that tests after evaluates f function (if this function returns false, there
    *                    stops folding).
    * @param f			the folding function.
    * @return			the folding result.
@@ -194,9 +194,9 @@ final class GameState(bd: Board)
    * @param mvStack		the moves (move buffer).
    * @param mvEval		the evaluation function for move.
    * @param z			the start value.
-   * @param p			the function of stopping that tests before evaluates f function (if this function returns false, there 
+   * @param p			the stopping function that tests before evaluates f function (if this function returns false, there 
    *                    stops folding).
-   * @param q			the function of stopping that tests after evaluates f function (if this function returns false, there
+   * @param q			the stopping function that tests after evaluates f function (if this function returns false, there
    *                    stops folding).
    * @param f			the folding function.
    * @return			the folding result.
@@ -236,9 +236,9 @@ final class GameState(bd: Board)
    * @param mvStack		the moves (move buffer).
    * @param mvEval		the evaluation function for move.
    * @param z			the start value.
-   * @param p			the function of stopping that tests before evaluates f function (if this function returns false, there 
+   * @param p			the stopping function that tests before evaluates f function (if this function returns false, there 
    *                    stops folding).
-   * @param q			the function of stopping that tests after evaluates f function (if this function returns false, there
+   * @param q			the stopping function that tests after evaluates f function (if this function returns false, there
    *                    stops folding).
    * @param f			the folding function.
    * @return			the folding result.
@@ -281,9 +281,9 @@ final class GameState(bd: Board)
    * @param mvStack		the moves (move buffer).
    * @param mvEval		the evaluation function for move.
    * @param z			the start value.
-   * @param p			the function of stopping that tests before evaluates f function (if this function returns false, there 
+   * @param p			the stopping function that tests before evaluates f function (if this function returns false, there 
    *                    stops folding).
-   * @param q			the function of stopping that tests after evaluates f function (if this function returns false, there
+   * @param q			the stopping function that tests after evaluates f function (if this function returns false, there
    *                    stops folding).
    * @param f			the folding function.
    * @return			the folding result.
