@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** A treat for searches game tree. 
+/** A trait for searches game tree. 
  * 
  * @author Łukasz Szpakowski
  */

@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** A listener treat for alpha beta algorithm.
+/** A listener trait for alpha beta algorithm.
  * 
  * @author Łukasz Szpakowski
  */

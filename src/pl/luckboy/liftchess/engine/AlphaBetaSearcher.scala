@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** A treat for alpha beta algorithm. 
+/** A trait for alpha beta algorithm. 
  * 
  * @author Łukasz Szpakowski
  */
