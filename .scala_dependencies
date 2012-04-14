@@ -26,8 +26,15 @@
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/AlphaBetaSearchListener.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Move.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/impl/search/SimpleSearcher.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Searcher.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/EvaluatorFactory.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/EvaluatorFactory.scala
-/home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/BoardTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SidePiece.scala
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SidePieceOption.scala
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/PieceOption.scala
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Side.scala
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Piece.scala
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SideOption.scala
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/BoardTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/TestHelper.scala
+/home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/BoardTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/BoardTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SidePieceOption.scala
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/BoardTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/BoardTest.scala
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/BoardTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Square.scala
@@ -72,8 +79,8 @@
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SquareOption.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/EnumValue.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/impl/eval/SimpleEvaluator.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/impl/eval/SimpleEvaluator.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Evaluator.scala
-/home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/TestHelper.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/TestHelper.scala -> /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/TestHelper.scala
+/home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/TestHelper.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/TestHelper.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SidePieceOption.scala
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/TestHelper.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SquareOption.scala
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/TestHelper.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/PieceOption.scala
@@ -395,6 +402,8 @@
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/Main.scala -> /home/luck/develop/prj/scala/chess/LiftChess/bin/pl/luckboy/liftchess/Main.class
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/AlphaBetaSearchListener.scala -> /home/luck/develop/prj/scala/chess/LiftChess/bin/pl/luckboy/liftchess/engine/AlphaBetaSearchListener.class
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/MoveStack.scala -> /home/luck/develop/prj/scala/chess/LiftChess/bin/pl/luckboy/liftchess/engine/MoveStack.class
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/bin/pl/luckboy/liftchess/package$.class
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/package.scala -> /home/luck/develop/prj/scala/chess/LiftChess/bin/pl/luckboy/liftchess/package.class
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/MoveStackTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/bin/pl/luckboy/liftchess/engine/test/MoveStackTest$$anonfun$37.class
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/MoveStackTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/bin/pl/luckboy/liftchess/engine/test/MoveStackTest$$anonfun$23$$anonfun$26.class
 /home/luck/develop/prj/scala/chess/LiftChess/test/pl/luckboy/liftchess/engine/test/MoveStackTest.scala -> /home/luck/develop/prj/scala/chess/LiftChess/bin/pl/luckboy/liftchess/engine/test/MoveStackTest$$anonfun$41.class
