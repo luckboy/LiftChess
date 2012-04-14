@@ -13,7 +13,7 @@ final class PieceOption private(val id: Int, val name: String) extends EnumValue
 
 /** A singleton for optional piece.
  * 
- * @authpr Łukasz Szpakowski
+ * @author Łukasz Szpakowski
  */
 object PieceOption
 {
