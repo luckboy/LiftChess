@@ -362,7 +362,7 @@ final class Board private(
   def halfmoveClock: Int =
     mHalfmoveClock
 
-  /** The number of moves */ 
+  /** The number of moves. */ 
   def fullmoveNumber: Int =
     mFullmoveNumber
   
@@ -376,7 +376,7 @@ final class Board private(
   
   /** This method is like unsafeMakeNormalMoveOrCaptureWithoutHashKey but this method calculates hash key.
    * @param move		the move.
-   * @return			the date used to undo move or value -1 if doesn't make move. 
+   * @return			the date used to undo move or -1 if doesn't make move. 
    */
   protected def unsafeMakeNormalMoveOrCapture(move: Move) = {
     val savedDstPiece = this(move.destination)
@@ -408,7 +408,7 @@ final class Board private(
      
   /** This method is like unsafeMakeEnPassantWithoutHashKey but this method calculates hash key.
    * @param move		the move.
-   * @return			the date used to undo move or -1 value if doesn't make move. 
+   * @return			the date used to undo move or -1 if doesn't make move. 
    */
   protected def unsafeMakeEnPassant(move: Move) = {
     val savedEnPassant = mEnPassant
@@ -431,7 +431,7 @@ final class Board private(
 
   /** This method is like unsafeMakeCastlingWithoutHashKey but this method calculates hash key.
    * @param move		the move.
-   * @return			the date used to undo move or -1 value if doesn't make move. 
+   * @return			the date used to undo move or -1 if doesn't make move. 
    */
   protected def unsafeMakeCastling(move: Move) = {
     val row = if(side eq Side.White) 7 else 0
@@ -532,7 +532,7 @@ final class Board private(
 
   /** Makes normal move or capture (it haven't to been en pasant or castling) but this method doesn't calculate hash key.
    * @param move		the move.
-   * @return			the date used to undo move or value -1 if doesn't make move. 
+   * @return			the date used to undo move or -1 if doesn't make move. 
    */
   protected def unsafeMakeNormalMoveOrCaptureWithoutHashKey(move: Move) = {
     val piece = move.piece
@@ -643,7 +643,7 @@ final class Board private(
 
   /** Makes en passant but this method doesn't hash key.
    * @param move		the move.
-   * @return			the date used to undo move or value -1 if doesn't make move. 
+   * @return			the date used to undo move or -1 if doesn't make move. 
    */
   protected def unsafeMakeEnPassantWithoutHashKey(move: Move) = {
     val src = move.source
@@ -712,7 +712,7 @@ final class Board private(
 
   /** Makes castling but this method doesn't hash key.
    * @param move		the move.
-   * @return			the date used to undo move or value -1 if doesn't make move. 
+   * @return			the date used to undo move or -1 if doesn't make move. 
    */
   protected def unsafeMakeCastlingWithoutHashKey(move: Move) = {
     val row = if(side == Side.White) 7 else 0
@@ -930,11 +930,11 @@ final class Board private(
   def inCheck: Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
 
-  /** The method is like sideInCheck but this method does't use cache. */
+  /** The method is like sideInCheck but this method doesn't use cache. */
   def sideInCheckNoCache(side: Side): Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
     
-  /** The method is like inCheck but this method does't use cache. */
+  /** The method is like inCheck but this method doesn't use cache. */
   def inCheckNoCache: Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
     

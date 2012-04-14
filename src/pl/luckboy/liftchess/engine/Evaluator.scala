@@ -6,9 +6,9 @@ package pl.luckboy.liftchess.engine
  */
 trait Evaluator 
 {
-  /** Podaje ocenę dla planszy.
-   * @param bd			plansza.
-   * @return			ocena.
+  /** Returns evaluation of board.
+   * @param bd			the board.
+   * @return			the evaluation.
    */
   def evaluate(bd: Board): Int
 }
