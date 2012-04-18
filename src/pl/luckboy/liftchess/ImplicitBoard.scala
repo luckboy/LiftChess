@@ -32,7 +32,7 @@ class ImplicitBoard private(bd: Board)
    * @return			true if there made move, false otherwise.
    */
   def makeMove(move: Move): Boolean =
-    pseudoLegalMoves.find(move == _).map { _ => bd.unsafeMakeMove(move).isDefined }.getOrElse(false)
+    pseudoLegalMoves.find(move == _).map { bd.unsafeMakeMove(_).isDefined }.getOrElse(false)
 }
 
 /**
