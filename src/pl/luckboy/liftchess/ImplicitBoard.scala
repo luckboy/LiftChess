@@ -40,6 +40,6 @@ class ImplicitBoard private(bd: Board)
  */
 object ImplicitBoard
 {
-  def boardToImplicitBoard(bd: Board) =
+  implicit def boardToImplicitBoard(bd: Board): ImplicitBoard =
     new ImplicitBoard(bd)
 }
