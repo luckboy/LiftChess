@@ -33,6 +33,14 @@ class ImplicitBoard private(bd: Board)
    */
   def makeMove(move: Move): Boolean =
     pseudoLegalMoves.find(move == _).map { bd.unsafeMakeMove(_).isDefined }.getOrElse(false)
+  
+  /** Returns true if current side is in checkmate. */
+  def inCheckmate: Boolean =
+    legalMoves.isEmpty && bd.inCheck
+  
+  /** Returns true if current side is in stalemate. */
+  def inStalemate: Boolean =
+    legalMoves.isEmpty && !bd.inCheck
 }
 
 /**
