@@ -472,7 +472,7 @@ class BoardTest extends Properties("Board")
   // Fukcje dla testów wykonywania ruchów.
   //
     
-  def boardTest(bd: Board, args: BoardArgs) = {
+  def testBoardWithoutHashKey(bd: Board, args: BoardArgs) = {
     val (aPieces, aSide, aCastling, aEnPassant, aHalfmoveClock, aFullmoveNumber) = args
    
     // foldSidePieces
@@ -528,12 +528,15 @@ class BoardTest extends Properties("Board")
     bd.halfmoveClock == aHalfmoveClock &&
     bd.fullmoveNumber == aFullmoveNumber
   }
+
+  implicit def testBoard(bd: Board, args: BoardArgs) =
+	testBoardWithoutHashKey(bd, args) && bd.hashKey == newBoardTupled(args).hashKey
   
-  def foldSuccessorPropForLegalMoves(gen: Gen[(BoardArgs, List[(Move, BoardArgs)])])(foldSuccessor: (Board) => (Move) => (Boolean) => ((Boolean, Board) => Boolean) => Boolean) = {
+  def foldSuccessorPropForLegalMoves(gen: Gen[(BoardArgs, List[(Move, BoardArgs)])])(foldSuccessor: (Board) => (Move) => (Boolean) => ((Boolean, Board) => Boolean) => Boolean)(implicit test: (Board, BoardArgs) => Boolean) = {
     Prop.forAllNoShrink(gen) {
       case (ba, mbas) => { 
         def g(bd: Board, ba: BoardArgs, mbas: List[(Move, BoardArgs)]): Boolean = {
-          val res1 = boardTest(bd, ba)
+          val res1 = test(bd, ba)
           val res2 = mbas match {
             case (move, ba2) :: mbas2 => 
               foldSuccessor(bd)(move)(false) { 
@@ -542,7 +545,7 @@ class BoardTest extends Properties("Board")
             case Nil                  =>
               true
           }
-          val res3 = boardTest(bd, ba)          
+          val res3 = test(bd, ba)          
           res1 && res2 && res3
         }
         
@@ -551,15 +554,15 @@ class BoardTest extends Properties("Board")
     }
   }
   
-  def foldSuccessorPropForIllegalMoves(gen: Gen[(BoardArgs, Set[Move])])(foldSuccessor: (Board) => (Move) => (Boolean) => ((Boolean, Board) => Boolean) => Boolean) = {
+  def foldSuccessorPropForIllegalMoves(gen: Gen[(BoardArgs, Set[Move])])(foldSuccessor: (Board) => (Move) => (Boolean) => ((Boolean, Board) => Boolean) => Boolean)(implicit test: (Board, BoardArgs) => Boolean) = {
     Prop.forAllNoShrink(gen) {
       case (ba, moves) => 
         moves.forall {
           move => 
             val aBd = newBoardTupled(ba)
-            val res = boardTest(aBd, ba)
+            val res = test(aBd, ba)
             val res2 = foldSuccessor(aBd)(move)(true) { (_, _) => false }
-            res && res2 && boardTest(aBd, ba)
+            res && res2 && test(aBd, ba)
         }
     }
   }
@@ -1413,6 +1416,9 @@ class BoardTest extends Properties("Board")
       property("unsafeFoldSuccessor for " + name + " should make move and undo move") =
         foldSuccessorPropForIllegalMoves(gen) { _.unsafeFoldSuccessor }
 
+      property("unsafeFoldSuccessorWithoutHashKey for " + name + " should make move and undo move") =
+        foldSuccessorPropForIllegalMoves(gen) { _.unsafeFoldSuccessorWithoutHashKey } (testBoardWithoutHashKey)
+      
       property("unsafeMakeMove and unsafeUndoMove for " + name + " should make move and undo move") =
         foldSuccessorPropForIllegalMoves(gen)(foldSuccessorForUnsafeMakeMove)
     }
