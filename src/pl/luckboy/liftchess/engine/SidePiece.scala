@@ -6,42 +6,42 @@ package pl.luckboy.liftchess.engine
  */
 final class SidePiece private(val id: Int, val name: String) extends EnumValue
 {
-  /** Checks whether side piece is specified side.
+  /** Checks whether the side piece is the specified side.
    * @param side		the side.
-   * @return			true if it is specified side.
+   * @return			true if it is the specified side.
    */
   def isSide(side: Side): Boolean =
     (id >> 4) == side.id + 1
 
-  /** Checks whether side piece is specified piece.
+  /** Checks whether the side piece is the specified piece.
    * @param piece		the piece.
-   * @return			true if it is specified piece.
+   * @return			true if it is the specified piece.
    */
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
   
-  /** Returns side. */
+  /** Returns the side. */
   @inline
   def side: Side =
     Side((id >> 4) - 1)
 
-  /** Return piece. */
+  /** Returns the piece. */
   @inline
   def piece: Piece =
     Piece(id & 15)
 
-  /** Returns side. */
+  /** Returns the side identifier. */
   @inline
   def sideId: Int =
     (id >> 4) - 1
 
-  /** Return piece. */
+  /** Return the piece indetifier. */
   @inline
   def pieceId: Int =
     id & 15
 }
 
-/** Singleton bierki strony.
+/** A Singleton for side and piece.
  * 
  * @author Łukasz Szpakowski
  */

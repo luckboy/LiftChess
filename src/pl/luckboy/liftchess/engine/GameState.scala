@@ -12,16 +12,16 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
   /** The board. */
   protected val mBoard = bd.clone()
   
-  /** The index for mRepHashKeys array. This index refers to next hash key but this index doesn't refer to current hash 
+  /** The index for mRepHashKeys array. This index refers to next hash key but this index doesn't refer to current the hash 
    * key. 
    */
   protected var mRepIndex = 0
   
-  /** The array contains hash key for repetitions. */
+  /** The array contains the hash key for repetitions. */
   protected val mRepHashKeys = new Array[Long](MaxRepHashKeys)
   
-  /** The array contains the counters for repetitions. If counter of array has value 0, hash key of counter hasn't correct 
-   * value. 
+  /** The array contains the counters for repetitions. If counter of array has value 0, the hash key of counter 
+   * hasn't correct value. 
    */
   protected val mRepCounters = Array.fill(MaxRepHashKeys)(0)
   
@@ -33,7 +33,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
   
   hashKeys.foreach(pushHashKey)
   
-  /** Pushes hash key. 
+  /** Pushes the hash key. 
    * @param key			the hash key.
    * @return			the saved hash key.
    */
@@ -47,7 +47,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     savedKey
   }
   
-  /** Pops hash key and pushes saved hash key into him place. 
+  /** Pops the hash key and pushes the saved hash key into him place. 
    * @param savedHashKey	the saved hash key.
    */
   protected def popHashKey(savedHashKey: Long) = {
@@ -58,15 +58,15 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     mRepHashKeys(mRepIndex) = savedHashKey    
   }
 
-  /** The board for game state. */
+  /** The board for the game state. */
   def board: Board =
     mBoard.clone()
   
-  /** This method is like unsafeFoldSuccessor in Board but only for game state.
+  /** This method is like unsafeFoldSuccessor in Board but only for the game state.
    * @param move		the move
    * @param z			the start move.
    * @param f			the folding function.
-   * @return			the result of function or start value.
+   * @return			the result of function or the start value.
    */
   @inline
   def unsafeFoldSuccessor[@specialized T](move: Move)(z: T)(f: (T, GameState) => T): T = {
@@ -84,7 +84,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
   /** This method is like unsafeFoldNullSuccessor in Board but only for game state.
    * @param z			the start move.
    * @param f			the folding function.
-   * @return			the result of function or start value.
+   * @return			the result of function or the start value.
    */
   @inline
   def unsafeFoldNullSuccessor[@specialized T](z: T)(f: (T, GameState) => T): T = {
@@ -99,7 +99,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }
   }
   
-  /** This method is like unsafeFoldSuccessorWithoutHashKey in Board but only for game state.
+  /** This method is like unsafeFoldSuccessorWithoutHashKey in Board but only for the game state.
    * @param move		the move
    * @param z			the start move.
    * @param f			the folding function.
@@ -119,10 +119,10 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }
   }
 
-  /** This method is like unsafeFoldNullSuccessorWithoutHashKey in Board but only for game state.
+  /** This method is like unsafeFoldNullSuccessorWithoutHashKey in Board but only for the game state.
    * @param z			the start value.
    * @param f			the folding function.
-   * @return			the result of function or start value.
+   * @return			the result of function or the start value.
    */
   @inline
   def unsafeFoldNullSuccessorWithoutHashKey[@specialized T](z: T)(f: (T, GameState) => T): T = {
@@ -150,7 +150,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }
   }
   
-  /** Folds sorted successors for game state.
+  /** Folds the sorted successors for the game state.
    * @param mvStack		the moves (move buffer).
    * @param mvEval		the evaluation function for move.
    * @param z			the start value.
@@ -195,7 +195,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }
   }
 
-  /** Folds sorted successors that may be potentially good for game state.
+  /** Folds the sorted successors that may be potentially good for the game state.
    * @param mvStack		the moves (move buffer).
    * @param mvEval		the evaluation function for move.
    * @param z			the start value.
@@ -237,7 +237,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }
   }
   
-  /** Folds sorted successors for game state but this method doesn't calculate hash key.
+  /** Folds the sorted successors for the game state but this method doesn't calculate hash key.
    * @param mvStack		the moves (move buffer).
    * @param mvEval		the evaluation function for move.
    * @param z			the start value.
@@ -282,7 +282,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }    
   }
   
-  /** Folds sorted successors that may be potentially good for game state but this method doesn't calculate hash key.
+  /** Folds the sorted successors that may be potentially good for the game state but this method doesn't calculate hash key.
    * @param mvStack		the moves (move buffer).
    * @param mvEval		the evaluation function for move.
    * @param z			the start value.
@@ -324,7 +324,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }    
   }
 
-  /** Returns number of legal moves. */
+  /** Returns the number of legal moves. */
   protected def countLegalMoves = {
     val mvStack = new MoveStack(1, 256)
     mvStack.generatePseudoLegalMovesWithPopMoves(mBoard) {
@@ -332,16 +332,16 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }
   }
   
-  /** Returns true if side won.
+  /** Returns true if the side won.
    * @param				the side
-   * @return			true if side won.
+   * @return			true if the side won.
    */
   def isWin(side: Side): Boolean =
     isLose(side.opposite)
 
-  /** Returns true if side lost.
+  /** Returns true if the side lost.
    * @param side		the side.
-   * @return			true if side lost.
+   * @return			true if the side lost.
    */
   def isLose(side: Side): Boolean = {
     if(side eq mBoard.side) {
@@ -380,7 +380,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     }
   }
 
-  /** This method is like unsafeMakeMove in Board but only for game state.
+  /** This method is like unsafeMakeMove in Board but only for the game state.
    * @param move		the move.
    * @return			the data for undo move.
    */
@@ -391,7 +391,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     mBoard.unsafeMakeMove(move).map { GameStateUndo(_, savedRepHashKey, savedNumberOfLegalMoves) }
   }
   
-  /** This method is like unsafeUndoMove in Board but only for game state.
+  /** This method is like unsafeUndoMove in Board but only for the game state.
    * @param undo	the data for undo move.
    */
   def unsafeUndoMove(undo: GameStateUndo): Unit = {
@@ -400,7 +400,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
     popHashKey(undo.repHashKey)
   }
   
-  /** Returns hash keys for repetition of position. */
+  /** Returns the hash keys for repetition of position. */
   private def repHashKeys: Seq[Long] =
     (0 until MaxRepHashKeys).flatMap { 
       i => 
@@ -417,7 +417,7 @@ object GameState
   /** The maximal number of the hash key for the repetition of position. */
   val MaxRepHashKeys: Int = 32
   
-  /** Creates a game state from board.
+  /** Creates a game state from the board.
    * @param	bd			the board.
    * @return			the game state.
    */

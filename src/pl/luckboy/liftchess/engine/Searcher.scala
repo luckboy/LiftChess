@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** A trait for searches game tree. 
+/** A trait for the searches game tree. 
  * 
  * @author Łukasz Szpakowski
  */
@@ -9,13 +9,13 @@ trait Searcher
   /** The listener type. */
   type SearchListener
   
-  /** The evaluator for searcher. */
+  /** The evaluator for the searcher. */
   def evaluator: Evaluator
 
-  /** The game state for searcher. */
+  /** The game state for the searcher. */
   def gameState: GameState
 
-  /** Sets the game state for searcher. */
+  /** Sets the game state for the searcher. */
   def gameState_=(gs: GameState): Unit
 
   /** The search listener. */
@@ -24,7 +24,7 @@ trait Searcher
   /** Sets the search listener. */
   def searchListener_=(listener: SearchListener): Unit
 
-  /** Searches game tree for specified depth.
+  /** Searches game tree for the specified depth.
    * @param depth		the depth.
    * @return			the search result.
    */

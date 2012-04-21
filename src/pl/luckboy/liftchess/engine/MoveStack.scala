@@ -23,7 +23,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
   
   mStack(0) = 0
 
-  /** Pushes move into stack.
+  /** Pushes the move into stack.
    * @param piece		the piece.
    * @param src			the move source.
    * @param dst			the move destination.
@@ -43,13 +43,13 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     }
   }
   
-  /** Generates pseudo legal en passants and, then pushes they into stack.
+  /** Generates a pseudo legal en passants and, then pushes they into stack.
    * @param bd			the board.
    */
   private def generatePseudoLegalEnPassants(bd: Board) =
     bd.enPassant.foldLeft(()) { (_, dst) => generatePseudoLegalEnPassantsTo(bd, dst) }
 
-  /** Generates pseudo legal promotions and, then pushes they into stack.
+  /** Generates a pseudo legal promotions and, then pushes they into stack.
    * @param bd			the board.
    * @param src			the move source.
    */
@@ -66,7 +66,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
         }
     }
   
-  /** Generates pseudo legal normal move and captures and, then pushes they into stack.
+  /** Generates a pseudo legal normal move and captures and, then pushes they into stack.
    * @param bd			the board.
    * @param src			the source move.
    * @param piece		the piece.
@@ -91,7 +91,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     }
   }
   
-  /** Generates pseudo legal moves and pushes they into stack.
+  /** Generates a pseudo legal moves and pushes they into stack.
    * @param bd			the board.
    */
   def generatePseudoLegalMoves(bd: Board): Unit = {
@@ -116,7 +116,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     generatePseudoLegalEnPassants(bd)
   }
 
-  /** Generates pseudo legal captures and, then pushes they into stack.
+  /** Generates a pseudo legal captures and, then pushes they into stack.
    * @param bd			the board.
    * @param src			the source move.
    * @param piece		the piece.
@@ -139,7 +139,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     }
   }
   
-  /** Generates pseudo legal moves those may be potentially good and, then pushes they into stack.
+  /** Generates a pseudo legal moves those may be potentially good and, then pushes they into stack.
    * @param bd			the board.
    */
   def generatePseudoLegalGoodMoves(bd: Board): Unit = {
@@ -155,21 +155,21 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     generatePseudoLegalEnPassants(bd)
   }
 
-  /** Begin to push new moves. This method uses in move generators */
+  /** Begin to push new moves. This method uses in the move generators */
   private def startPushMoves() = {
     mSp += 1
     mStack(mSp) = mEndMoveIndex
     mStartMoveIndex = mEndMoveIndex
   }
 
-  /** Pops moves from stack. */
+  /** Pops the moves from stack. */
   def popMoves(): Unit = {
     mEndMoveIndex = mStartMoveIndex
     mSp -= 1
     mStartMoveIndex = mStack(mSp)
   }
   
-  /** Pushes pseudo legal moves and, then evalute function and, then pops moves from stack. 
+  /** Pushes a pseudo legal moves and, then evaluates the function and, then pops the moves from stack. 
    * @param bd			the board.
    * @param f			the function.
    * @return			the result of function.
@@ -180,8 +180,8 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     try { f } finally { popMoves() }
   }
 
-  /** Pushes pseudo legal moves those may be potentially good and, then evaluates function, and then pops moves from
-   * stack.
+  /** Pushes a pseudo legal moves those may be potentially good and, then evaluates the function, and then pops the moves 
+   * from stack.
    * @param bd			the board.
    * @param f			the function.
    * @return			the result of function.
@@ -196,7 +196,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
   def size: Int =
     (mEndMoveIndex - mStartMoveIndex) >> 1
 
-  /** Returns move at specified index.
+  /** Returns the move at specified index.
    * @param i			the index.
    * @return			the move.
    */
@@ -219,7 +219,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
   def setScore(i: Int, score: Int): Unit =
     mMoves(mStartMoveIndex + (i << 1) + 1) = score 
 
-  /** Swap two moves and their score for specified indexes.
+  /** Swap two moves and their score for the specified indexes.
    * @param i			the index for first move.
    * @param j			the index for second move.
    */

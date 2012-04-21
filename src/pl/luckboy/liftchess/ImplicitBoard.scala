@@ -7,18 +7,18 @@ import pl.luckboy.liftchess.engine._
  */
 class ImplicitBoard private(bd: Board)
 {
-  /** Returns legal moves for board. */
+  /** Returns a legal moves for the board. */
   def legalMoves: Set[Move] = 
     pseudoLegalMoves.filter { bd.clone().unsafeFoldSuccessor(_)(false) { (_, _) => true } }
   
-  /** Returns pseudo legal moves for board. */
+  /** Returns a pseudo legal moves for the board. */
   def pseudoLegalMoves: Set[Move] = {
     val mvStack = new MoveStack(1, 256)
     mvStack.generatePseudoLegalMovesWithPopMoves(bd) { (0 until mvStack.size).map(mvStack.move) }.toSet
   }
   
-  /** Returns successor for board if specified move is legal, None otherwise. Successor is copy of board after current side 
-   * made move.
+  /** Returns the successor for board if specified move is legal, None otherwise. The successor is copy of board after 
+   * current side made the move.
    * @param move		the move.
    * @return			the successor.
    */
@@ -27,7 +27,7 @@ class ImplicitBoard private(bd: Board)
     if(new ImplicitBoard(newBd).makeMove(move)) Some(newBd) else None
   }
   
-  /** Makes move if specified move is legal. 
+  /** Makes the move if the specified move is legal. 
    * @param move		the move.
    * @return			true if there made move, false otherwise.
    */

@@ -6,7 +6,7 @@ package pl.luckboy.liftchess.engine
  */
 final class Side private(val id: Int, val name: String) extends EnumValue
 {
-  /** Returns opposite side. */
+  /** Returns the opposite side. */
   @inline
   def opposite: Side =
     Side(id ^ 1)

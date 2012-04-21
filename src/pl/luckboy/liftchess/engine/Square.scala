@@ -60,7 +60,7 @@ object Square
       Array(15, 17, 16, 32)
       )
 
-  /** Folds squares of pawn captures for specified square. 
+  /** Folds squares of pawn captures for the specified square. 
    * @param sq			the square.
    * @param side		the side.
    * @param z			the start value.
@@ -89,7 +89,7 @@ object Square
     y2
   }
 
-  /** Folds squares of pawn moves for specified squares.
+  /** Folds squares of pawn moves for the specified squares.
    * @param sq			the square.
    * @param side		the side.
    * @param z			the start value.
@@ -114,7 +114,7 @@ object Square
     }
   }
 
-  /** Folds square of non-sliding moves for specified square.
+  /** Folds square of non-sliding moves for the specified square.
    * @param sq			the square.
    * @param piece		the piece.
    * @param z			the start value.
@@ -138,7 +138,7 @@ object Square
     y
   }
   
-  /** Folds squares of sliding moves for specified square.
+  /** Folds squares of sliding moves for the specified square.
    * @param sq			the square.
    * @param piece		the piece.
    * @param z			the start value.
@@ -168,7 +168,7 @@ object Square
     y
   }
   
-  /** Folds move squares for specified square. In case piece is pawn, just evaluates f function for non-captures and 
+  /** Folds move squares for the specified square. In case piece is pawn, just evaluates f function for non-captures and 
    * break condition is satisfied. Just evaluates g function for captures and break condition isn't satisfied.
    * @param sq			the square.
    * @param side		the side.

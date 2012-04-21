@@ -42,14 +42,14 @@ case class BoardBuilder(
   def updatedCastlingPair(newCastlingPair: (Castling, Castling)): BoardBuilder =
     BoardBuilder(pieces, side, newCastlingPair, enPassant, halfmoveClock, fullmoveNumber)
 
-  /** The castling for specified side.
+  /** The castling for the specified side.
    * @param side		the sided.
    * @return			the castling.
    */
   def castling(side: Side): Castling =
     if(side == Side.White) castlingPair._1 else castlingPair._2
   
-  /** Creates a copy of board builder with new castling for specified side.
+  /** Creates a copy of board builder with new castling for the specified side.
    * @param side		the side.
    * @param castling	the castling.
    * @return			the new builder.
@@ -78,12 +78,12 @@ case class BoardBuilder(
   def updatedFullmoveNumber(newFullmoveNumber: Int): BoardBuilder =
   	BoardBuilder(pieces, side, castlingPair, enPassant, halfmoveClock, newFullmoveNumber)
   	
-  /** Converts to board. */
+  /** Converts to a board. */
   def toBoard: Board =
     Board(pieces, side, castlingPair, enPassant, halfmoveClock, fullmoveNumber)
 }
 
-/** A singleton for board builder.
+/** A singleton for the board builder.
  * 
  * @author Łukasz Szpakowski
  */

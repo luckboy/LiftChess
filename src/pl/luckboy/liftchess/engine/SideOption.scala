@@ -1,12 +1,12 @@
 package pl.luckboy.liftchess.engine
 
-/** A class for optional side.
+/** A class for the optional side.
  * 
  * @author Łukasz Szpakowski
  */
 final class SideOption private(val id: Int, val name: String) extends EnumValue
 {
-  /** Returns opposite side */
+  /** Returns the opposite side */
   def opposite: SideOption =
     if(id != 2) SideOption(id ^ 1) else this
 
@@ -20,7 +20,7 @@ final class SideOption private(val id: Int, val name: String) extends EnumValue
     if(id != 2) f(z, Side(id)) else z
 }
 
-/** A singleton for optional side.
+/** A singleton for the optional side.
  * 
  * @author Łukasz Szpakowski
  */

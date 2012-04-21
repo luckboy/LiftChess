@@ -6,48 +6,48 @@ package pl.luckboy.liftchess.engine
  */
 final class SidePieceOption private(val id: Int, val name: String) extends EnumValue
 {
-  /** Checks whether optional side piece doesn't contain piece. */
+  /** Checks whether optional side piece doesn't contain the piece. */
   @inline
   def isNone: Boolean =
     id == 54
 
-  /** Checks whether optional side piece is specified side.
+  /** Checks whether the optional side piece is the specified side.
    * @param side		the side.
-   * @return			true if it is specified side.
+   * @return			true if it is the specified side.
    */
   def isSide(side: Side): Boolean =
     (id >> 4) == side.id + 1
       
-  /** Checks whether optional side piece doesn't contain piece or is specified side.
+  /** Checks whether the optional side piece doesn't contain the piece or is the specified side.
    * @param side		the side.
-   * @return			true if it doesn't contain piece or it is specified side.
+   * @return			true if it doesn't contain the piece or it is the specified side.
    */
   def isNoneOrSide(side: Side): Boolean =
     ((id >> 4) & (side.id + 1)) != 0
   
-  /** Checks whether optional side piece is specified piece.
+  /** Checks whether optional side piece is the specified piece.
    * @param piece		the piece.
-   * @return			true if it is specified piece.
+   * @return			true if it is the specified piece.
    */
   def isPiece(piece: Piece): Boolean =
     (id & 15) == piece.id
 
-  /** Returns optional side. */
+  /** Returns the optional side. */
   @inline
   def sideOption: SideOption =
     SideOption((id >> 4) - 1)
 
-  /** Returns optional piece. */
+  /** Returns the optional piece. */
   @inline
   def pieceOption: PieceOption =
     PieceOption(id & 15)
 
-  /** Returns identifier of optional side. */
+  /** Returns the identifier of optional side. */
   @inline
   def sideOptionId: Int =
     (id >> 4) - 1
 
-  /** Returns identifier of optional piece. */
+  /** Returns the identifier of optional piece. */
   @inline
   def pieceOptionId: Int =
     id & 15
@@ -115,7 +115,7 @@ object SidePieceOption
   def fromSideAndPiece(side: Side, piece: Piece): SidePieceOption =
     Values(side.id)(piece.id)
 
-  /** Creates a optional side piece from identifier.
+  /** Creates a optional side piece from the specified identifier.
    * @param				the identifier.
    * @return			the optional side piece.
    */

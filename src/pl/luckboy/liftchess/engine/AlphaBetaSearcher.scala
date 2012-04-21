@@ -8,7 +8,7 @@ trait AlphaBetaSearcher extends Searcher
 {
   override type SearchListener = AlphaBetaSearchListener
   
-  /** Searches game tree for specified depth with specified window.
+  /** Searches the game tree for specified depth with specified window.
    * @param depth		the depth.
    * @param alpha		the alpha.
    * @param beta		the beta.

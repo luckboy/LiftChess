@@ -42,7 +42,7 @@ object Zobrist
   
   /** The key for square of en passant. 
    * @param side		the square of en passant.
-   * @return			the hash key for square of en passant.
+   * @return			the hash key for the square of en passant.
    */
   def enPassantKey(enPassant: SquareOption): Long =
     mEnPassantKeys(enPassant.id + 1)

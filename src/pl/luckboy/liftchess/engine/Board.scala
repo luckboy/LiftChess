@@ -19,7 +19,7 @@ final class Board private(
   require(pieces.size == 64)
   require(pieces.count { _ == SidePieceOption.WhiteKing } == 1 && pieces.count { _ == SidePieceOption.BlackKing } == 1)
   
-  // Checks whether en passant is correct.
+  // Checks whether the en passant is correct.
   require(mEnPassant.foldLeft(true) {  
     (_, enpSq) =>
       val (enpRow, prevDstRow) = side match {
@@ -33,7 +33,7 @@ final class Board private(
       Square.foldPawnCaptureSquares(enpSq, side.opposite)(false) { (b, _) => !b } { (_, sq) => pieces(sq) == pawn }
   })
 
-  // Checks whether castling is correct.
+  // Checks whether the castling is correct.
   Seq((Side.White, castlingPair._1, 7), (Side.Black, castlingPair._2, 0)).foreach {
     case (side, castling, row) =>
       if(castling != Castling.NoneCastling) 
@@ -105,7 +105,7 @@ final class Board private(
       Zobrist.enPassantKey(mEnPassant)
   )
   
-  /** Returns number of occurrences of specified piece for specified side.
+  /** Returns the number of occurrences of specified piece for the specified side.
    * @param side		the side.
    * @param piece		the piece.
    * @return			the number of pieces.
@@ -130,7 +130,7 @@ final class Board private(
     }
   }
 
-  /** Returns number of occurrences of piece for any side.
+  /** Returns the number of occurrences of piece for any side.
    * @param piece		the piece.
    * @return			the number of pieces.
    */
@@ -144,7 +144,7 @@ final class Board private(
     sum
   }
   
-  /** Returns number of all pieces for specified side.
+  /** Returns the number of all pieces for the specified side.
    * @param side 		the side.
    * @return			the number of pieces.
    */
@@ -159,7 +159,7 @@ final class Board private(
     sum
   }
   
-  /** Returns number of all pieces for any side.
+  /** Returns the number of all pieces for any side.
    * @return			the number of pieces.
    */
   def countAllPieces: Int = {
@@ -172,13 +172,13 @@ final class Board private(
     sum
   }
 
-  /** Returns number of empty squares.
+  /** Returns the number of empty squares.
    * @return			the number of empty squares.
    */
   def countEmptySquares: Int =
     64 - countAllPieces
 
-  /** Folds occurrences of specified piece for specified side.
+  /** Folds occurrences of the specified piece for the specified side.
    * @param side 		the side.
    * @param piece		the piece.
    * @param	z			the start value.
@@ -220,7 +220,7 @@ final class Board private(
     }
   }
   
-  /** Folds occurrences of specified piece for any side.
+  /** Folds occurrences of the specified piece for any side.
    * @param piece		the piece.
    * @param	z			the start value.
    * @param p			the stopping function (if this function returns false, there stops folding).
@@ -272,7 +272,7 @@ final class Board private(
     }
   }
   
-  /** Folds all piece for specified side.
+  /** Folds all piece for the specified side.
    * @param side		the side.
    * @param	z			the start value.
    * @param p			the stopping function (if this function returns false, there stops folding).
@@ -346,7 +346,7 @@ final class Board private(
   def side: Side =
     mSide
 
-  /** The available castling for specified side.
+  /** The available castling for the specified side.
    * @param side		the side.
    */
   def castling(side: Side): Castling = {
@@ -354,7 +354,7 @@ final class Board private(
     mCastlingArray(Square(row, 0)) | mCastlingArray(Square(row, 7))
   }
 
-  /** The square for en passant. */
+  /** The square for the en passant. */
   def enPassant: SquareOption =
     mEnPassant
 
@@ -370,13 +370,13 @@ final class Board private(
   def hashKey: Long =
     mHashKey
 
-  /** Returns piece at specified square. */
+  /** Returns the piece at specified square. */
   def apply(sq: Int): SidePieceOption =
     mPieces(sq)
   
-  /** This method is like unsafeMakeNormalMoveOrCaptureWithoutHashKey but this method calculates hash key.
+  /** This method is like unsafeMakeNormalMoveOrCaptureWithoutHashKey but this method calculates the hash key.
    * @param move		the move.
-   * @return			the date used to undo move or -1 if doesn't make move. 
+   * @return			the date used to undo the move or -1 if doesn't make the move. 
    */
   protected def unsafeMakeNormalMoveOrCapture(move: Move) = {
     val savedDstPiece = this(move.destination)
@@ -406,9 +406,9 @@ final class Board private(
     undo
   }
      
-  /** This method is like unsafeMakeEnPassantWithoutHashKey but this method calculates hash key.
+  /** This method is like unsafeMakeEnPassantWithoutHashKey but this method calculates the hash key.
    * @param move		the move.
-   * @return			the date used to undo move or -1 if doesn't make move. 
+   * @return			the date used to undo the move or -1 if doesn't make the move. 
    */
   protected def unsafeMakeEnPassant(move: Move) = {
     val savedEnPassant = mEnPassant
@@ -429,9 +429,9 @@ final class Board private(
     undo
   }
 
-  /** This method is like unsafeMakeCastlingWithoutHashKey but this method calculates hash key.
+  /** This method is like unsafeMakeCastlingWithoutHashKey but this method calculates the hash key.
    * @param move		the move.
-   * @return			the date used to undo move or -1 if doesn't make move. 
+   * @return			the date used to undo the move or -1 if doesn't make the move. 
    */
   protected def unsafeMakeCastling(move: Move) = {
     val row = if(side eq Side.White) 7 else 0
@@ -460,11 +460,12 @@ final class Board private(
     undo
   }
 
-  /** Folds successor for board. Really, makes move if move is legal and, then evaluates function and, then undo move.
+  /** Folds the successor for board. Really, makes the move if the move is legal and, then evaluates function and, then 
+   * undo the move.
    * @param move		the move.
    * @param	z			the start value.
    * @param f			the folding function.
-   * @return			the result of function or start value.
+   * @return			the result of function or the start value.
    */
   @inline
   def unsafeFoldSuccessor[@specialized T](move: Move)(z: T)(f: (T, Board) => T): T = {
@@ -511,10 +512,10 @@ final class Board private(
     }
   }
 
-  /** Folds successor for null move. Really makes move and, then evaluates function and, then undo move.
+  /** Folds the successor for the null move. Really makes the move and, then evaluates the function and, then undo the move.
    * @param z			the start value
    * @param f			the folding function.
-   * @return			the result of function or start value.
+   * @return			the result of function or the start value.
    */
   @inline
   def unsafeFoldNullSuccessor[@specialized T](z: T)(f: (T, Board) => T): T = {
@@ -530,9 +531,10 @@ final class Board private(
     }
   }
 
-  /** Makes normal move or capture (it haven't to been en pasant or castling) but this method doesn't calculate hash key.
+  /** Makes the normal move or the capture (it haven't to been en pasant or castling) but this method doesn't calculate the 
+   * hash key.
    * @param move		the move.
-   * @return			the date used to undo move or -1 if doesn't make move. 
+   * @return			the date used to undo the move or -1 if doesn't make the move. 
    */
   protected def unsafeMakeNormalMoveOrCaptureWithoutHashKey(move: Move) = {
     val piece = move.piece
@@ -604,9 +606,10 @@ final class Board private(
     }
   }
 
-  /** Undoes normal move or capture (it haven't to been en passant or castling) but this method doesn't calculate hash key.
+  /** Undoes normal the move or the capture (it haven't to been en passant or castling) but this method doesn't calculate the 
+   * hash key.
    * @param move				the move.
-   * @param undo				the data for undo move.
+   * @param undo				the data for undo the move.
    * @param savedEnPassant		the saved square for en passant.
    * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
    */
@@ -641,9 +644,9 @@ final class Board private(
     mPieces(dst) = savedDstPiece
   }
 
-  /** Makes en passant but this method doesn't hash key.
+  /** Makes en passant but this method doesn't calculate the hash key.
    * @param move		the move.
-   * @return			the date used to undo move or -1 if doesn't make move. 
+   * @return			the date used to undo the move or -1 if doesn't make the move. 
    */
   protected def unsafeMakeEnPassantWithoutHashKey(move: Move) = {
     val src = move.source
@@ -679,11 +682,11 @@ final class Board private(
     }
   }
 
-  /** Undoes en passant but this method doesn't calculate hash key.
+  /** Undoes the en passant but this method doesn't calculate the hash key.
    * @param move 				the move.
-   * @param	undo				the data for undo move.
+   * @param	undo				the data for undo the move.
    * @param savedEnPassant		the saved square for en passant.
-   * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
+   * @param savedHalfmoveClock	the saved number of half move from last capture or the pawn move.
    */
   protected def unsafeUndoEnPassantWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
     val src = move.source
@@ -710,9 +713,9 @@ final class Board private(
     mPieces(src) = SidePieceOption.fromSideAndPiece(side, Piece.Pawn)
   }
 
-  /** Makes castling but this method doesn't hash key.
+  /** Makes the castling but this method doesn't calculate the hash key.
    * @param move		the move.
-   * @return			the date used to undo move or -1 if doesn't make move. 
+   * @return			the date used to undo the move or -1 if doesn't make the move. 
    */
   protected def unsafeMakeCastlingWithoutHashKey(move: Move) = {
     val row = if(side == Side.White) 7 else 0
@@ -752,7 +755,7 @@ final class Board private(
     }
   }
   
-  /** Undoes castling but this method doesn't calculate hash key.
+  /** Undoes the castling but this method doesn't calculate the hash key.
    * @param move 				the move.
    * @param	undo				the data for undo move.
    * @param savedEnPassant		the saved square for en passant.
@@ -790,12 +793,12 @@ final class Board private(
     mPieces(rookDst) = SidePieceOption.None
   }
   
-  /** Folds successor for board but this method doesn't calculate hash key. Really makes move if move is legal and, then 
-   * evaluates function and, then undo move.
+  /** Folds the successor for the board but this method doesn't calculate the hash key. Really makes the move if the move is 
+   * legal and, then evaluates the function and, then undoes the move.
    * @param move		the move.
    * @param	z			the start value.
    * @param f			the folding function.
-   * @return			the result of function or start value.
+   * @return			the result of function or the the start value.
    */
   @inline
   def unsafeFoldSuccessorWithoutHashKey[@specialized T](move: Move)(z: T)(f: (T, Board) => T): T = {
@@ -838,11 +841,11 @@ final class Board private(
     }
   }
 
-  /** Folds successor for null move but this method doesn't calculate hash key. Really makes move and, then evaluates 
-   * function and, then undo move.
+  /** Folds the successor for the null move but this method doesn't calculate the hash key. Really makes the move and, then 
+   * evaluates the function and, then undoes the move.
    * @param z			the start value
    * @param f			the folding function.
-   * @return			the result of function or start value.
+   * @return			the result of function or the the start value.
    */
   @inline
   def unsafeFoldNullSuccessorWithoutHashKey[@specialized T](z: T)(f: (T, Board) => T): T = {
@@ -854,9 +857,9 @@ final class Board private(
     }
   }
 
-  /** Makes move.
+  /** Makes the move.
    * @param move		the move.
-   * @return			the data used to undo move.
+   * @return			the data used to undo the move.
    */
   def unsafeMakeMove(move: Move): Option[Undo] = {
     val savedEnPassant = mEnPassant
@@ -870,8 +873,8 @@ final class Board private(
     if(undoData != -1) Some(Undo(move, undoData, savedEnPassant, savedHalfmoveClock, savedHashKey)) else None
   }
 
-  /** Undoes move.
-   * @param undo		the data for undo move.
+  /** Undoes the move.
+   * @param undo		the data for undo the move.
    */
   def unsafeUndoMove(undo: Undo): Unit = {
     undo.move.moveType match {
@@ -888,7 +891,7 @@ final class Board private(
   /** Checks whether specified square be attack by specified side.
    * @param sq			the square.
    * @param side		the side.
-   * @return			true if side attack.
+   * @return			true if the side attack.
    */
   def attack(sq: Int, side: Side): Boolean = {
     {
@@ -919,14 +922,14 @@ final class Board private(
     }
   }
 
-  /** Checks whether specified side is in check.
+  /** Checks whether the specified side is in check.
    * @param side		the side.
-   * @return			true if side is in check.
+   * @return			true if the side is in check.
    */
   def sideInCheck(side: Side): Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
 
-  /** Checks whether side that have move is in check. */
+  /** Checks whether the side that have the move is in check. */
   def inCheck: Boolean =
     attack(mSList(StartSListIndexes(side.id)(Piece.King.id)), side.opposite)
 
@@ -966,13 +969,13 @@ object Board
   /** The array of sides for board implementation. */ 
   private val Sides = Array(Side.White, Side.Black)
 
-  /** The array of start indexes of specified piece for specified side. */
+  /** The array of start indexes of specified piece for the specified side. */
   private val StartSListIndexes = Side.makeArray(
       Piece.makeArray(0, 8, 10, 12, 14, 16),
       Piece.makeArray(20, 28, 30, 32, 34, 36)
       )
 
-  /** The array of end indexes of specified piece for specified side. */
+  /** The array of end indexes of specified piece for the specified side. */
   private val EndSListIndexes = Side.makeArray(
       Piece.makeArray(8, 10, 12, 14, 15, 17),
       Piece.makeArray(28, 30, 32, 34, 35, 37)
