@@ -15,7 +15,7 @@ object Square
   def apply(row: Int, col: Int): Int =
     (row << 3) + col
 
-  /** Returns column of square.
+  /** Returns a column of square.
    * @param sq			the square.
    * @return			the column.
    */
@@ -23,7 +23,7 @@ object Square
   def toColumn(sq: Int): Int =
     sq & 7
 
-  /** Returns row of square.
+  /** Returns a row of square.
    * @param sq			the square.
    * @return			the row.
    */
@@ -60,7 +60,7 @@ object Square
       Array(15, 17, 16, 32)
       )
 
-  /** Folds squares of pawn captures for the specified square. 
+  /** Folds the squares of pawn captures for the specified square. 
    * @param sq			the square.
    * @param side		the side.
    * @param z			the start value.
@@ -89,7 +89,7 @@ object Square
     y2
   }
 
-  /** Folds squares of pawn moves for the specified squares.
+  /** Folds the squares of pawn moves for the specified squares.
    * @param sq			the square.
    * @param side		the side.
    * @param z			the start value.
@@ -114,7 +114,7 @@ object Square
     }
   }
 
-  /** Folds square of non-sliding moves for the specified square.
+  /** Folds the square of non-sliding moves for the specified square.
    * @param sq			the square.
    * @param piece		the piece.
    * @param z			the start value.
@@ -138,7 +138,7 @@ object Square
     y
   }
   
-  /** Folds squares of sliding moves for the specified square.
+  /** Folds the squares of sliding moves for the specified square.
    * @param sq			the square.
    * @param piece		the piece.
    * @param z			the start value.
@@ -168,7 +168,7 @@ object Square
     y
   }
   
-  /** Folds move squares for the specified square. In case piece is pawn, just evaluates f function for non-captures and 
+  /** Folds the move squares for the specified square. In case piece is pawn, just evaluates f function for non-captures and 
    * break condition is satisfied. Just evaluates g function for captures and break condition isn't satisfied.
    * @param sq			the square.
    * @param side		the side.

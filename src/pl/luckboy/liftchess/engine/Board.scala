@@ -178,7 +178,7 @@ final class Board private(
   def countEmptySquares: Int =
     64 - countAllPieces
 
-  /** Folds occurrences of the specified piece for the specified side.
+  /** Folds the occurrences of the specified piece for the specified side.
    * @param side 		the side.
    * @param piece		the piece.
    * @param	z			the start value.
@@ -220,7 +220,7 @@ final class Board private(
     }
   }
   
-  /** Folds occurrences of the specified piece for any side.
+  /** Folds the occurrences of the specified piece for any side.
    * @param piece		the piece.
    * @param	z			the start value.
    * @param p			the stopping function (if this function returns false, there stops folding).
@@ -322,7 +322,7 @@ final class Board private(
     y
   }
 
-  /** Folds empty squares.
+  /** Folds the empty squares.
    * @param	z			the start value.
    * @param p			the stopping function (if this function returns false, there stops folding).
    * @param f			the folding function.
