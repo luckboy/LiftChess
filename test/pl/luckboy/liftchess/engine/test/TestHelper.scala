@@ -50,4 +50,64 @@ object TestHelper
       case _                    => Capture(piece,src, dst, promPiece)
     }
   }
+  
+    def testBoardWithoutHashKey(bd: Board, args: BoardArgs) = {
+    val (aPieces, aSide, aCastling, aEnPassant, aHalfmoveClock, aFullmoveNumber) = args
+   
+    // foldSidePieces
+    val res1 = Seq(Side.White, Side.Black).forall {
+      side => 
+        Seq(Piece.Pawn, Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen, Piece.King).forall {
+          piece => 
+            val aPs = bd.foldSidePieces(side, piece)(Set[(Int, SidePieceOption)]()) { (_, _) => true } { 
+              (ps, sq) => ps + ((sq, bd(sq)): (Int, SidePieceOption))
+            }
+            val ePs = (0 to 63).filter { sq => aPieces(sq) == SidePieceOption.fromSideAndPiece(side, piece) }.map {
+              sq => (sq, aPieces(sq))
+            }.toSet
+            aPs == ePs
+        }
+    }
+    
+    // foldAllSidePieces
+    val res2 = Seq(Side.White, Side.Black).forall {
+      side => 
+        val aPs = bd.foldAllSidePieces(side)(Set[(Int, SidePieceOption)]()) { (_, _) => true } { 
+          (ps, sq) => ps + ((sq, bd(sq)): (Int, SidePieceOption))
+        }
+        val ePs = (0 to 63).filter { sq => aPieces(sq).isSide(side) }.map { sq => (sq, aPieces(sq)) }.toSet
+        aPs == ePs
+    }
+    
+    // foldPieces
+    val res3 = Seq(Piece.Pawn, Piece.Knight, Piece.Bishop, Piece.Rook, Piece.Queen, Piece.King).forall {
+      piece => 
+        val aPs = bd.foldPieces(piece)(Set[(Int, SidePieceOption)]()) { (_, _) => true } { 
+          (ps, sq) => ps + ((sq, bd(sq)): (Int, SidePieceOption))
+        }
+        val ePs = (0 to 63).filter { sq => aPieces(sq).isPiece(piece) }.map { sq => (sq, aPieces(sq)) }.toSet
+        aPs == ePs
+    }
+    
+    // foldAllPieces
+    val res4 = {
+      val aPs = bd.foldAllPieces(Set[(Int, SidePieceOption)]()) { (_, _) => true } { 
+        (ps, sq) => ps + ((sq, bd(sq)): (Int, SidePieceOption))
+      }
+      val ePs = (0 to 63).filterNot { sq => aPieces(sq).isNone }.map { sq => (sq, aPieces(sq)) }.toSet
+      aPs == ePs
+    }
+    
+    res1 && res2 && res3 && res4 &&
+    (0 to 63).forall { sq => bd(sq) == aPieces(sq) } &&
+    bd.side == aSide &&
+    bd.castling(Side.White) == aCastling._1 &&
+    bd.castling(Side.Black) == aCastling._2 &&
+    bd.enPassant == aEnPassant &&
+    bd.halfmoveClock == aHalfmoveClock &&
+    bd.fullmoveNumber == aFullmoveNumber
+  }
+
+  implicit def testBoard(bd: Board, args: BoardArgs) =
+	testBoardWithoutHashKey(bd, args) && bd.hashKey == newBoardTupled(args).hashKey
 }

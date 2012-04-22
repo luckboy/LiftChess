@@ -177,11 +177,11 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
       while(i < n && dontStop) {
         sortMove(mvStack, i)
         val move = mvStack.move(i)
-        y = unsafeFoldSuccessor(move)(z) { 
+        y = unsafeFoldSuccessor(move)(y) { 
           (x, gs) => 
             var y = x
             dontStop = p(y, gs, move)
-            if(!dontStop) {
+            if(dontStop) {
               y = f(x, gs, move) 
               dontStop = q(y, gs, move)
             }
@@ -221,11 +221,11 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
       while(i < n && dontStop) {
         sortMove(mvStack, i)
         val move = mvStack.move(i)
-        y = unsafeFoldSuccessor(move)(z) { 
+        y = unsafeFoldSuccessor(move)(y) { 
           (x, gs) => 
             var y = x
             dontStop = p(y, gs, move)
-            if(!dontStop) {
+            if(dontStop) {
               y = f(x, gs, move) 
               dontStop = q(y, gs, move)
             }
@@ -264,11 +264,11 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
       while(i < n && dontStop) {
         sortMove(mvStack, i)
         val move = mvStack.move(i)
-        y = unsafeFoldSuccessorWithoutHashKey(move)(z) { 
+        y = unsafeFoldSuccessorWithoutHashKey(move)(y) { 
           (x, gs) => 
             var y = x
             dontStop = p(y, gs, move)
-            if(!dontStop) {
+            if(dontStop) {
               y = f(x, gs, move) 
               dontStop = q(y, gs, move)
             }
@@ -308,11 +308,11 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
       while(i < n && dontStop) {
         sortMove(mvStack, i)
         val move = mvStack.move(i)
-        y = unsafeFoldSuccessorWithoutHashKey(move)(z) { 
+        y = unsafeFoldSuccessorWithoutHashKey(move)(y) { 
           (x, gs) => 
             var y = x
             dontStop = p(y, gs, move)
-            if(!dontStop) {
+            if(dontStop) {
               y = f(x, gs, move) 
               dontStop = q(y, gs, move)
             }
