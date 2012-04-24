@@ -72,7 +72,7 @@ class GameStateTest  extends Properties("GameState")
       ("foldSortedGoodSuccessors", true, (gs: GameState) => gs.foldSortedGoodSuccessors[Seq[Move]] _), 
       ("foldSortedGoodSuccessorsWithoutHashKey", true, (gs: GameState) => gs.foldSortedGoodSuccessorsWithoutHashKey[Seq[Move]] _)
       ).foreach {
-    case (name, isGood, f) =>      
+    case (name, isGood, f) =>  {
       property(name + " should return sorted moves") = Prop.forAllNoShrink(boardArgsGen) {
         args =>
           val eMoves = legalMoves(args, isGood)
@@ -114,5 +114,123 @@ class GameStateTest  extends Properties("GameState")
           }
           aMoves == eMoves
       }
+    }
+  }
+
+  Seq(
+      // *
+      (
+          "normal board",
+          (
+              Seq(BR, __, __, __, BK, __, __, BR,
+                  BP, __, BP, BP, BQ, BP, BB, __,
+                  BB, BN, __, __, BP, BN, BP, __,
+                  __, __, __, WP, WN, __, __, __,
+                  __, BP, __, __, WP, __, __, __,
+                  __, __, WN, __, __, WQ, __, BP,
+                  WP, WP, WP, WB, WB, WP, WP, WP,
+                  WR, __, __, __, WK, __, __, WR
+            	  ),
+              Side.White,
+              (Castling.AllCastling, Castling.AllCastling),
+              SquareOption.None,
+              0, 1
+              ),
+          false, false
+          ),
+      // checkmate
+      (
+          "checkmate",
+          (
+              Seq(BR, BN, BB, __, BK, BB, BN, BR,
+                  BP, BP, BP, BP, __, BP, BB, BB,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, BP, __, __, __,
+                  __, __, __, __, __, __, WP, BQ,
+                  __, __, __, __, __, WP, __, __,
+                  WP, WP, WP, WP, WP, __, __, WP,
+                  WR, WN, WB, WQ, WK, WB, WN, WR
+            	  ),
+              Side.White,
+              (Castling.AllCastling, Castling.AllCastling),
+              SquareOption.None,
+              0, 1
+              ),
+          true, false
+          ),
+      // stalemate
+      (
+          "stalemate",
+          (
+              Seq(__, __, __, __, __, __, __, BK,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, WN, WK, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __
+            	  ),
+              Side.Black,
+              (Castling.NoneCastling, Castling.NoneCastling),
+              SquareOption.None,
+              0, 1
+              ),
+          false, true
+          ),
+      // 50 moves
+      (
+          "50 move rule",
+          (
+              Seq(__, __, __, __, __, __, __, BK,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  WK, __, __, __, __, __, __, __
+            	  ),
+              Side.Black,
+              (Castling.NoneCastling, Castling.NoneCastling),
+              SquareOption.None,
+              100, 1
+              ),
+          false, true
+          ),
+      // no 50 moves
+      (
+          "board before draw by 50 move rule",
+          (
+              Seq(__, __, __, __, __, __, __, BK,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  WK, __, __, __, __, __, __, __
+            	  ),
+              Side.Black,
+              (Castling.NoneCastling, Castling.NoneCastling),
+              SquareOption.None,
+              99, 1
+              ),
+          false, false
+          )
+      ).foreach {
+    case (name, args, isLose, isDraw) => {
+      property("isLose should return " + isLose + " for " + name) = Prop.forAllNoShrink(Gen.value(())) {
+        _ => GameState.fromBoard(newBoardTupled(args)).isLose(args._2) == isLose
+      }
+
+      property("isWin should return " + isLose + " for " + name) = Prop.forAllNoShrink(Gen.value(())) {
+        _ => GameState.fromBoard(newBoardTupled(args)).isWin(args._2.opposite) == isLose
+      }
+      
+      property("isDraw should return " + isDraw + " for " + name) = Prop.forAllNoShrink(Gen.value(())) {
+        _ => GameState.fromBoard(newBoardTupled(args)).isDraw == isDraw
+      }
+    }
   }
 }
