@@ -233,4 +233,127 @@ class GameStateTest  extends Properties("GameState")
       }
     }
   }
+  
+  val repsGen = Gen.oneOf(
+      // immediate
+      (
+          (
+              Seq(__, __, __, __, __, __, __, BK,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, BP, __,
+                  __, __, __, __, __, __, WP, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, WK
+            	  ),
+              Side.Black,
+              (Castling.NoneCastling, Castling.NoneCastling),
+              SquareOption.None,
+              0, 1
+              ),
+          List(
+              NormalMove(Piece.King, 7, 6, PieceOption.None),
+              NormalMove(Piece.King, 63, 62, PieceOption.None),
+              NormalMove(Piece.King, 6, 7, PieceOption.None),
+              NormalMove(Piece.King, 62, 63, PieceOption.None),
+              NormalMove(Piece.King, 7, 6, PieceOption.None),
+              NormalMove(Piece.King, 63, 62, PieceOption.None),
+              NormalMove(Piece.King, 6, 7, PieceOption.None),
+              NormalMove(Piece.King, 62, 63, PieceOption.None)
+              )
+          ),
+      // no immediate
+      (
+          (
+              Seq(__, __, BN, __, __, __, __, __,
+                  __, __, __, __, __, BK, __, __,
+                  __, __, __, __, BP, __, __, __,
+                  __, __, __, __, WP, BP, __, __,
+                  __, __, __, __, __, WP, __, __,
+                  __, __, WN, __, __, WK, __, __,
+                  __, __, __, __, __, __, __, __,
+                  __, __, __, __, __, __, __, __
+            	  ),
+              Side.White,
+              (Castling.AllCastling, Castling.AllCastling),
+              SquareOption.None,
+              0, 1
+              ),
+          List(
+              NormalMove(Piece.Knight, Square(5, 2), Square(6, 4), PieceOption.None),
+              NormalMove(Piece.Knight, Square(0, 2), Square(1, 4), PieceOption.None),
+              NormalMove(Piece.Knight, Square(6, 4), Square(4, 3), PieceOption.None),
+              NormalMove(Piece.Knight, Square(1, 4), Square(2, 2), PieceOption.None),
+              NormalMove(Piece.Knight, Square(4, 3), Square(3, 1), PieceOption.None),
+              NormalMove(Piece.Knight, Square(2, 2), Square(1, 0), PieceOption.None),
+              NormalMove(Piece.Knight, Square(3, 1), Square(5, 2), PieceOption.None),
+              NormalMove(Piece.Knight, Square(1, 0), Square(0, 2), PieceOption.None),
+              NormalMove(Piece.King, Square(5, 5), Square(6, 4), PieceOption.None),
+              NormalMove(Piece.King, Square(1, 5), Square(0, 4), PieceOption.None),
+              NormalMove(Piece.King, Square(6, 4), Square(6, 5), PieceOption.None),
+              NormalMove(Piece.King, Square(0, 4), Square(0, 5), PieceOption.None),
+              NormalMove(Piece.King, Square(6, 5), Square(5, 5), PieceOption.None),
+              NormalMove(Piece.King, Square(0, 5), Square(1, 5), PieceOption.None)
+              )
+          )
+   )
+   
+  def foldSuccessorPropForReps(mustDraw: Boolean)(fold: (GameState) => (Move) => (Boolean) => ((Boolean, GameState) => Boolean) => Boolean) = {
+    Prop.forAllNoShrink(repsGen) {
+      case (args, moves) => 
+        def g(gs: GameState, moves: List[Move]): Boolean = {
+          moves match {
+            case Nil           => 
+              val res1 = gs.isDraw == mustDraw
+              //if(!res1) println("ups " + gs.board.hashKey)
+              gs.isLose(gs.board.side) == false && gs.isLose(gs.board.side.opposite) == false && res1
+            case move :: moves2 => 
+              val res1 = gs.isLose(gs.board.side) == false && gs.isLose(gs.board.side.opposite) == false && gs.isDraw == false
+              val res2 = fold(gs)(move)(false) { (_, gs2) => g(gs2, moves2) }
+              val res3 = gs.isLose(gs.board.side) == false && gs.isLose(gs.board.side.opposite) == false && gs.isDraw == false
+              //if(!(res1 && res3)) println(move, moves2)
+              //if(!res2) println(gs.board.hashKey)
+              res1 && res2 && res3
+          }
+        }
+        g(GameState.fromBoard(newBoardTupled(args)), moves)
+    }
+  }
+  
+  def foldSuccessorForMakeMove(gs: GameState)(move: Move)(z: Boolean)(f: (Boolean, GameState) => Boolean): Boolean = {
+    gs.unsafeMakeMove(move).map {
+      undo =>
+        val y = f(z, gs)
+        gs.unsafeUndoMove(undo)
+        y
+    }.getOrElse(false)
+  }
+  
+  def foldSuccessorForFoldSortedSuccessors(gs: GameState)(move: Move)(z: Boolean)(f: (Boolean, GameState) => Boolean): Boolean = {
+    gs.foldSortedSuccessors(new MoveStack(1, 1024)) { _.hashCode } (z) { (_, _, _) => true}  { (_, _, _) => true } {
+      (x, gs2, move2) => if(move == move2) f(x, gs2) else x
+    }
+  }
+
+  def foldSuccessorForFoldSortedSuccessorsWithoutHashKey(gs: GameState)(move: Move)(z: Boolean)(f: (Boolean, GameState) => Boolean): Boolean = {
+    gs.foldSortedSuccessorsWithoutHashKey(new MoveStack(1, 1024)) { _.hashCode } (z) { (_, _, _) => true}  { (_, _, _) => true } {
+      (x, gs2, move2) => if(move == move2) f(x, gs2) else x
+    }
+  }
+
+  Seq(("unsafeFoldSortedSuccessor", (gs: GameState) => gs.unsafeFoldSuccessor[Boolean] _),
+      ("unsafeMakeMove", foldSuccessorForMakeMove _),
+      ("foldSortedSuccessors", foldSuccessorForFoldSortedSuccessors _)
+      ).foreach {
+    case (name, f) => 
+      property("isDraw should check repetition of position for " + name) = foldSuccessorPropForReps(true)(f)
+  }
+
+  Seq(("unsafeFoldSortedSuccessorWithoutHashKey", (gs: GameState) => gs.unsafeFoldSuccessorWithoutHashKey[Boolean] _),
+      ("foldSortedSuccessorsWithoutHashKey", foldSuccessorForFoldSortedSuccessorsWithoutHashKey _)
+      ).foreach {
+    case (name, f) => 
+      property("isDraw should not check repetition of position for " + name) = foldSuccessorPropForReps(false)(f)
+  }
 }

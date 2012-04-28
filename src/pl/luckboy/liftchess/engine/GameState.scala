@@ -26,7 +26,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
   protected val mRepCounters = Array.fill(MaxRepHashKeys)(0)
   
   /** Whether can check repetition of position. */
-  protected var mCanCheckRep = false
+  protected var mCanCheckRep = true
 
   /** The number of legal moves. */
   protected var mNumberOfLegalMoves = -1
@@ -367,8 +367,12 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
           // Checks whether draw by repetition of position.
           var i = 0
           var j = (mRepIndex + MaxRepHashKeys - 1) % MaxRepHashKeys
+          var reps = 0
           while(i < MaxRepHashKeys && mRepCounters(j) > 0) {
-            if(mRepHashKeys(j) == mBoard.hashKey) return true
+            if(mRepHashKeys(j) == mBoard.hashKey) {
+              reps += 1
+              if(reps == 2) return true 
+            }
             i += 1
             //j = (j + MaxRepHashKeys - 1) % MaxRepHashKeys
             j -= 1
