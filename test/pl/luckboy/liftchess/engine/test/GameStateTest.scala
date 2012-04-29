@@ -114,6 +114,24 @@ class GameStateTest  extends Properties("GameState")
           }
           aMoves == eMoves
       }
+
+      property(name + " should twice return same sorted moves") = Prop.forAllNoShrink(boardArgsGen) {
+        args =>
+          val eMoves = legalMoves(args, isGood)
+          val gs = GameState.fromBoard(newBoardTupled(args))
+          
+          val Seq(aMoves1, aMoves2) =  (1 to 2).map {
+            i => 
+              f(gs)(new MoveStack(1, 4096)) { _.hashCode } (Seq[Move]()) { 
+                (_, _, _) => true
+              } { 
+                (_, _, _) => true
+              } {
+                (moves, _, move) => moves :+ move
+              }
+          }
+          aMoves1 == eMoves && aMoves2 == eMoves
+      }
     }
   }
 
