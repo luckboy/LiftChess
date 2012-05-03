@@ -22,9 +22,7 @@ object SquareOption
 {
   val None = new SquareOption(-1, "-")
   
-  private val Values = (0 to 63).map { 
-    sq => new SquareOption(sq, ('a' to 'h')(Square.toColumn(sq)).toString + (8 - Square.toRow(sq)))
-  }
+  private val Values = (0 to 63).map { sq => new SquareOption(sq, Square.toString(sq)) }
   
   def apply(sq: Int) =
     Values(sq)

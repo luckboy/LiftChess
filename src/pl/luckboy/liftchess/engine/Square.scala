@@ -230,4 +230,11 @@ object Square
         y
       }
     }
+  
+  /** Converts the square to a string.
+   * @param sq			the square.
+   * @return			the string.
+   */
+  def toString(sq: Int): String =
+    ('a' to 'h')(Square.toColumn(sq)).toString + (8 - Square.toRow(sq))
 }
