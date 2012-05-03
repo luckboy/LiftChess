@@ -91,4 +91,7 @@ object BoardBuilder
 {
   implicit def toBoard(builder: BoardBuilder): Board = 
     builder.toBoard
+    
+  /** Returns the board builder of initial position. */
+  def initialBoard: BoardBuilder = throw new Exception
 }

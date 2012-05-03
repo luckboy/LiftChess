@@ -995,4 +995,7 @@ object Board
       halfmoveClock: Int,
       fullmoveNumber: Int): Board =
     new Board(pieces, side, castling, enPassant, halfmoveClock, fullmoveNumber)
+  
+  def unapply(bd: Board): Option[(Seq[SidePieceOption], Side, (Castling, Castling), SquareOption, Int, Int)] =
+    Some((0 to 63).map { bd(_) }, bd.side, (bd.castling(Side.White), bd.castling(Side.White)), bd.enPassant, bd.halfmoveClock, bd.fullmoveNumber)
 }
