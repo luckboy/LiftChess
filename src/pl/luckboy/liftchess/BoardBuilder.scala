@@ -92,6 +92,13 @@ object BoardBuilder
   implicit def toBoard(builder: BoardBuilder): Board = 
     builder.toBoard
     
+  implicit def toImplicitBoard(builder: BoardBuilder): ImplicitBoard = 
+    builder.toBoard
+    
   /** Returns the board builder of initial position. */
   def initialBoardBuilder: BoardBuilder = throw new Exception
+  
+  /** Creates a board builder from the board. */
+  def fromBoard(bd: Board): BoardBuilder =
+    BoardBuilder((0 to 63).map { bd(_) }, bd.side, (bd.castling(Side.White), bd.castling(Side.Black)), bd.enPassant, bd.halfmoveClock, bd.fullmoveNumber)
 }
