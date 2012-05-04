@@ -93,5 +93,5 @@ object BoardBuilder
     builder.toBoard
     
   /** Returns the board builder of initial position. */
-  def initialBoard: BoardBuilder = throw new Exception
+  def initialBoardBuilder: BoardBuilder = throw new Exception
 }

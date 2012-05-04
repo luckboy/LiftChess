@@ -5,7 +5,7 @@ import scala.util.Random
 import pl.luckboy.liftchess.engine._
 
 @RunWith(classOf[org.scalacheck.contrib.ScalaCheckJUnitPropertiesRunner])
-class GameStateTest  extends Properties("GameState")
+class GameStateTest  extends Properties("engine.GameState")
 {
   import TestHelper._
   

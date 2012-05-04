@@ -6,7 +6,7 @@ package pl.luckboy.liftchess.engine
  */
 final case class Move(piece: Piece, source: Int, destination: Int, promotionPiece: PieceOption, moveType: MoveType)
 {
-  def toString: String = {
+  override def toString: String = {
     (if(piece != Piece.Pawn) piece else "") +
     Square.toString(source) + 
     (if(moveType == MoveType.Capture || moveType == MoveType.EnPassant) "x" else "") +
