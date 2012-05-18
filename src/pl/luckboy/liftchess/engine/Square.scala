@@ -6,7 +6,7 @@ package pl.luckboy.liftchess.engine
  */
 object Square
 {
-  /** Creates a square from column and row.
+  /** Creates a square from the column and the row.
    * @param row			the row.
    * @param col			the column.
    * @return 			the square.
@@ -15,7 +15,7 @@ object Square
   def apply(row: Int, col: Int): Int =
     (row << 3) + col
 
-  /** Returns a column of square.
+  /** Returns a column of the square.
    * @param sq			the square.
    * @return			the column.
    */
@@ -23,7 +23,7 @@ object Square
   def toColumn(sq: Int): Int =
     sq & 7
 
-  /** Returns a row of square.
+  /** Returns a row of the square.
    * @param sq			the square.
    * @return			the row.
    */

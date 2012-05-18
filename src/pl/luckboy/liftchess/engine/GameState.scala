@@ -12,7 +12,7 @@ final class GameState private(bd: Board, hashKeys: Seq[Long])
   /** The board. */
   protected val mBoard = bd.clone()
   
-  /** The index for mRepHashKeys array. This index refers to next hash key but this index doesn't refer to current the hash 
+  /** The index for mRepHashKeys array. This index refers to next hash key but this index doesn't refer to the current hash 
    * key. 
    */
   protected var mRepIndex = 0

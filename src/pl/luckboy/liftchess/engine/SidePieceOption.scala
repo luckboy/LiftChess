@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** A class for optional side piece.
+/** A class for the optional side piece.
  * 
  * @author Łukasz Szpakowski
  */
@@ -42,12 +42,12 @@ final class SidePieceOption private(val id: Int, val name: String) extends EnumV
   def pieceOption: PieceOption =
     PieceOption(id & 15)
 
-  /** Returns the identifier of optional side. */
+  /** Returns the identifier of the optional side. */
   @inline
   def sideOptionId: Int =
     (id >> 4) - 1
 
-  /** Returns the identifier of optional piece. */
+  /** Returns the identifier of the optional piece. */
   @inline
   def pieceOptionId: Int =
     id & 15
@@ -80,7 +80,7 @@ final class SidePieceOption private(val id: Int, val name: String) extends EnumV
     if((id & 15) != 6) f(z, Piece(id & 15)) else z
 }
 
-/** A singleton for optional side piece.
+/** A singleton for the optional side piece.
  * 
  * @author Łukasz Szpakowski
  */
@@ -107,7 +107,7 @@ object SidePieceOption
       Piece.makeArray(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )
 
-  /** Creates a optional side piece from side and piece.
+  /** Creates a optional side piece from the side and the piece.
    * @param side		the side.
    * @param piece		the piece.
    * @return			the optional side piece.

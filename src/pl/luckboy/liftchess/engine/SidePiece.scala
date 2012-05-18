@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** Class for side and piece.
+/** Class for the side and the piece.
  * 
  * @author Łukasz Szpakowski
  */
@@ -41,7 +41,7 @@ final class SidePiece private(val id: Int, val name: String) extends EnumValue
     id & 15
 }
 
-/** A Singleton for side and piece.
+/** A Singleton for the side and the piece.
  * 
  * @author Łukasz Szpakowski
  */
@@ -66,7 +66,7 @@ object SidePiece
       Piece.makeArray(BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing)
       )
   
-  /** Creates a side piece from side and piece.
+  /** Creates a side piece from the side and the piece.
    * @param side		the side.
    * @param piece		the piece.
    * @return 			the side piece.
@@ -74,14 +74,14 @@ object SidePiece
   def fromSideAndPiece(side: Side, piece: Piece): SidePiece =
     Values(side.id)(piece.id)
 
-  /** Creates a side piece from identifier.
+  /** Creates a side piece from the identifier.
    * @param	id 			the identifier.
    * @return			the side piece.
    */
   def apply(id: Int): SidePiece = 
     Values((id >> 4) - 1)(id & 15)    
   
-  /** Converts side piece to optional side piece.
+  /** Converts side piece to the optional side piece.
    * @param sidePiece	the side piece.
    * @return			the optional side piece.
    */

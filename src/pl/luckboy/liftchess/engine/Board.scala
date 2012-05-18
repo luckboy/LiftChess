@@ -50,7 +50,7 @@ final class Board private(
   /** The piece array. */
   protected val mPieces = pieces.toArray
   
-  /** The castling array. This array contains castling marks. */
+  /** The castling array. This array contains the castling marks. */
   protected val mCastlingArray = (
       Array(castlingPair._2 & Castling.QueensideCastling) ++
       Array.fill(6)(Castling.NoneCastling) ++
@@ -61,7 +61,7 @@ final class Board private(
       Array(castlingPair._1 & Castling.KingsideCastling)
       )
 
-  /** The list contains squares for pieces. */
+  /** The list contains squares for the pieces. */
   protected val mSList = {
     val slist = Array.fill(40)(-1)
     val lastSListIndexes = Side.makeArray(
@@ -105,7 +105,7 @@ final class Board private(
       Zobrist.enPassantKey(mEnPassant)
   )
   
-  /** Returns the number of occurrences of specified piece for the specified side.
+  /** Returns the number of occurrences of the specified piece for the specified side.
    * @param side		the side.
    * @param piece		the piece.
    * @return			the number of pieces.
@@ -130,7 +130,7 @@ final class Board private(
     }
   }
 
-  /** Returns the number of occurrences of piece for any side.
+  /** Returns the number of occurrences of the piece for any side.
    * @param piece		the piece.
    * @return			the number of pieces.
    */
@@ -172,8 +172,8 @@ final class Board private(
     sum
   }
 
-  /** Returns the number of empty squares.
-   * @return			the number of empty squares.
+  /** Returns the number of the empty squares.
+   * @return			the number of the empty squares.
    */
   def countEmptySquares: Int =
     64 - countAllPieces
@@ -358,11 +358,11 @@ final class Board private(
   def enPassant: SquareOption =
     mEnPassant
 
-  /** The number of half move. */
+  /** The number of the half move. */
   def halfmoveClock: Int =
     mHalfmoveClock
 
-  /** The number of moves. */ 
+  /** The number of the moves. */ 
   def fullmoveNumber: Int =
     mFullmoveNumber
   
@@ -759,7 +759,7 @@ final class Board private(
    * @param move 				the move.
    * @param	undo				the data for undo move.
    * @param savedEnPassant		the saved square for en passant.
-   * @param savedHalfmoveClock	the saved number of half move from last capture or pawn move.
+   * @param savedHalfmoveClock	the saved number of half the move from the last capture or pawn move.
    */
   protected def unsafeUndoCastlingWithoutHashKey(move: Move, undo: Int, savedEnPassant: SquareOption, savedHalfmoveClock: Int) = {
     val row = if(side == Side.Black) 7 else 0
@@ -966,10 +966,10 @@ final class Board private(
  */
 object Board
 {
-  /** The array of sides for board implementation. */ 
+  /** The array of the sides for the board implementation. */ 
   private val Sides = Array(Side.White, Side.Black)
 
-  /** The array of start indexes of specified piece for the specified side. */
+  /** The array of the start indexes of the specified piece for the specified side. */
   private val StartSListIndexes = Side.makeArray(
       Piece.makeArray(0, 8, 10, 12, 14, 16),
       Piece.makeArray(20, 28, 30, 32, 34, 36)
@@ -981,10 +981,10 @@ object Board
       Piece.makeArray(28, 30, 32, 34, 35, 37)
       )
 
-  /** The array of minimal indexes of specified side. */
+  /** The array of minimal indexes of the specified side. */
   private val MinStartSListIndexes = Side.makeArray(0, 20)
 
-  /** The array of maximal indexes of specified side. */
+  /** The array of maximal indexes of the specified side. */
   private val MaxEndSListIndexes = Side.makeArray(17, 37)
   
   def apply(

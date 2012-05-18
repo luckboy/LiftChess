@@ -6,7 +6,7 @@ package pl.luckboy.liftchess.engine
  */
 final class MoveStack(maxDepth: Int, maxMoves: Int)
 {
-  /** The stack pointer for indexes. */
+  /** The stack pointer for the indexes. */
   protected var mSp = 0
   
   /** The index stack. */
@@ -23,11 +23,11 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
   
   mStack(0) = 0
 
-  /** Pushes the move into stack.
+  /** Pushes the move into the stack.
    * @param piece		the piece.
    * @param src			the move source.
    * @param dst			the move destination.
-   * @param promPiece	the piece that will be  promotes by pawn.
+   * @param promPiece	the piece that will be promotes by the pawn.
    * @param moveType	the move type.
    */
   private def pushMove(piece: Piece, src: Int, dst: Int, promPiece: PieceOption, moveType: MoveType) = {
@@ -43,13 +43,13 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     }
   }
   
-  /** Generates a pseudo legal en passants and, then pushes they into stack.
+  /** Generates a pseudo legal en passants and, then pushes they into the stack.
    * @param bd			the board.
    */
   private def generatePseudoLegalEnPassants(bd: Board) =
     bd.enPassant.foldLeft(()) { (_, dst) => generatePseudoLegalEnPassantsTo(bd, dst) }
 
-  /** Generates a pseudo legal promotions and, then pushes they into stack.
+  /** Generates a pseudo legal promotions and, then pushes they into the stack.
    * @param bd			the board.
    * @param src			the move source.
    */
@@ -66,7 +66,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
         }
     }
   
-  /** Generates a pseudo legal normal move and captures and, then pushes they into stack.
+  /** Generates a pseudo legal normal move and captures and, then pushes they into the stack.
    * @param bd			the board.
    * @param src			the source move.
    * @param piece		the piece.
@@ -91,7 +91,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     }
   }
   
-  /** Generates a pseudo legal moves and pushes they into stack.
+  /** Generates a pseudo legal moves and pushes they into the stack.
    * @param bd			the board.
    */
   def generatePseudoLegalMoves(bd: Board): Unit = {
@@ -116,7 +116,7 @@ final class MoveStack(maxDepth: Int, maxMoves: Int)
     generatePseudoLegalEnPassants(bd)
   }
 
-  /** Generates a pseudo legal captures and, then pushes they into stack.
+  /** Generates a pseudo legal captures and, then pushes they into the the stack.
    * @param bd			the board.
    * @param src			the source move.
    * @param piece		the piece.

@@ -6,7 +6,7 @@ package pl.luckboy.liftchess.engine
  */
 object Zobrist
 {
-  /** The key array for pieces and their squares. */
+  /** The key array for the pieces and their squares. */
   private val mPieceSquareKeys: Array[Array[Array[Long]]] = Array.fill(64) {
     Side.makeArray(
         Piece.makeArray(0, 0, 0, 0, 0, 0),
@@ -14,16 +14,16 @@ object Zobrist
         )
   }
   
-  /** The key array for castling. */
+  /** The key array for the castling. */
   private val mCastlingKeys: Array[Array[Long]] = Side.makeArray(
       Castling.makeArray(0, 0, 0, 0),
       Castling.makeArray(0, 0, 0, 0)
       )
 
-  /** The key array for en passant. */
+  /** The key array for the en passant. */
   private val mEnPassantKeys: Array[Long] = Array.fill(65)(0)  
 
-  /** The key for piece and square. 
+  /** The key for the piece and the square. 
    * @param sq			the square.
    * @param side		the side.
    * @param piece		the piece.
@@ -32,7 +32,7 @@ object Zobrist
   def pieceSquareKey(sq: Int, side: Side, piece: Piece): Long =
     mPieceSquareKeys(sq)(side.id)(piece.id)
   
-  /** The key for castling. 
+  /** The key for the castling. 
    * @param side		the side.
    * @param	castling	the castling.
    * @return			the hash key for castling.
@@ -40,21 +40,21 @@ object Zobrist
   def castlingKey(side: Side, castling: Castling): Long =
     mCastlingKeys(side.id)(castling.id)
   
-  /** The key for square of en passant. 
-   * @param side		the square of en passant.
-   * @return			the hash key for the square of en passant.
+  /** The key for the square of the en passant. 
+   * @param side		the square of the en passant.
+   * @return			the hash key for the square of the en passant.
    */
   def enPassantKey(enPassant: SquareOption): Long =
     mEnPassantKeys(enPassant.id + 1)
   
-  /** The key for side. */
+  /** The key for the side. */
   def sideKey(side: Side): Long =
     side.id
 
   /** The generator of pseudo random number */
   private var mRandom = new LongRandom(System.currentTimeMillis())
   
-  /** Resets key arrays. 
+  /** Resets the key arrays. 
    * @param r			the generator of pseudo random number.
    */
   def reset(r: LongRandom): Unit = {

@@ -1,6 +1,6 @@
 package pl.luckboy.liftchess.engine
 
-/** A class for castling. 
+/** A class for the castling. 
  * 
  * @author Łukasz Szpakowski
  */
@@ -19,7 +19,7 @@ final class Castling private(val id: Int, val name: String) extends EnumValue
     Castling(id | castling.id)
 }
 
-/** A class for castling.
+/** A class for the castling.
  * 
  * @author Łukasz Szpakowski
  */
