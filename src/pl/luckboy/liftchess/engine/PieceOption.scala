@@ -32,4 +32,7 @@ object PieceOption
     
   def makeArray[T](p: T, n: T, b: T, r: T, q: T, k: T, none: T)(implicit m: ClassManifest[T]): Array[T] =
     Piece.makeArray(p, n, b, r, q, k) :+ none
+    
+  def values: Set[PieceOption] =
+    Values.toSet
 }

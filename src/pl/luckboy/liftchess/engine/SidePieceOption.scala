@@ -110,15 +110,19 @@ object SidePieceOption
   /** Creates a optional side piece from the side and the piece.
    * @param side		the side.
    * @param piece		the piece.
-   * @return			the optional side piece.
+   * @return			a optional side piece.
    */
   def fromSideAndPiece(side: Side, piece: Piece): SidePieceOption =
     Values(side.id)(piece.id)
 
   /** Creates a optional side piece from the specified identifier.
    * @param				the identifier.
-   * @return			the optional side piece.
+   * @return			a optional side piece.
    */
   def apply(id: Int): SidePieceOption =
     if(id != None.id) Values((id >> 4) - 1)(id & 15) else None
+    
+  /** Return the set of the side pieces. */
+  def values: Set[SidePieceOption] =
+    Values.flatten.toSet + None
 }

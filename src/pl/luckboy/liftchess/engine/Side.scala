@@ -10,6 +10,10 @@ final class Side private(val id: Int, val name: String) extends EnumValue
   @inline
   def opposite: Side =
     Side(id ^ 1)
+    
+  /** Converts to a side option. */
+  def toSideOption: SideOption =
+    SideOption(id)
 }
 
 /** A side singleton.
@@ -31,4 +35,7 @@ object Side
     
   implicit def toSideOption(side: Side): SideOption =
     SideOption(side.id)
+    
+  def values: Set[Side] =
+    Values.toSet
 }

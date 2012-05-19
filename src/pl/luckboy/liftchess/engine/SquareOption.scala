@@ -22,8 +22,11 @@ object SquareOption
 {
   val None = new SquareOption(-1, "-")
   
-  private val Values = (0 to 63).map { sq => new SquareOption(sq, Square.toString(sq)) }
+  private val Values = (0 to 63).map { sq => new SquareOption(sq, Square.toString(sq)) }.toArray
   
   def apply(sq: Int) =
     Values(sq)
+    
+  def values: Set[SquareOption] =
+    Values.toSet + None
 }

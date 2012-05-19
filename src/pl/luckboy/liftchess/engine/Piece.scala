@@ -5,6 +5,10 @@ package pl.luckboy.liftchess.engine
  * @author Łukasz Szpakowski
  */
 final class Piece private(val id: Int, val name: String) extends EnumValue
+{
+  def toPieceOption: PieceOption =
+    PieceOption(id)
+}
 
 /** A piece singleton.
  * 
@@ -29,4 +33,7 @@ object Piece
     
   implicit def toPieceOption(piece: Piece): PieceOption =
     PieceOption(piece.id)
+    
+  def values: Set[Piece] =
+    Values.toSet
 }

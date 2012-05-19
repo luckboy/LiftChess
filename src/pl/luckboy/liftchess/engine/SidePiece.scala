@@ -35,10 +35,14 @@ final class SidePiece private(val id: Int, val name: String) extends EnumValue
   def sideId: Int =
     (id >> 4) - 1
 
-  /** Return the piece indetifier. */
+  /** Return the piece identifier. */
   @inline
   def pieceId: Int =
     id & 15
+    
+  /** Converts to a optional side piece. */
+  def toSidePieceOption: SidePieceOption =
+    SidePieceOption(id)
 }
 
 /** A Singleton for the side and the piece.
@@ -69,22 +73,26 @@ object SidePiece
   /** Creates a side piece from the side and the piece.
    * @param side		the side.
    * @param piece		the piece.
-   * @return 			the side piece.
+   * @return 			a side piece.
    */
   def fromSideAndPiece(side: Side, piece: Piece): SidePiece =
     Values(side.id)(piece.id)
 
   /** Creates a side piece from the identifier.
    * @param	id 			the identifier.
-   * @return			the side piece.
+   * @return			a side piece.
    */
   def apply(id: Int): SidePiece = 
     Values((id >> 4) - 1)(id & 15)    
   
-  /** Converts side piece to the optional side piece.
+  /** Converts the side piece to a optional side piece.
    * @param sidePiece	the side piece.
    * @return			the optional side piece.
    */
   implicit def toSidePieceOption(sidePiece: SidePiece): SidePieceOption =
     SidePieceOption(sidePiece.id)
+  
+  /** Return the set of the side pieces. */
+  def values: Set[SidePiece] =
+    Values.flatten.toSet
 }

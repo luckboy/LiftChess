@@ -37,4 +37,7 @@ object SideOption
     
   def makeArray[T](w: T, b: T, none: T)(implicit m: ClassManifest[T]): Array[T] = 
     Array(w, b, none)
+    
+  def values: Set[SideOption] =
+    Values.toSet
 }

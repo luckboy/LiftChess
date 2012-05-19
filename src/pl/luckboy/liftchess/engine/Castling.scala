@@ -37,4 +37,7 @@ object Castling
     
   def makeArray[T](none: T, k: T, q: T, kq: T)(implicit m: ClassManifest[T]) =
     Array(none, k, q, kq)
+    
+  def values: Set[Castling] =
+    Values.toSet
 }
