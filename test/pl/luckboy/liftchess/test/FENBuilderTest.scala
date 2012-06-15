@@ -30,7 +30,7 @@ class FENBuilderTest extends Properties("FENBuilder")
 
   val sidePieceGen = (sideGen.map2(pieceGen) { (side, piece) => SidePiece.fromSideAndPiece(side, piece) })
 
-  val fenAndBoardBuilderGen = {
+  val shortFenAndBoardBuilderGen = {
     // row
     val rowGen = for { 
       n <- Gen.choose(0, 7)
@@ -67,30 +67,34 @@ class FENBuilderTest extends Properties("FENBuilder")
       side <- sideGen
       (fenCastling, castlingPair) <- castlingPairGen
       enPassant <- Gen.oneOf(SquareOption.values.toSeq)
-      halfmoveClock <- halfmoveClockGen
-      fullmoveNumber <- fullmoveNumberGen
     } yield (
-        fenRows.mkString("/") + " " + side.toString + " " + fenCastling + " " + enPassant + " " + halfmoveClock + " " + fullmoveNumber,
-        BoardBuilder(rows.flatten, side, castlingPair, enPassant, halfmoveClock, fullmoveNumber)
+        fenRows.mkString("/") + " " + side.toString + " " + fenCastling + " " + enPassant,
+        BoardBuilder(rows.flatten, side, castlingPair, enPassant, 0, 1)
         )
   }
+
+  val fenAndBoardBuilderGen = {
+	for {
+	  (fen, builder) <- shortFenAndBoardBuilderGen
+	  halfmoveClock <- halfmoveClockGen
+      fullmoveNumber <- fullmoveNumberGen
+	} yield (fen + " " + halfmoveClock + " " + fullmoveNumber, builder.updatedHalfmoveClock(halfmoveClock).updatedFullmoveNumber(fullmoveNumber))
+  } 
   
   property("apply should return a correct board builder") =
     Prop.forAllNoShrink(fenAndBoardBuilderGen) {
-      case (fen, eBuilder) => 
-        val aBuilder = FENBuilder(fen)
-        aBuilder.pieces == eBuilder.pieces &&
-        aBuilder.side == eBuilder.side &&
-        aBuilder.castlingPair == eBuilder.castlingPair &&
-        aBuilder.enPassant == eBuilder.enPassant &&
-        aBuilder.halfmoveClock == eBuilder.halfmoveClock &&
-        aBuilder.fullmoveNumber == eBuilder.fullmoveNumber
+      case (fen, eBuilder) => FENBuilder(fen) == eBuilder
+    }
+  
+  property("apply should return a currect board builder for the short FEN") =
+    Prop.forAllNoShrink(shortFenAndBoardBuilderGen) {
+      case (fen, eBuilder) => FENBuilder(fen) == eBuilder
     }
 
   property("toFENString should return a correct FEN") =
     Prop.forAllNoShrink(fenAndBoardBuilderGen) {
       case (fen, builder) => 
-        println(FENBuilder.toFENString(builder))
+        //println(FENBuilder.toFENString(builder))
         FENBuilder.toFENString(builder) == fen
     }
 }
