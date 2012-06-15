@@ -112,6 +112,7 @@
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Move.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Move.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/impl/search/SimpleSearcher.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Searcher.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SidePiece.scala
+/home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/FEN.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/SidePieceOption.scala
 /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Board.scala -> /home/luck/develop/prj/scala/chess/LiftChess/src/pl/luckboy/liftchess/engine/Square.scala

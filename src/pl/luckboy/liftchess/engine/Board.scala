@@ -16,6 +16,7 @@
  ******************************************************************************/
 
 package pl.luckboy.liftchess.engine
+import pl.luckboy.liftchess.FEN
 
 /** A board class. 
  * 
@@ -976,6 +977,9 @@ final class Board private(
   
   override def clone(): Board =
     Board(mPieces.toSeq, side, (castling(Side.White), castling(Side.Black)), enPassant, halfmoveClock, fullmoveNumber)
+    
+  override def toString: String =
+    FEN.toFENString(this)
 }
 
 /**
